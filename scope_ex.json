@@ -1,0 +1,51 @@
+{
+    "scope": {
+        "geometry": "895x1009+1999+102",
+        "color": [ 
+            {"name": "Black", "RGB": [0, 0, 0], "Hex": "#000000" },
+            {"name": "Blue", "RGB": [0, 0, 255], "Hex": "#0000FF" }
+        ],
+
+        "title": "scope",
+        
+        "reversed": false,
+
+        "global": {
+            "shot": "current_shot(\"cmod\")",
+            "xmin": -0.1,
+            "xmax": 2,
+            "horizontal_offset": 0,
+            "vertical_offset": 0
+        },
+
+        "plot": [
+            {
+                "height": 124,
+                "width": 200,
+                "grid_mode": 0,
+                "y_label": "label",
+                "x_log": false,
+                "y_log": false,
+                "update_limits": true,
+                "palette": "Color scale",
+                "bit_shift": 0,
+                "bit_clip": false,
+                "palette_max": 0.0,
+                "palette_min": 0.0,
+                "experiment": "magnetics",
+                "event": "mag_traq",
+                "num_shot": 1,
+                "num_expr": 1,
+                "continuous_update": 0,
+                "title": "plot-1-1",
+                "global_defaults": 12345,
+                "y_expr": [ "abs(\\magnetics::ip/1.e6)" ],
+                "mode_1D": [ "Line" ],
+                "mode_2D": [ "xz(y)" ],
+                "color": [ 0 ],
+                "marker": [ 0 ],
+                "step_marker": [ 1 ]
+            }
+        ]
+    }
+}
