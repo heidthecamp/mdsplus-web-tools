@@ -17,6 +17,7 @@ export default class Panel {
         this.title = title;
         this.y_expr = y_expr;
         this.x_expr = x_expr;
+        Panel.panels.push(this);
     };
 
     update = () => {
@@ -90,4 +91,28 @@ export default class Panel {
 
         return p;
     }
+
+    static async add_panel (info) {
+        let table = document.getElementById("table");
+        let panel = document.createElement("div");
+        let new_id = Panel.panels.length + 1;
+        panel.setAttribute("id", `panel-${new_id}`);
+        table.appendChild(panel)
+        // TODO: Tim should clean this up too, maybe pass info right to panel?
+        if (!info) {
+            info = {};
+        }
+        let experiment = info.hasOwnProperty('experiment') ? info['experiment'] : 'cmod';
+        let shot = info.hasOwnProperty('shot') ? info['shot'] : '1090909010';
+        let default_node = info.hasOwnProperty('default_node') ? info['default_node'] : null;
+        let title = info.hasOwnProperty('title') ? info['title'] : '';
+        let y = info.hasOwnProperty('y') ? info['y'] : '\\ip';
+        let x = info.hasOwnProperty('x') ? info['x'] : '';
+        let p = new Panel(new_id, experiment, shot, default_node, title, y, x);
+        // panels.push(p);
+        panel.replaceWith(p.get_panel_element());
+        await p.update();
+    }
+
+    static panels = []
 }

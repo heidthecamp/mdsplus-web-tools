@@ -37,75 +37,27 @@
         import * as c from "./connection.js";
         // import * as s from "./scope.js";
         import Panel from "./panel.js";
+        import {dropHandler, dragOverHandler} from "./file-handler.js"
 
         // document.getElementById('update').addEventListener('click', s.update);
 
-        let data = {
-            "title": '',
-            "columns": 1,
-            "global": { },
-            "plots": [],
-        };
+
+        let title = "";
 
         let count = 0;
-        let panels = [];
 
         let update = async () => {
-            // panels.forEach((p) => {
-            //     p.p_update();
-            // })
 
-            // TODO: if (data['global']['shot'])
-            if (data.hasOwnProperty('title')) {
-                document.getElementById('title').innerText = data['title'];
-                window.title = data['title'];
-
-                await c.get_request({
-                    'title': data['title'],
-                })
-                .then(response => {
-                    if (response.title.hasOwnProperty('error')) {
-                        console.log(response.title.error)
-                    }
-                    else {
-                        document.getElementById('title').innerText = response.title.value;
-                        window.title = response.title.value;
-                    }
-                });
+            for (var i = 0; i < Panel.panels.length; ++i) {
+                Panel.panels[i].update();
             }
-            
-            for (var i = 0; i < panels.length; ++i) {
-                panels[i].update();
-            }
-        }
-
-        let add_panel = async (info) => {
-            let table = document.getElementById("table");
-            let new_id = ++count
-            let panel = document.createElement("div");
-            panel.setAttribute("id", `panel-${new_id}`);
-            table.appendChild(panel)
-            // TODO: Tim should clean this up too, maybe pass info right to panel?
-            if (!info) {
-                info = {};
-            }
-            let experiment = info.hasOwnProperty('experiment') ? info['experiment'] : 'cmod';
-            let shot = info.hasOwnProperty('shot') ? info['shot'] : '1090909010';
-            let default_node = info.hasOwnProperty('default_node') ? info['default_node'] : null;
-            let title = info.hasOwnProperty('title') ? info['title'] : '';
-            let y = info.hasOwnProperty('y') ? info['y'] : '\\ip';
-            let x = info.hasOwnProperty('x') ? info['x'] : '';
-            let p = new Panel(new_id, experiment, shot, default_node, title, y, x);
-            panels.push(p);
-            panel.replaceWith(p.get_panel_element());
-            await p.update();
         }
 
         let remove_panel = () => {
             console.log("This has not been implemented yet.")
         }
 
-        document.getElementById("add-panel").addEventListener('click', add_panel)
+        document.getElementById("add-panel").addEventListener('click', Panel.add_panel)
         document.getElementById("update").addEventListener('click', update)
         
 
@@ -116,168 +68,11 @@
             }; 
         }
 
-
-        // Drag and drop and select file.
-        async function dropHandler(ev) {
-
-            console.log("File(s) dropped");
-
-            // Prevent default behavior (Prevent file from being opened)
-            ev.preventDefault();
-
-            const file = ev.dataTransfer.items[0].getAsFile();
-
-
-            if (!file.name.endsWith("dat") && !file.name.endsWith("jscp")){
-                console.error("Unsupported file type")
-            }
-
-            const reader = new FileReader();
-            reader.onload = async () => {
-                let rows_in_column = [];
-                var lines = reader.result.split('\n');
-                lines.forEach((line) => {
-                    line = line.trim();
-                    if (line.length == 0) {
-                        return;
-                    }
-
-                    if (line.startsWith('Scope.')) {
-                        line = line.substring('Scope.'.length);
-                    }
-                    
-                    // Using maxsplit=2 still splits on all remaining :, but discards the extras
-                    var parts = line.split(':');
-                    var key = parts.shift();
-                    var value = parts.join(':');
-                    key = key.trim();
-                    value = value.trim();
-                    
-                    if (key.startsWith('rows_in_column_')) {
-                        // TODO: Parse the column index
-                        rows_in_column.push(parseInt(value));
-                    }
-                    else if (key.startsWith('plot_')) {
-                        var [plotIndex, plotKey] = key.split('.', 2);
-                        var [_, row, col] = plotIndex.split('_', 3);
-                        row = parseInt(row) - 1;
-                        col = parseInt(col) - 1;
-
-                        var offset = rows_in_column.slice(0, col).reduce((sum, x) => sum + x, 0);
-                        var index = offset + row;
-
-                        while (data['plots'].length <= index) {
-                            data['plots'].push({});
-                        }
-
-                        switch (plotKey) {
-                        case 'height':
-                            data['plots'][index]['height'] = parseInt(value);
-                            break;
-                        case 'experiment':
-                            data['plots'][index]['experiment'] = value;
-                            break;
-                        case 'y':
-                            data['plots'][index]['y'] = value.replaceAll('|||', '\n'); // TODO: Make a wrapper function?
-                            break;
-                        case 'x':
-                            data['plots'][index]['x'] = value.replaceAll('|||', '\n');
-                            break;
-                        case 'ymin':
-                            data['plots'][index]['ymin'] = parseFloat(value);
-                            break;
-                        case 'ymax':
-                            data['plots'][index]['ymax'] = parseFloat(value);
-                            break;
-                        case 'xmin':
-                            data['plots'][index]['xmin'] = parseFloat(value);
-                            break;
-                        case 'xmax':
-                            data['plots'][index]['xmax'] = parseFloat(value);
-                            break;
-                        case 'default_node':
-                            data['plots'][index]['default_node'] = value;
-                            break;
-                        case 'event':
-                            data['plots'][index]['event'] = value.replaceAll('|||', '\n');
-                            break;
-                        case 'title':
-                            data['plots'][index]['title'] = value.replaceAll('|||', '\n');
-                            break;
-                        case 'label':
-                            data['plots'][index]['label'] = value.replaceAll('|||', '\n');
-                            break;
-                        case 'global_defaults':
-                            data['plots'][index]['global_defaults'] = parseInt(value);
-                            break;
-                        default:
-                            console.log(`Ignoring ${key}`)
-                        }
-                    }
-                    else {
-                        switch (key) {
-                        case 'geometry':
-                            data['geometry'] = value.split(/x|\+/, 4).map((e) => {
-                                return parseInt(e);
-                            });
-                            break;
-                        case 'title':
-                            data['title'] = value;
-                            break;
-                        // case 'icon_name': break;
-                        // case 'title_event': break;
-                        // case 'print_file': break;
-                        // case 'print_event': break;
-                        // case 'print_portrait': break;
-                        // case 'print_window_title': break;
-                        // case 'printer': break;
-                        // case 'font': break;
-                        case 'columns':
-                            data['columns'] = parseInt(value);
-                            break;
-                        case 'global_1_1.shot':
-                            data['global']['shot'] = value;
-                            break;
-                        case 'global_1_1.xmin':
-                            data['global']['xmin'] = parseFloat(value);
-                            break;
-                        case 'global_1_1.xmax':
-                            data['global']['xmax'] = parseFloat(value);
-                            break;
-                        case 'global_1_1.global_defaults':
-                            data['global']['global_defaults'] = parseInt(value);
-                            break;
-                        default:
-                            console.log(`Ignoring ${key}`)
-                        }
-                    }
-                })
-
-                // TODO: Tim should probably improve this
-                panels = [];
-                document.getElementById("table").innerHTML = '';
-
-                for (var i = 0; i < data['plots'].length; ++i) {
-                    await add_panel(data['plots'][i]);
-                }
-
-            };
-            reader.onerror = () => {
-                console.error("Error reading the file. Please try again.", "error");
-            };
-            reader.readAsText(file);
-        }
-
-        function dragOverHandler(ev) {
-            // console.log("File(s) in drop zone");
-
-            // Prevent default behavior (Prevent file from being opened)
-            ev.preventDefault();
-        }
-
-
         // let dropzone = document.querySelector('body');
-        document.addEventListener("drop", dropHandler);
+        document.addEventListener("drop", (e) => {
+            Panel.panels = [];
+            dropHandler(e);
+        });
         document.addEventListener("dragover", dragOverHandler);
 
     </script>
