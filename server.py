@@ -27,7 +27,8 @@ from websockets.legacy.server import serve
 async def handle_connection(websocket):
     # print(f"New websocket connection from {websocket.host}:{websocket.port}")
     print(f"New websocket connection from {websocket.origin}")
-    conn = mdsthin.Connection('alcdata-archives')
+    # conn = mdsthin.Connection('localhost')
+    conn = mdsthin.Connection('sshp://heidcamp@mfews-heidcamp-local.psfc.mit.edu', ssh_port=9224, sshp_host='alcdata-archives')
 
     async for message in websocket:
         request = json.loads(message)
@@ -36,6 +37,7 @@ async def handle_connection(websocket):
         action = request.get('action', 'get')
 
         if action == 'get':
+#            Get many breaks logic of chaining scopes.
 #            gm = conn.getMany()
 #            for name, expr in request.items():
 #                gm.append(name, expr)
