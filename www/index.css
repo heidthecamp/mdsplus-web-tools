@@ -1,0 +1,17 @@
+.form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px;
+    border-color: black;
+    background-color:lightgray;
+    padding: 10, 15;
+    margin: 10, 15;
+    width: auto;
+    height: auto;
+}
+
+.form-element {
+    
+}

@@ -18,10 +18,48 @@ export default class Panel {
         this.y_expr = y_expr;
         this.x_expr = x_expr;
         Panel.panels.push(this);
+        this.update();
     };
 
-    update = () => {
-        s.update(`${this.id}`, this.tree, this.shot, this.default_node, this.title, this.y_expr, this.x_expr);
+    update = (
+        tree = null,
+        shot = null,
+        default_node = null,
+        title = null,
+        y_expr = null,
+        x_expr = null,
+    ) => {
+        if (!!tree) {
+            this.tree = tree;
+        }
+        if (!!shot) {
+            this.shot = shot;
+        }
+        if (!!default_node) {
+            this.default_node = default_node;
+        }
+        if (!!title) {
+            this.title = title;
+        }
+        if (!!y_expr) {
+            this.y_expr = y_expr;
+            if (!x_expr) {
+                this.x_expr = null; // Panel hanldes null by using dim_of(y)
+            }
+        }
+        if (!!x_expr) {
+            this.x_expr = x_expr;
+        }
+
+        s.update(
+            `${this.id}`,
+            this.tree,
+            this.shot, 
+            this.default_node,
+            this.title,
+            this.y_expr,
+            this.x_expr,
+        );
     }
 
     
@@ -30,54 +68,11 @@ export default class Panel {
         p.classList.add('panel');
         p.setAttribute("id", `panel-${this.id}`);
 
-        let t = document.createElement("div");
-        t.innerText = "Tree: ";
-        let ti = document.createElement("input");
-        ti.type = "text";
-        ti.value = this.tree;
-        ti.addEventListener("change", (e) => this.tree = e.target.value);
-        t.appendChild(ti);
-        p.appendChild(t);
-        
-        let s = document.createElement("div");
-        s.innerText = "Shot: ";
-        let si = document.createElement("input");
-        si.type = "text";
-        si.value = this.shot;
-        si.addEventListener("change", (e) => this.shot = e.target.value);
-        s.appendChild(si);
-        p.appendChild(s);
-        
-        let dn = document.createElement("div");
-        dn.innerText = "Default Node: ";
-        let dni = document.createElement("input");
-        dni.type = "text";
-        dni.value = this.default_node;
-        dni.addEventListener("change", (e) => this.default_node = e.target.value);
-        dn.appendChild(dni);
-        p.appendChild(dn);
-        
-        let y = document.createElement("div");
-        y.innerText = "Y: ";
-        let yi = document.createElement("input");
-        yi.type = "text";
-        yi.value = this.y_expr;
-        yi.addEventListener("change", (e) => this.y_expr = e.target.value);
-        y.appendChild(yi);
-        p.appendChild(y);
-        
-        let x = document.createElement("div");
-        x.innerText = "X: ";
-        let xi = document.createElement("input");
-        xi.type = "text";
-        xi.value = this.x_expr;
-        xi.addEventListener("change", (e) => this.x_expr = e.target.value);
-        x.appendChild(xi);
-        p.appendChild(x);
-
         let button = document.createElement("button");
-        button.setAttribute("id", `update-${this.id}`);
-        button.addEventListener("click", this.update);
+        button.setAttribute("id", `open-options-${this.id}`);
+        button.addEventListener("click", () => {
+            document.querySelector("body").appendChild(this.get_form_element());
+        });
         button.innerText = `Update panel-${this.id}`;
         p.appendChild(button);
 
@@ -90,6 +85,89 @@ export default class Panel {
         p.appendChild(scope);
 
         return p;
+    }
+
+    get_form_element = () => {
+        let f = document.createElement("div");
+        f.setAttribute("id", "form")
+        f.classList.add("form", "panel-form")
+
+        let tree = this.tree;
+        let t = document.createElement("div");
+        t.classList.add("form-element");
+        t.innerText = "Tree: ";
+        let ti = document.createElement("input");
+        ti.type = "text";
+        ti.value = this.tree;
+        ti.addEventListener("change", (e) => tree = e.target.value);
+        t.appendChild(ti);
+        f.appendChild(t);
+        
+        let shot = this.shot;
+        let s = document.createElement("div");
+        s.classList.add("form-element");
+        s.innerText = "Shot: ";
+        let si = document.createElement("input");
+        si.type = "text";
+        si.value = shot;
+        si.addEventListener("change", (e) => shot = e.target.value);
+        s.appendChild(si);
+        f.appendChild(s);
+        
+        let default_node = this.default_node;
+        let dn = document.createElement("div");
+        dn.classList.add("form-element");
+        dn.innerText = "Default Node: ";
+        let dni = document.createElement("input");
+        dni.type = "text";
+        dni.value = default_node;
+        dni.addEventListener("change", (e) => default_node = e.target.value);
+        dn.appendChild(dni);
+        f.appendChild(dn);
+        
+        let y_expr = this.y_expr;
+        let y = document.createElement("div");
+        y.classList.add("form-element");
+        y.innerText = "Y: ";
+        let yi = document.createElement("input");
+        yi.type = "text";
+        yi.value = y_expr;
+        yi.addEventListener("change", (e) => y_expr = e.target.value);
+        y.appendChild(yi);
+        f.appendChild(y);
+        
+        let x_expr = this.x_expr;
+        let x = document.createElement("div");
+        x.classList.add("form-element");
+        x.innerText = "X: ";
+        let xi = document.createElement("input");
+        xi.type = "text";
+        xi.value = x_expr;
+        xi.addEventListener("change", (e) => x_expr = e.target.value);
+        x.appendChild(xi);
+        f.appendChild(x);
+
+        let button = document.createElement("button");
+        button.setAttribute("id", `update-${this.id}`);
+        button.addEventListener("click", () => {
+            // TODO: Make sure x_exper is updated correctly. 
+            this.update(
+                tree, shot, default_node, this.title, y_expr, x_expr
+            )
+        });
+        button.innerText = `Update panel-${this.id}`;
+
+        let close = document.createElement("button");
+        close.setAttribute("id", "close");
+        close.innerText="close"
+        close.addEventListener("click", () => {
+            f.remove()
+        })
+
+        f.appendChild(button);
+        f.appendChild(close);
+
+        return(f);
     }
 
     static async add_panel (info) {
@@ -111,7 +189,7 @@ export default class Panel {
         let p = new Panel(new_id, experiment, shot, default_node, title, y, x);
         // panels.push(p);
         panel.replaceWith(p.get_panel_element());
-        await p.update();
+        // await p.update();
     }
 
     static panels = []

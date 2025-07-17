@@ -44,12 +44,6 @@ export async function update(
 
     let u_data;
 
-    if (y_expr === null) // TODO: remove
-        y_expr = document.getElementById('y_expr').value;
-
-    if (x_expr === null) {
-        x_expr = document.getElementById('x_expr').value;
-    }
     if (x_expr == null || x_expr.trim() == '') {
         x_expr = `dim_of(${y_expr})`;
     }
