@@ -71,7 +71,7 @@ export default class Panel {
         let button = document.createElement("button");
         button.setAttribute("id", `open-options-${this.id}`);
         button.addEventListener("click", () => {
-            document.querySelector("body").appendChild(this.get_form_element());
+            document.querySelector("body").appendChild(this.display_options());
         });
         button.innerText = `Update panel-${this.id}`;
         p.appendChild(button);
@@ -87,10 +87,15 @@ export default class Panel {
         return p;
     }
 
-    get_form_element = () => {
-        let f = document.createElement("div");
-        f.setAttribute("id", "form")
-        f.classList.add("form", "panel-form")
+    display_options = () => {
+        let options_bg = document.createElement("div");
+        options_bg.classList.add("click-off", "background");
+
+        
+        let o = document.createElement("div");
+        o.setAttribute("id", "options");
+        o.classList.add("options", "panel-form");
+        options_bg.appendChild(o);
 
         let tree = this.tree;
         let t = document.createElement("div");
@@ -101,7 +106,7 @@ export default class Panel {
         ti.value = this.tree;
         ti.addEventListener("change", (e) => tree = e.target.value);
         t.appendChild(ti);
-        f.appendChild(t);
+        o.appendChild(t);
         
         let shot = this.shot;
         let s = document.createElement("div");
@@ -112,7 +117,7 @@ export default class Panel {
         si.value = shot;
         si.addEventListener("change", (e) => shot = e.target.value);
         s.appendChild(si);
-        f.appendChild(s);
+        o.appendChild(s);
         
         let default_node = this.default_node;
         let dn = document.createElement("div");
@@ -123,7 +128,7 @@ export default class Panel {
         dni.value = default_node;
         dni.addEventListener("change", (e) => default_node = e.target.value);
         dn.appendChild(dni);
-        f.appendChild(dn);
+        o.appendChild(dn);
         
         let y_expr = this.y_expr;
         let y = document.createElement("div");
@@ -134,7 +139,7 @@ export default class Panel {
         yi.value = y_expr;
         yi.addEventListener("change", (e) => y_expr = e.target.value);
         y.appendChild(yi);
-        f.appendChild(y);
+        o.appendChild(y);
         
         let x_expr = this.x_expr;
         let x = document.createElement("div");
@@ -145,7 +150,7 @@ export default class Panel {
         xi.value = x_expr;
         xi.addEventListener("change", (e) => x_expr = e.target.value);
         x.appendChild(xi);
-        f.appendChild(x);
+        o.appendChild(x);
 
         let button = document.createElement("button");
         button.setAttribute("id", `update-${this.id}`);
@@ -157,17 +162,28 @@ export default class Panel {
         });
         button.innerText = `Update panel-${this.id}`;
 
+        function closeEvent() {
+            options_bg.remove();
+        }
+
+        function outerClick(event){
+            if (!o.contains(event.target)) {
+                options_bg.remove();
+            }
+        }
+
         let close = document.createElement("button");
         close.setAttribute("id", "close");
-        close.innerText="close"
-        close.addEventListener("click", () => {
-            f.remove()
-        })
+        close.innerText="close";
+        close.addEventListener("click", closeEvent, true);
 
-        f.appendChild(button);
-        f.appendChild(close);
 
-        return(f);
+        options_bg.addEventListener("click", outerClick, true);
+
+        o.appendChild(button);
+        o.appendChild(close);
+
+        return(options_bg);
     }
 
     static async add_panel (info) {
