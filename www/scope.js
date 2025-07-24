@@ -1,4 +1,6 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import { symbol, symbolDiamond } from 'https://esm.sh/d3-shape';
+import * as shape from 'https://esm.sh/d3-shape';
 import * as c from "./connection.js";
 
 export async function update(
@@ -10,7 +12,14 @@ export async function update(
     title = null,
     y_expr = null,
     x_expr = null,
+    line_type = "line",
+    line_color="steelblue",
+    point_type="circle",
+    point_color="red"
 ){
+    let symbolGenerator = symbol()
+        .type(symbolDiamond)
+        .size(80);
     let y_data = null;
     let x_data = null;
 
@@ -188,18 +197,21 @@ export async function update(
 
     var brush = d3.brush()
         .extent([[0,0], [width,height]])
-        .on("end", updateChart)
+        .on("end", zoomChart)
     
     var line = svg.append("g")
-        .attr("clip-path", "url(#clip)")
-
+    .attr("clip-path", "url(#clip)")
+    // Handle line attributes here
+    // .attr("class", "dashed")
+    
     line.append("path")
         .datum(u_data)
         .attr("class", "line")
         .attr("fill", "none")
-        .attr("stroke", "steelblue")
+        .attr("stroke", line_color)
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
+            .curve(d3.curveStepAfter)
             .x(function(d) { return x(d.x_data) })
             .y(function(d) { return y(d.y_data) })
         )
@@ -209,11 +221,51 @@ export async function update(
             .attr("class", "brush")
             .call(brush);
 
+    // var points = svg.append("g")
+    //     .attr("clip-path", "url(#clip)")
+    
+    // points.append("path")
+    //     .datum(u_data)
+    //     .attr("class", "data_points")
+        
+    // // SLW maybe this should be it's own container, not part of line
+    // points.selectAll("data_point")
+    //     .data(u_data)
+    //     .join(
+    //         function(enter) {
+    //             return enter.append("data_point")
+    //         },
+    //     )
+    //     .attr("class", "symbol")
+    //     // .attr("d", symbolGenerator)
+    //     .attr("d", function(d) {
+    //         shape.symbol().size(60).type(shape["symbolSquare"])
+    //     })
+    //     .attr("fill", point_color)
+    //     .attr("stroke", point_color)
+    //     .attr("cx", function(d) { return x(d.x_data) })
+    //     .attr("cy", function(d) { return y(d.y_data) })
+        // .attr("r", 6)
+
+    const points = svg.append("g")
+        .attr("stroke-width", 1)
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .selectAll("path")
+        .data(u_data)
+        .join("path")
+        .attr("fill", "red")
+        .attr(
+            "transform",
+            d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
+        )
+        .attr("d", symbol().type(symbolDiamond))
+
     var idleTimeout
     function idled() { idleTimeout = null; }
 
     // A function that update the chart for given boundaries
-    function updateChart(e) {
+    function zoomChart(e) {
 
         // What are the selected boundaries?
         let extent = e.selection;
@@ -235,11 +287,18 @@ export async function update(
         line
             .select('.line')
             .transition()
-            .duration(1000)
             .attr("d", d3.line()
+                .curve(d3.curveStepAfter)
                 .x(function(d) { return x(d.x_data) })
                 .y(function(d) { return y(d.y_data) })
+            );
+
+        points.selectAll("path")
+            .transition().attr(
+                "transform",
+                d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
             )
+            .attr("d", symbol().type(symbolDiamond));
     }
 
     // If user double click, reinitialize the chart
