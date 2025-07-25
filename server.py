@@ -28,8 +28,9 @@ async def handle_connection(websocket):
     # print(f"New websocket connection from {websocket.host}:{websocket.port}")
     print(f"New websocket connection from {websocket.origin}")
     # conn = mdsthin.Connection('localhost')
-    conn = mdsthin.Connection('sshp://heidcamp@mfews-heidcamp-public.psfc.mit.edu', ssh_port=9224, sshp_host='alcdata-archives')
-
+    # conn = mdsthin.Connection('sshp://heidcamp@mfews-heidcamp-public.psfc.mit.edu', ssh_port=9224, sshp_host='alcdata-archives')
+    conn = mdsthin.Connection('alcdata-archives')
+    
     async for message in websocket:
         request = json.loads(message)
         response = {}

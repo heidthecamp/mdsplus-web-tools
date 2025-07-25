@@ -5,7 +5,12 @@ let requests = [];
 
 function establish_connection(cb ) {
     let host = window.location.host;
-    host = 'ws://' + host.split(':', 1) + ':8123'; // TODO: Parameterize
+    if (window.location.protocol == 'https:') {
+        host = 'wss://' + host + '/ws';
+    }
+    else {
+        host = 'ws://' + host.split(':', 1) + ':8123';// TODO: Parameterize
+    }
     ws = new WebSocket(host);
 
     // TODO: Implement
