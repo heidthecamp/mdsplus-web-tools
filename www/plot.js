@@ -69,7 +69,6 @@ export async function update(
         'x': x_expr
     })
     .then(response => {
-        console.log(response);
 
         if( !response || !response.open ) {
             return;
@@ -130,11 +129,6 @@ export async function update(
             console.error()
         }
     });
-
-    // const y_max = Math.max(...y_data);
-    // const y_min = Math.min(...y_data);
-    // const x_max = Math.max(...x_data);
-    // const x_min = Math.min(...x_data);
 
     let y_max = y_data[0];
     let y_min = y_data[0];
@@ -199,53 +193,52 @@ export async function update(
         .extent([[0,0], [width,height]])
         .on("end", zoomChart)
     
+    var zoom_brush = svg.append("g")
+        .attr("clip-path", "url(#clip)")
+        .append("g")
+        .attr("class", "brush")
+        .call(brush);
+        
+
     var line = svg.append("g")
     .attr("clip-path", "url(#clip)")
     // Handle line attributes here
     // .attr("class", "dashed")
     
-    line.append("path")
-        .datum(u_data)
-        .attr("class", "line")
-        .attr("fill", "none")
-        .attr("stroke", line_color)
-        .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
-            .curve(d3.curveStepAfter)
-            .x(function(d) { return x(d.x_data) })
-            .y(function(d) { return y(d.y_data) })
+    switch (line_type){
+        case "line":
+            line.append("path")
+                .datum(u_data)
+                .attr("class", "line")
+                .attr("fill", "none")
+                .attr("stroke", line_color)
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(function(d) { return x(d.x_data) })
+                    .y(function(d) { return y(d.y_data) })
         )
+            break;
+        case "step_after":
+            line.append("path")
+                .datum(u_data)
+                .attr("class", "line")
+                .attr("fill", "none")
+                .attr("stroke", line_color)
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .curve(d3.curveStepAfter)
+                    .x(function(d) { return x(d.x_data) })
+                    .y(function(d) { return y(d.y_data) })
+                )
+            break;
+        default:
+            break;
 
-    line
-        .append("g")
-            .attr("class", "brush")
-            .call(brush);
+    }
 
-    // var points = svg.append("g")
-    //     .attr("clip-path", "url(#clip)")
-    
-    // points.append("path")
-    //     .datum(u_data)
-    //     .attr("class", "data_points")
-        
-    // // SLW maybe this should be it's own container, not part of line
-    // points.selectAll("data_point")
-    //     .data(u_data)
-    //     .join(
-    //         function(enter) {
-    //             return enter.append("data_point")
-    //         },
-    //     )
-    //     .attr("class", "symbol")
-    //     // .attr("d", symbolGenerator)
-    //     .attr("d", function(d) {
-    //         shape.symbol().size(60).type(shape["symbolSquare"])
-    //     })
-    //     .attr("fill", point_color)
-    //     .attr("stroke", point_color)
-    //     .attr("cx", function(d) { return x(d.x_data) })
-    //     .attr("cy", function(d) { return y(d.y_data) })
-        // .attr("r", 6)
+    // line.append("g")
+    //     .attr("class", "brush")
+    //     .call(brush);
 
     const points = svg.append("g")
         .attr("stroke-width", 1)
@@ -278,7 +271,7 @@ export async function update(
         } else {
             x.domain([ x.invert(extent[0][0]), x.invert(extent[1][0]) ]);
             y.domain([ y.invert(extent[1][1]), y.invert(extent[0][1]) ]);
-            line.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
+            zoom_brush.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
         }
 
         // Update axis and line position
@@ -293,12 +286,15 @@ export async function update(
                 .y(function(d) { return y(d.y_data) })
             );
 
+        transform = d3.ZoomTransform(k, x, y);
+
         points.selectAll("path")
-            .transition().attr(
+            // .transition()
+            .attr(
                 "transform",
-                d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
+                d => `translate(${transform.rescaleX(d.x_data)}, ${transform.rescaleY(d.y_data)})`
             )
-            .attr("d", symbol().type(symbolDiamond));
+            // .attr("d", symbol().type(symbolDiamond));
     }
 
     // If user double click, reinitialize the chart
@@ -313,5 +309,13 @@ export async function update(
         .x(function(d) { return x(d.x_data) })
         .y(function(d) { return y(d.y_data) })
     )
+    points
+        .selectAll("path")
+        .transition()
+        .attr(
+            "transform",
+            d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
+        );
     });
+    zoom_brush.select(".brush").call(brush.move, null);
 }

@@ -1,5 +1,3 @@
-// import update from "./scope.js";
-
 let ws = null;
 let requests = [];
 
