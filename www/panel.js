@@ -1,34 +1,34 @@
-import * as s from "./plot.js";
+import * as plot from "./plot.js";
 import { display_options } from "./options.js";
-import Line from "./trace.js";
+import Trace from "./trace.js";
 
 export default class Panel {
     constructor (
         id = -1,
-        lines = [],
+        traces = [],
     ) {
         this.id = id;
-        this.lines = lines;
+        this.traces = traces;
         Panel.panels.push(this);
         this.update();
     };
 
     update = (
-        lines = []
+        traces = []
     ) => {
 
-        if (lines.length > 0){
-            this.lines = lines;
+        if (traces.length > 0){
+            this.traces = traces;
         }
 
-        s.update(
+        plot.update(
             `${this.id}`,
-            this.lines[0].tree,
-            this.lines[0].shot, 
-            this.lines[0].default_node,
-            this.lines[0].title,
-            this.lines[0].y_expr,
-            this.lines[0].x_expr,
+            this.traces[0].tree,
+            this.traces[0].shot, 
+            this.traces[0].default_node,
+            this.traces[0].title,
+            this.traces[0].y_expr,
+            this.traces[0].x_expr,
         );
     }
 
@@ -36,20 +36,15 @@ export default class Panel {
     get_panel_element = () => {
         let p = document.createElement("div");
         p.classList.add('panel');
-        p.setAttribute("id", `panel-${this.lines[0].id}`);
+        p.setAttribute("id", `panel-${this.traces[0].id}`);
 
         let button = document.createElement("button");
-        button.setAttribute("id", `open-options-${this.lines[0].id}`);
+        button.setAttribute("id", `open-options-${this.traces[0].id}`);
         button.addEventListener("click", () => {
-            document.querySelector("body").appendChild(display_options({
-                "tree": this.lines[0].tree,
-                "shot": this.lines[0].shot,
-                "default_node": this.lines[0].default_node,
-                "title": this.lines[0].title,
-                "y_expr": this.lines[0].y_expr,
-                "x_expr": this.lines[0].x_expr,
-                "id": this.id,
-            }, this.update));
+            document.querySelector("body").appendChild(display_options(
+                this.id,
+                this.traces,
+                this.update));
         });
         button.innerText = `Update panel-${this.id}`;
         p.appendChild(button);
@@ -64,7 +59,7 @@ export default class Panel {
 
         return p;
     }
-info
+// info
     static async add_panel (info) {
         let table = document.getElementById("table");
         let panel = document.createElement("div");
@@ -81,7 +76,7 @@ info
         let title = info.hasOwnProperty('title') ? info['title'] : '';
         let y = info.hasOwnProperty('y') ? info['y'] : '\\ip';
         let x = info.hasOwnProperty('x') ? info['x'] : '';
-        let l = new Line(experiment, shot, default_node, title, y, x)
+        let l = new Trace(experiment, shot, default_node, title, y, x)
         let p = new Panel(new_id, [l]);
         // panels.push(p);
         panel.replaceWith(p.get_panel_element());

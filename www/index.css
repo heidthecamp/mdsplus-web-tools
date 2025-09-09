@@ -3,14 +3,17 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: 5px;
-    border-color: black;
     background-color:lightgray;
-    padding: 10, 15;
-    margin: 10, 15;
+    padding: auto;
+    margin: auto;
     width: 400px;
     height: 200px;
     align-items: center;
+}
+
+.form-element {
+    margin: auto;
+    padding: auto;
 }
 
 .click-off {
@@ -23,4 +26,6 @@
     z-index: 50;
 }
 
+.dashed{
+    stroke-dasharray: 5,5;
 }

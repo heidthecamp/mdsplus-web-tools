@@ -1,6 +1,6 @@
-import Line from "./trace.js";
+import Trace from "./trace.js";
 
-export function display_options(panelOptions, update) {
+export function display_options(id, traces, update, index = 0) {
     let options_bg = document.createElement("div");
     options_bg.classList.add("click-off", "options-background");
     
@@ -9,18 +9,18 @@ export function display_options(panelOptions, update) {
     o.classList.add("options", "panel-form");
     options_bg.appendChild(o);
 
-    let tree = panelOptions.tree;
+    let tree = traces[index].tree;
     let t = document.createElement("div");
     t.classList.add("form-element");
     t.innerText = "Tree: ";
     let ti = document.createElement("input");
     ti.type = "text";
-    ti.value = panelOptions.tree;
+    ti.value = traces[index].tree;
     ti.addEventListener("change", (e) => tree = e.target.value);
     t.appendChild(ti);
     o.appendChild(t);
     
-    let shot = panelOptions.shot;
+    let shot = traces[index].shot;
     let s = document.createElement("div");
     s.classList.add("form-element");
     s.innerText = "Shot: ";
@@ -31,7 +31,7 @@ export function display_options(panelOptions, update) {
     s.appendChild(si);
     o.appendChild(s);
     
-    let default_node = panelOptions.default_node;
+    let default_node = traces[index].default_node;
     let dn = document.createElement("div");
     dn.classList.add("form-element");
     dn.innerText = "Default Node: ";
@@ -42,7 +42,7 @@ export function display_options(panelOptions, update) {
     dn.appendChild(dni);
     o.appendChild(dn);
     
-    let y_expr = panelOptions.y_expr;
+    let y_expr = traces[index].y_expr;
     let y = document.createElement("div");
     y.classList.add("form-element");
     y.innerText = "Y: ";
@@ -53,7 +53,7 @@ export function display_options(panelOptions, update) {
     y.appendChild(yi);
     o.appendChild(y);
     
-    let x_expr = panelOptions.x_expr;
+    let x_expr = traces[index].x_expr;
     let x = document.createElement("div");
     x.classList.add("form-element");
     x.innerText = "X: ";
@@ -65,14 +65,15 @@ export function display_options(panelOptions, update) {
     o.appendChild(x);
 
     let button = document.createElement("button");
-    button.setAttribute("id", `update-${panelOptions.id}`);
+    button.setAttribute("id", `update-${id}`);
     button.addEventListener("click", () => {
-        // TODO: Make sure x_exper is updated correctly. 
+        // TODO: Fix this to work with multi trace
         update(
-            [new Line(tree, shot, default_node, panelOptions.title, y_expr, x_expr)]
+            [new Trace(tree, shot, default_node, traces[index].title, y_expr, x_expr)],
+            // new Trace(tree, shot, default_node, traces[index].title, `abs(y_expr)`, x_expr)
         )
     });
-    button.innerText = `Update panel-${panelOptions.id}`;
+    button.innerText = `Update panel-${id}`;
 
     function closeEvent() {
         options_bg.remove();

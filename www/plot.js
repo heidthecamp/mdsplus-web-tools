@@ -17,40 +17,6 @@ export async function update(
     point_type="circle",
     point_color="red"
 ){
-    let symbolGenerator = symbol()
-        .type(symbolDiamond)
-        .size(80);
-    let y_data = null;
-    let x_data = null;
-
-    if (tree === null) // TODO: remove
-        tree = document.getElementById('tree').value;
-    if (shot === null) // TODO: remove
-        shot = document.getElementById('shot').value;
-
-    // get(request, ws)
-    // await c.get_request({
-    //     'open': `TreeOpen("${tree}",${shot})`
-    // })
-    // .then(response => {
-    //     console.log(response);
-
-    //     if( !response || !response.open ) {
-    //         return;
-    //     }
-    //     else if (response.open.hasOwnProperty('error')) {
-    //         // Error Message
-    //         alert(response.open.error);
-    //     }
-    //     else {
-    //         let status = response.open.value;
-    //         if ((status & 1) == 0) {
-    //             // Error Status Code
-    //             alert(response);
-    //         }
-    //     }
-    // });
-
     let u_data;
 
     if (x_expr == null || x_expr.trim() == '') {
@@ -60,6 +26,9 @@ export async function update(
     if (!default_node) {
         default_node = '\\TOP';
     }
+    
+    let y_data;
+    let x_data;
 
     await c.get_request({
         'open': `TreeOpen("${tree}",${shot})`,
@@ -189,15 +158,15 @@ export async function update(
         .attr("x", 0)
         .attr("y", 0);
 
-    var brush = d3.brush()
-        .extent([[0,0], [width,height]])
-        .on("end", zoomChart)
+    // var brush = d3.brush()
+    //     .extent([[0,0], [width,height]])
+    //     .on("end", zoomChart)
     
-    var zoom_brush = svg.append("g")
-        .attr("clip-path", "url(#clip)")
-        .append("g")
-        .attr("class", "brush")
-        .call(brush);
+    // var zoom_brush = svg.append("g")
+    //     .attr("clip-path", "url(#clip)")
+    //     .append("g")
+    //     .attr("class", "brush")
+    //     .call(brush);
         
 
     var line = svg.append("g")
@@ -240,19 +209,19 @@ export async function update(
     //     .attr("class", "brush")
     //     .call(brush);
 
-    const points = svg.append("g")
-        .attr("stroke-width", 1)
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 10)
-        .selectAll("path")
-        .data(u_data)
-        .join("path")
-        .attr("fill", "red")
-        .attr(
-            "transform",
-            d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
-        )
-        .attr("d", symbol().type(symbolDiamond))
+    // const points = svg.append("g")
+    //     .attr("stroke-width", 1)
+    //     .attr("font-family", "sans-serif")
+    //     .attr("font-size", 10)
+    //     .selectAll("path")
+    //     .data(u_data)
+    //     .join("path")
+    //     .attr("fill", "red")
+    //     .attr(
+    //         "transform",
+    //         d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
+    //     )
+    //     .attr("d", symbol().type(symbolDiamond))
 
     var idleTimeout
     function idled() { idleTimeout = null; }
@@ -288,34 +257,34 @@ export async function update(
 
         transform = d3.ZoomTransform(k, x, y);
 
-        points.selectAll("path")
-            // .transition()
-            .attr(
-                "transform",
-                d => `translate(${transform.rescaleX(d.x_data)}, ${transform.rescaleY(d.y_data)})`
-            )
+        // points.selectAll("path")
+        //     // .transition()
+        //     .attr(
+        //         "transform",
+        //         d => `translate(${transform.rescaleX(d.x_data)}, ${transform.rescaleY(d.y_data)})`
+        //     )
             // .attr("d", symbol().type(symbolDiamond));
     }
 
     // If user double click, reinitialize the chart
     svg.on("dblclick",function(){
-    x.domain(d3.extent(u_data, function(d) { return d.x_data }));
-    y.domain(d3.extent(u_data, function(d) { return d.y_data }));
-    xAxis.transition().call(d3.axisBottom(x))
-    line
-        .select('.line')
-        .transition()
-        .attr("d", d3.line()
-        .x(function(d) { return x(d.x_data) })
-        .y(function(d) { return y(d.y_data) })
-    )
-    points
-        .selectAll("path")
-        .transition()
-        .attr(
-            "transform",
-            d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
-        );
+        x.domain(d3.extent(u_data, function(d) { return d.x_data }));
+        y.domain(d3.extent(u_data, function(d) { return d.y_data }));
+        xAxis.transition().call(d3.axisBottom(x))
+        line
+            .select('.line')
+            .transition()
+            .attr("d", d3.line()
+            .x(function(d) { return x(d.x_data) })
+            .y(function(d) { return y(d.y_data) })
+        )
+        // points
+        //     .selectAll("path")
+        //     .transition()
+        //     .attr(
+        //         "transform",
+        //         d => `translate(${x(d.x_data)}, ${y(d.y_data)})`
+        //     );
+        // zoom_brush.select(".brush").call(brush.move, null);
     });
-    zoom_brush.select(".brush").call(brush.move, null);
 }

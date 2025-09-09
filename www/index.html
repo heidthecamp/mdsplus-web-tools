@@ -23,7 +23,7 @@
 <body>
     <div class="table-inputs">
         <button id="add-panel">Add</button></span>
-        <button id="update">Update</button></span>
+        <button id="update">Update Global Defaults</button></span>
     </div>
     
     <h1 id="title"></h1>
@@ -37,12 +37,16 @@
         // import * as s from "./scope.js";
         import Panel from "./panel.js";
         import {dropHandler, dragOverHandler} from "./file-handler.js"
+        import Global_Options from "./global_options.js"
+
+        let global_options = Global_Options.get_instance();
 
         // document.getElementById('update').addEventListener('click', s.update);
         let title = "";
 
-        let update = async () => {
 
+
+        let update = async () => {
             for (var i = 0; i < Panel.panels.length; ++i) {
                 Panel.panels[i].update();
             }
@@ -53,7 +57,10 @@
         }
 
         document.getElementById("add-panel").addEventListener('click', Panel.add_panel)
-        document.getElementById("update").addEventListener('click', update)
+        document.getElementById("update").addEventListener('click', () => {
+            let parent = document.querySelector("body")
+            Global_Options.display_options(update, parent)
+        })
         
 
         window.onload =  () => {
