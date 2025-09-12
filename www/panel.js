@@ -41,10 +41,12 @@ export default class Panel {
         let button = document.createElement("button");
         button.setAttribute("id", `open-options-${this.traces[0].id}`);
         button.addEventListener("click", () => {
-            document.querySelector("body").appendChild(display_options(
+            let body = document.querySelector("body");
+            display_options(
                 this.id,
                 this.traces,
-                this.update));
+                this.update,
+                body);
         });
         button.innerText = `Update panel-${this.id}`;
         p.appendChild(button);
