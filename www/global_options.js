@@ -6,9 +6,22 @@ export default class Global_Optinos {
 
 
     constructor (
+        update = false,
+        x_grid_labels = null,
+        y_grid_lables = null,
+        show_mode = null,
+        step_plot = null,
+        x_grid_lines = null,
+        y_grid_lines = null,
         tree = null,
         shot = null,
         default_node = null,
+        x_label = null,
+        y_label = null,
+        xmin = null,
+        ymin = null,
+        xmax = null,
+        ymax = null,
         title = null,
         y_expr = null,
         x_expr = null,
@@ -22,16 +35,27 @@ export default class Global_Optinos {
             return gopts;
         }
 
-        this.tree         = tree;
-        this.shot         = shot;
-        this.default_node = default_node;
-        this.title        = title;
-        this.y_expr       = y_expr;
-        this.x_expr       = x_expr;
-        this.trace_type   = trace_type;
-        this.trace_color  = trace_color;
-        this.point_type   = point_type;
-        this.point_color  = point_color;
+        this.update        = update,
+        this.x_grid_labels = x_grid_labels,
+        this.y_grid_lables = y_grid_lables,
+        this.show_mode     = show_mode,
+        this.step_plot     = step_plot,
+        this.x_grid_lines  = x_grid_lines,
+        this.y_grid_lines  = y_grid_lines
+        this.tree          = tree;
+        this.shot          = shot;
+        this.x_label       = x_label
+        this.y_label       = y_label
+        this.xmin          = xmin
+        this.ymin          = ymin
+        this.xmax          = xmax
+        this.ymax          = ymax
+        this.default_node  = default_node;
+        this.title         = title;
+        this.trace_type    = trace_type;
+        this.trace_color   = trace_color;
+        this.point_type    = point_type;
+        this.point_color   = point_color;
 
         gopts = this;
     }
@@ -57,147 +81,132 @@ export default class Global_Optinos {
         options_bg.setAttribute("id", "options_bg");
 
         parent.appendChild(options_bg);
-
-        // options_bg.addEventListener("click", outerClick, true);
-
-        function closeEvent(e) {
-            e.preventDefault();
-            options_bg = document.getElementById("options_bg");
-            options_bg.remove();
-        }
         
         options_bg.innerHTML = `
-        <div class="options panel-form">
+        <div class="options panel-form" id="form">
             <form >
                 <div class="form-element">
                     <label for="global-title">Title</label>
                     <input  id="global-title">
                 </div>
-                <div class="form-element">
-                    <label for="global-x-label">X Label</label>
-                    <input  id="global-x-label">
-                </div>
-                <div class="form-element">
+                <div class="form-element y-values">
+                    <span>
                     <label for="global-y-label">Y Label</label>
                     <input  id="global-y-label">
+                    </span><span>
+                        <label for="global-y-min">Y min</label>
+                        <input size=5 id="global-y-min">
+                    </span><span>
+                        <label for="global-y-max">Y max</label>
+                        <input size=5 id="global-y-max">
+                    </span>
                 </div>
-                <div class="form-element">
+                <div class="form-element x-values">
+                    <span>
+                        <label for="global-x-label">X Label</label>
+                        <input  id="global-x-label">
+                    </span><span>
                     <label for="global-x-min">X min</label>
-                    <input  id="global-x-min">
-                </div>
-                <div class="form-element">
-                    <label for="global-y-min">Y min</label>
-                    <input  id="global-y-min">
-                </div>
-                <div class="form-element">
+                        <input  size=5 id="global-x-min">
+                    </span><span>
                     <label for="global-x-max">X max</label>
-                    <input  id="global-x-max">
+                        <input size=5 id="global-x-max">
+                    </span>
                 </div>
                 <div class="form-element">
-                    <label for="global-y-max">X max</label>
-                    <input  id="global-y-max">
-                </div>
-                <div class="form-element">
+                    <span>
                     <label for="global-tree-input">Tree:</label> 
                     <input id="global-tree-input" name="global-tree-input" type="text" value="${this.tree}">
-                </div>
-                <div class="form-element">
+                    </span><span>
                     <label for="global-shot-input">Shot:</label>
-                    <input id="global-shot-input" name="global-shot-input" type="text" value="${this.shot}">
+                        <input type="number" id="global-shot-input" name="global-shot-input" type="text" value="${this.shot}">
+                    </span>
                 </div>
                 <div class="form-element">
+                    <span>
                     <label for="global-update-event">Update event</label>
                     <input disabled id="global-update-event">
+                    </span><span>
+                        <label for="global-default-node-input">Default Node:</label>
+                        <input id="global-default-node-input" name="global-default-node-input" type="text">
+                    </span>
                 </div>
-                <div class="form-element">
-                    <label for="global-default-node-input">Default Node:</label>
-                    <input id="global-default-node-input" name="global-default-node-input" type="text">
+                <div class="form-element grid-values">
+                    <span>
+                        <label for="lines-x">Lines x</label>
+                        <input min=1 max=1 type="number" id="lines-x">
+                    </span><span>
+                        <label for="lines-y">Lines y</label>
+                        <input min=1 max=1 type="number" id="lines-y">
+                    </span><span>
+                        <label for="vertical-offset">Vertical offset</label>
+                        <input min=1 max=1 type="number" id="lines-x">
+                    </span><span>
+                        <label for="horizontal-offset">Horizontal offset</label>
+                        <input min=1 max=1 type="number" id="horizontal-offset">
+                    </span><span>
                 </div>
-                <div class="form-element">
-                    <label for=""></label>
-                    <input  id="">
+                <div class="form-element trace-values">
+                    <span>
+                        <label for="reversed">Reversed</label>
+                        <input type="checkbox" id="reversed">
+                    </span><span>
+                        <label for="grid-mode">Grid mode</label>
+                        <select size=1 id="grid-mode">
+                            <option value="dotted">dotted</option>
+                        </select>
+                    </span><span>
+                        <label for="legend">Legend</label>
+                        <select size=1 id="legend">
+                            <option value="in-graphics">In Graphics</option>
+                        </select>
+                    </span><span>
+                        <label for="auto-color">Auto color</label>
+                        <select size=1 id="auto-color">
+                            <option value="on-shot">on shot</option>
+                        </select>
+                    </span><span>
+                        <label for="upd-lims">Upd. limits</label>
+                        <input type="checkbox" size=1 id="upd-lims">
+                    </span>
                 </div>
 
-                <button id="update onclick="update">Update</button>
-                <button id="apply-close" onclick="() => update(); closeEvent();">Update and close</button>
             </form>
-
-            <button id="close-button" >Close</button>
+            <div>
+                <button id="ok-button">Ok</button>
+                <button id="apply-button">Apply</button>
+                <button id="reset-button">Reset</button>
+                <button id="erase-button">Erase</button>
+                <button id="close-button">Close</button>
             </div>
-            `
-            
-            document.getElementById("close-button").addEventListener("click", closeEvent);
+        </div>`
 
-        // let o = document.createElement("div");
-        // o.setAttribute("id", "options");
-        // o.classList.add("options", "panel-form");
-        // options_bg.appendChild(o);
+        function apply() {
+            console.error("Implement Apply")
+        }
 
-        // let tree = this.tree;
-        // let t = document.createElement("div");
-        // t.classList.add("form-element");
-        // t.innerText = "Tree: ";
-        // let ti = document.createElement("input");
-        // ti.type = "text";
-        // ti.value = this.tree;
-        // ti.addEventListener("change", (e) => tree = e.target.value);
-        // t.appendChild(ti);
-        // o.appendChild(t);
+        function erase() {
+            console.error("Implement Erase")
+        }
+
+        function reset() {
+            console.error("Implement Reset")
+        }
+
+        function closeEvent(e) {
+            e.preventDefault();
+            // options_bg = document.getElementById("options_bg");
+            options_bg.remove();
+        }
+
+        function outerClick(event){
+            if (!document.getElementById("form").contains(event.target)) {
+                options_bg.remove();
+            }
+        }
+
+        options_bg.addEventListener("click", outerClick, true);
         
-        // let shot = this.shot;
-        // let s = document.createElement("div");
-        // s.classList.add("form-element");
-        // s.innerText = "Shot: ";
-        // let si = document.createElement("input");
-        // si.type = "text";
-        // si.value = shot;
-        // si.addEventListener("change", (e) => shot = e.target.value);
-        // s.appendChild(si);
-        // o.appendChild(s);
-        
-        // let default_node = this.default_node;
-        // let dn = document.createElement("div");
-        // dn.classList.add("form-element");
-        // dn.innerText = "Default Node: ";
-        // let dni = document.createElement("input");
-        // dni.type = "text";
-        // dni.value = default_node;
-        // dni.addEventListener("change", (e) => default_node = e.target.value);
-        // dn.appendChild(dni);
-        // o.appendChild(dn);
-        
-        // let y_expr = this.y_expr;
-        // let y = document.createElement("div");
-        // y.classList.add("form-element");
-        // y.innerText = "Y: ";
-        // let yi = document.createElement("input");
-        // yi.type = "text";
-        // yi.value = y_expr;
-        // yi.addEventListener("change", (e) => y_expr = e.target.value);
-        // y.appendChild(yi);
-        // o.appendChild(y);
-        
-        // let x_expr = this.x_expr;
-        // let x = document.createElement("div");
-        // x.classList.add("form-element");
-        // x.innerText = "X: ";
-        // let xi = document.createElement("input");
-        // xi.type = "text";
-        // xi.value = x_expr;
-        // xi.addEventListener("change", (e) => x_expr = e.target.value);
-        // x.appendChild(xi);
-        // o.appendChild(x);
-
-        // button.innerText = `Update panel-${id}`;
-
-        // let close = document.createElement("button");
-        // close.setAttribute("id", "close");
-        // close.innerText="close";
-        // close.addEventListener("click", closeEvent, true);
-
-        // o.appendChild(button);
-        // o.appendChild(close);
-
-        // return(options_bg);
+        document.getElementById("close-button").addEventListener("click", closeEvent);
     }
 }
