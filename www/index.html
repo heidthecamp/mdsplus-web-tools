@@ -1,82 +1,98 @@
-<!DOCTYPE html>
 <html>
 <head>
     <style>
-        .table-inputs {
-            padding: 10px;
+        body, html {
+            margin: 0;
+            padding: 0;
         }
-        .table-inputs > * {
-            padding-left: 3px;
-            padding-right: 3px;
+        button:disabled {
+            color: #888;
         }
-        .scopes {
-            align-content: left;
+        h1 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 20px;
         }
-        /* HACK */
+
         .panel {
-            width: 600px;
+            width: 620px;
+            height: 400px;
             float: left;
         }
+        #overlay {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        #overlay.shown {
+            display: block;
+        }
+        #panel-form {
+            width: 400px;
+            margin: 100px auto 0 auto;
+            padding: 20px;
+            background: #888;
+            border: 1px solid black;
+        }
+        .trace-form {
+            display: none;
+            border: 1px solid black;
+            padding: 5px;
+        }
+        .trace-form.shown {
+            display: block;
+        }
     </style>
-    <link rel="stylesheet" href="index.css">
+
+    <template id="panel-template">
+        <div class="controls">
+            <button data-action="edit">Edit</button> <button data-action="remove">Remove</button>
+        </div>
+        <b class="title"></b>
+        <div class="plot">Loading...</div>
+    </template>
+
+    <template id="panel-form-template">
+        <div id="panel-form">
+            <label for="panel-title_expr">Title:</label> <input id="panel-title_expr" type="text" /> <input id="panel-title_expr-default" type="checkbox" /><br />
+            <div id="trace-form-tabs">
+                <button class="add-trace-button" data-action="add-trace">+</button>
+            </div>
+            <div id="trace-forms"></div>
+            <button data-action="save">Save</button> <button data-action="reset">Reset</button> <button data-action="cancel">Cancel</button>
+        </div>
+    </template>
+
+    <template id="trace-form-template">
+        <label for="trace-y_expr">Y Axis:</label> <input id="trace-y_expr" type="text" /> <input id="trace-y_expr-default" type="checkbox" /><br />
+        <label for="trace-x_expr">X Axis:</label> <input id="trace-x_expr" type="text" /> <input id="trace-x_expr-default" type="checkbox" /><br />
+        <label for="trace-tree">Tree:</label> <input id="trace-tree" type="text" /> <input id="trace-tree-default" type="checkbox" /><br />
+        <label for="trace-shot">Shot:</label> <input id="trace-shot" type="text" /> <input id="trace-shot-default" type="checkbox" /><br />
+        <label for="trace-default_node">Default Node:</label> <input id="trace-default_node" type="text" /> <input id="trace-default_node-default" type="checkbox" /><br />
+    </template>
+
+    <template id="global-defaults-form-template">
+        <div id="panel-form">
+            <h1>Global Defaults</h1>
+            <label for="global-defaults-title_expr">Title:</label> <input id="global-defaults-title_expr" type="text" /><br />
+            <label for="global-defaults-y_expr">Y Axis:</label> <input id="global-defaults-y_expr" type="text" /><br />
+            <label for="global-defaults-x_expr">X Axis:</label> <input id="global-defaults-x_expr" type="text" /><br />
+            <label for="global-defaults-tree">Tree:</label> <input id="global-defaults-tree" type="text" /><br />
+            <label for="global-defaults-shot">Shot:</label> <input id="global-defaults-shot" type="text" /><br />
+            <label for="global-defaults-default_node">Default Node:</label> <input id="global-defaults-default_node" type="text" /><br />
+            <button data-action="save">Save</button> <button data-action="reset">Reset</button> <button data-action="cancel">Cancel</button>
+        </div>
+    </template>
+
 </head>
 <body>
-    <div class="table-inputs">
-        <button id="add-panel">Add</button></span>
-        <button id="update">Update Global Defaults</button></span>
-    </div>
-    
-    <h1 id="title"></h1>
-    <div id="table" class="scopes">
-        <!-- This is where the scopes will appear. -->
-    </div>
+    <script type="module" src="index.js"></script>
 
+    <div id="overlay"></div>
 
-    <script type="module">
-        import * as c from "./connection.js";
-        // import * as s from "./scope.js";
-        import Panel from "./panel.js";
-        import {dropHandler, dragOverHandler} from "./file-handler.js"
-        import Global_Options from "./global_options.js"
-
-        let global_options = Global_Options.get_instance();
-
-        // document.getElementById('update').addEventListener('click', s.update);
-        let title = "";
-
-
-
-        let update = async () => {
-            for (var i = 0; i < Panel.panels.length; ++i) {
-                Panel.panels[i].update();
-            }
-        }
-
-        let remove_panel = () => {
-            console.log("This has not been implemented yet.")
-        }
-
-        document.getElementById("add-panel").addEventListener('click', Panel.add_panel)
-        document.getElementById("update").addEventListener('click', () => {
-            let parent = document.querySelector("body")
-            Global_Options.display_options(update, parent)
-        })
-        
-
-        window.onload =  () => {
-            let ws = c.establish_connection();
-            ws.onopen = e => { 
-                // TODO: Check for files in the url parameters and load if present
-            }; 
-        }
-
-        // let dropzone = document.querySelector('body');
-        document.addEventListener("drop", (e) => {
-            Panel.panels = [];
-            dropHandler(e);
-        });
-        document.addEventListener("dragover", dragOverHandler);
-
-    </script>
+    <button data-action="global-defaults">Global Defaults</button> <button data-action="add-panel">Add Panel</button> <button id="refresh" data-action="refresh">Refresh</button>
+    <div id="panels"></div>
 </body>
 </html>
