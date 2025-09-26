@@ -37,7 +37,8 @@ window.onload = () => {
     .then((e) => {
         panels.push(new Panel(new Trace(
             "cmod", 1090909010,
-            null, null,
+            null,
+            // null, // title
             "\\IP", null,
             0x0000
         )));

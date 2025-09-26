@@ -8,11 +8,10 @@ export default class Trace {
         tree = null,
         shot = null,
         default_node = null,
-        title = null, // TODO: Move to Panel
+        // title = null, // TODO: Move to Panel
         y_expr = null,
         x_expr = null,
         global_defaults = 0xFFFF,
-        // TODO: global_defaults, ymin, ymax, xmin, xmax
         trace_type = "line",
         trace_color = "steelblue",
         point_type = null,
@@ -21,7 +20,7 @@ export default class Trace {
         this.tree = tree;
         this.shot = shot;
         this.default_node = default_node;
-        this.title_expr = title;
+        // this.title_expr = title;
         this.y_expr = y_expr;
         this.x_expr = x_expr;
         this.global_defaults = global_defaults;
@@ -39,7 +38,7 @@ export default class Trace {
         return useDefault(property, this.global_defaults);
     }
 
-    async update() {
+    async update(title_expr = null) {
         let tree = this.tree;
         if (this.useDefault('tree')) {
             tree = globalDefaults.tree;
@@ -60,8 +59,11 @@ export default class Trace {
                 request.title = globalDefaults.title_expr;
             }
         }
-        else if (this.title_expr) {
-            request.title = this.title_expr;
+        else if (title_expr) {
+            request.title = title_expr;
+        }
+        else {
+            request.title = "";
         }
         
         request.default_node = 'TreeSetDefault("\\\\TOP")';

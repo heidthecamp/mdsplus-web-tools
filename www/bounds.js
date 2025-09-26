@@ -2,10 +2,10 @@
 // TODO: Replace 0 with null
 export default class Bounds {
     constructor(
-        xMin = 0,
-        xMax = 0,
-        yMin = 0,
-        yMax = 0,
+        xMin = Number.MAX_SAFE_INTEGER,
+        xMax = Number.MIN_SAFE_INTEGER,
+        yMin = Number.MAX_SAFE_INTEGER,
+        yMax = Number.MIN_SAFE_INTEGER,
     ) {
         this.xMin = xMin;
         this.xMax = xMax;
@@ -17,14 +17,16 @@ export default class Bounds {
         if (bounds.xMin < this.xMin) {
             this.xMin = bounds.xMin;
         }
-        else if (bounds.xMax > this.xMax) {
+        
+        if (bounds.xMax > this.xMax) {
             this.xMax = bounds.xMax;
         }
 
         if (bounds.yMin < this.yMin) {
             this.yMin = bounds.yMin;
         }
-        else if (bounds.yMax > this.yMax) {
+        
+        if (bounds.yMax > this.yMax) {
             this.yMax = bounds.yMax;
         }
     }
@@ -33,14 +35,16 @@ export default class Bounds {
         if (x < this.xMin) {
             this.xMin = x;
         }
-        else if (x > this.xMax) {
+        
+        if (x > this.xMax) {
             this.xMax = x;
         }
 
         if (y < this.yMin) {
             this.yMin = y;
         }
-        else if (y > this.yMax) {
+        
+        if (y > this.yMax) {
             this.yMax = y;
         }
     }

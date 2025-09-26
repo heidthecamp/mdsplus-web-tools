@@ -27,7 +27,11 @@ export default class GlobalDefaults {
         this.default_node = null;
         this.title_expr = null;
         this.y_expr = null;
+        this.y_min = null;
+        this.y_max = null;
         this.x_expr = null;
+        this.x_min = null;
+        this.x_max = null;
         this.trace_type = 'line';
         this.trace_color = 'steelblue';
         this.point_type = null;
@@ -49,7 +53,11 @@ export default class GlobalDefaults {
         // Update the form values
         document.getElementById('global-defaults-title_expr').value = this.title_expr; // TODO: Move to Panel
         document.getElementById('global-defaults-y_expr').value = this.y_expr;
+        document.getElementById('global-defaults-y-min').value = this.y_min;
+        document.getElementById('global-defaults-y-max').value = this.y_max;
         document.getElementById('global-defaults-x_expr').value = this.x_expr;
+        document.getElementById('global-defaults-x-min').value = this.x_min;
+        document.getElementById('global-defaults-x-max').value = this.x_max;
         document.getElementById('global-defaults-tree').value = this.tree;
         document.getElementById('global-defaults-shot').value = this.shot;
         document.getElementById('global-defaults-default_node').value = this.default_node;
@@ -60,7 +68,11 @@ export default class GlobalDefaults {
 
                     this.title_expr = document.getElementById('global-defaults-title_expr').value;
                     this.y_expr = document.getElementById('global-defaults-y_expr').value;
+                    this.y_min = document.getElementById('global-defaults-y-min').value;
+                    this.y_max = document.getElementById('global-defaults-y-max').value;
                     this.x_expr = document.getElementById('global-defaults-x_expr').value;
+                    this.x_min = document.getElementById('global-defaults-x-min').value;
+                    this.x_max = document.getElementById('global-defaults-x-max').value;
                     this.tree = document.getElementById('global-defaults-tree').value;
                     this.shot = document.getElementById('global-defaults-shot').value;
                     this.default_node = document.getElementById('global-defaults-default_node').value;

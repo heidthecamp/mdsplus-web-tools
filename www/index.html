@@ -57,6 +57,10 @@
     <template id="panel-form-template">
         <div id="panel-form">
             <label for="panel-title_expr">Title:</label> <input id="panel-title_expr" type="text" /> <input id="panel-title_expr-default" type="checkbox" /><br />
+            <label for="panel-y-min">y-min:</label> <input id="panel-y-min" type="number" /> <input id="panel-y-min-default" type="checkbox" /><br />
+            <label for="panel-y-max">y-max:</label> <input id="panel-y-max" type="number" /> <input id="panel-y-max-default" type="checkbox" /><br />
+            <label for="panel-x-min">x-min:</label> <input id="panel-x-min" type="number" /> <input id="panel-x-min-default" type="checkbox" /><br />
+            <label for="panel-x-max">x-max:</label> <input id="panel-x-max" type="number" /> <input id="panel-x-max-default" type="checkbox" /><br />
             <div id="trace-form-tabs">
                 <button class="add-trace-button" data-action="add-trace">+</button>
             </div>
@@ -78,7 +82,11 @@
             <h1>Global Defaults</h1>
             <label for="global-defaults-title_expr">Title:</label> <input id="global-defaults-title_expr" type="text" /><br />
             <label for="global-defaults-y_expr">Y Axis:</label> <input id="global-defaults-y_expr" type="text" /><br />
+            <label for="global-defaults-y-min">y-min:</label> <input id="global-defaults-y-min" type="number" /> <br />
+            <label for="global-defaults-y-max">y-max:</label> <input id="global-defaults-y-max" type="number" /> <br />
             <label for="global-defaults-x_expr">X Axis:</label> <input id="global-defaults-x_expr" type="text" /><br />
+            <label for="global-defaults-x-min">x-min:</label> <input id="global-defaults-x-min" type="number" /> <br />
+            <label for="global-defaults-x-max">x-max:</label> <input id="global-defaults-x-max" type="number" /> <br />
             <label for="global-defaults-tree">Tree:</label> <input id="global-defaults-tree" type="text" /><br />
             <label for="global-defaults-shot">Shot:</label> <input id="global-defaults-shot" type="text" /><br />
             <label for="global-defaults-default_node">Default Node:</label> <input id="global-defaults-default_node" type="text" /><br />

@@ -1,5 +1,5 @@
 import Bounds from "./bounds.js";
-import { GlobalDefaultFlags } from "./globalDefaults.js";
+import { GlobalDefaultFlags, useDefault } from "./globalDefaults.js";
 import Trace from "./trace.js";
 
 let NextId = 1;
@@ -7,6 +7,14 @@ let NextId = 1;
 export default class Panel {
     constructor(...traces) {
         this.id = NextId++;
+        this.title;
+        this.y_min;
+        this.y_max;
+        this.yGridLines;
+        this.x_min;
+        this.x_max;
+        this.xGridLines;
+        this.global_defaults;
         this.traces = traces;
 
         this.addElement();
@@ -100,7 +108,7 @@ export default class Panel {
         let setupGlobalDefaults = (property, inputId=null, checkboxId=null) => {
             // TODO: Remove when title gets moved
             let $input = document.getElementById(inputId ? inputId : `trace-${property}-${id}`);
-            let $checkbox = document.getElementById(checkboxId ? inputId : `trace-${property}-default-${id}`);
+            let $checkbox = document.getElementById(checkboxId ? checkboxId : `trace-${property}-default-${id}`);
 
             $checkbox.addEventListener('change', (e) => {
                 if (e.target.checked) {
@@ -122,15 +130,24 @@ export default class Panel {
         }
 
         setupGlobalDefaults('title_expr', 'panel-title_expr', 'panel-title_expr-default');
+        setupGlobalDefaults('y_min', 'panel-y-min', 'panel-y-min-default');
+        setupGlobalDefaults('y_max', 'panel-y-max', 'panel-y-max-default');
+        setupGlobalDefaults('x_min', 'panel-x-min', 'panel-x-min-default');
+        setupGlobalDefaults('x_max', 'panel-x-max', 'panel-x-max-default');
         setupGlobalDefaults('y_expr');
         setupGlobalDefaults('x_expr');
         setupGlobalDefaults('tree');
         setupGlobalDefaults('shot');
         setupGlobalDefaults('default_node');
 
+        document.getElementById('panel-title_expr').value = this.title;
+        document.getElementById('panel-y-min').value = this.y_min;
+        document.getElementById('panel-y-max').value = this.y_max;
+        document.getElementById('panel-x-min').value = this.x_min;
+        document.getElementById('panel-x-max').value = this.x_max;
+        
         if (trace) {
             // Update the form values
-            document.getElementById('panel-title_expr').value = trace.title_expr; // TODO: Move to Panel
             document.getElementById(`trace-y_expr-${id}`).value = trace.y_expr;
             document.getElementById(`trace-x_expr-${id}`).value = trace.x_expr;
             document.getElementById(`trace-tree-${id}`).value = trace.tree;
@@ -191,36 +208,71 @@ export default class Panel {
                 node.addEventListener('click', (e) => {
                     this.traces = [];
                     let $traceForms = document.getElementsByClassName('trace-form');
+                    let _global_defaults = 0;
+                    if (document.getElementById('panel-title_expr-default').checked) {
+                        _global_defaults |= GlobalDefaultFlags['title_expr'];
+                    }
+                    if (document.getElementById('panel-y-min-default').checked){
+                        _global_defaults |= GlobalDefaultFlags['y_min'];
+                    }
+                    if (document.getElementById('panel-y-max-default').checked){
+                        _global_defaults |= GlobalDefaultFlags['y_max'];
+                    }
+                    if (document.getElementById('panel-x-min-default').checked){
+                        _global_defaults |= GlobalDefaultFlags['x_min'];
+                    }
+                    if (document.getElementById('panel-x-max-default').checked){
+                        _global_defaults |= GlobalDefaultFlags['x_max'];
+                    }
+                    this.global_defaults = _global_defaults;
                     for (var i = 0; i < $traceForms.length; ++i) {
                         let id = parseInt($traceForms[i].dataset.id);
-                        let global_defaults = 0;
+                        let t_global_defaults = _global_defaults;
                         if (document.getElementById(`trace-tree-default-${id}`).checked) {
-                            global_defaults |= GlobalDefaultFlags['tree'];
+                            t_global_defaults |= GlobalDefaultFlags['tree'];
                         }
                         if (document.getElementById(`trace-shot-default-${id}`).checked) {
-                            global_defaults |= GlobalDefaultFlags['shot'];
+                            t_global_defaults |= GlobalDefaultFlags['shot'];
                         }
                         if (document.getElementById(`trace-default_node-default-${id}`).checked) {
-                            global_defaults |= GlobalDefaultFlags['default_node'];
+                            t_global_defaults |= GlobalDefaultFlags['default_node'];
                         }
                         if (document.getElementById('panel-title_expr-default').checked) {
-                            global_defaults |= GlobalDefaultFlags['title_expr'];
+                            t_global_defaults |= GlobalDefaultFlags['title_expr'];
                         }
                         if (document.getElementById(`trace-y_expr-default-${id}`).checked) {
-                            global_defaults |= GlobalDefaultFlags['y_expr'];
+                            t_global_defaults |= GlobalDefaultFlags['y_expr'];
                         }
                         if (document.getElementById(`trace-x_expr-default-${id}`).checked) {
-                            global_defaults |= GlobalDefaultFlags['x_expr'];
+                            t_global_defaults |= GlobalDefaultFlags['x_expr'];
                         }
 
+                        let valueOrNull = (value) => {
+                            if (value.trim() == ""){
+                                return null;
+                            }
+                            return value
+                        }
+                        let numberOrNull = (value) => {
+                            if (value === null){
+                                return null;
+                            }
+                            return Number(value);
+                        }
+                        
+                        this.title = valueOrNull(document.getElementById('panel-title_expr').value);
+                        this.y_min = numberOrNull(valueOrNull(document.getElementById('panel-y-min').value));
+                        this.y_max = numberOrNull(valueOrNull(document.getElementById('panel-y-max').value));
+                        this.x_min = numberOrNull(valueOrNull(document.getElementById('panel-x-min').value));
+                        this.x_max = numberOrNull(valueOrNull(document.getElementById('panel-x-max').value));
                         this.traces.push(new Trace(
                             document.getElementById(`trace-tree-${id}`).value,
                             document.getElementById(`trace-shot-${id}`).value,
                             document.getElementById(`trace-default_node-${id}`).value,
-                            document.getElementById('panel-title_expr').value, // TODO: Move to Panel
+                            // document.getElementById('panel-title_expr').value, // TODO: Move to Panel
                             document.getElementById(`trace-y_expr-${id}`).value,
                             document.getElementById(`trace-x_expr-${id}`).value,
-                            global_defaults
+                            t_global_defaults
                         ))
                     }
 
@@ -257,20 +309,46 @@ export default class Panel {
         }
 
         let bounds = null;
+        
+        if (this.title) {
+            document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
+        }
+
         for (var i = 0; i < this.traces.length; ++i) {
-            await this.traces[i].update();
+            await this.traces[i].update(this.title);
 
             // TODO: Move
-            if (this.traces[i].title) {
-                document.querySelector(`#panel-${this.id} .title`).innerText = this.traces[i].title;
-            }
-
             if (bounds) {
                 bounds.join(this.traces[i].bounds);
             }
             else {
                 bounds = this.traces[i].bounds;
             }
+        }
+
+        if (this.useDefault("x_min")){
+            bounds.xMin = globalDefaults.x_min;
+        }
+        else if (this.x_min) {
+            bounds.xMin = this.x_min;
+        }
+        if (this.useDefault("x_max")){
+            bounds.xMax = globalDefaults.x_max;
+        }
+        else if (this.x_max) {
+            bounds.xMax = this.x_max;
+        }
+        if (this.useDefault("y_min")){
+            bounds.yMin = globalDefaults.y_min;
+        }
+        else if (this.y_min) {
+            bounds.yMin = this.y_min;
+        }
+        if (this.useDefault("y_max")){
+            bounds.yMax = globalDefaults.y_max;
+        }
+        else if (this.y_max) {
+            bounds.yMax = this.y_max;
         }
 
         // TODO: Replace .plot
@@ -330,5 +408,10 @@ export default class Panel {
 
     height() {
         return 300;
+    }
+
+
+    useDefault(property) {
+        return useDefault(property, this.global_defaults);
     }
 };

@@ -146,6 +146,12 @@ export async function importFile(file) {
                     case 'global_1_1.xmax':
                         data['global']['xmax'] = parseFloat(value);
                         break;
+                    case 'global_1_1.ymin':
+                        data['global']['ymin'] = parseFloat(value);
+                        break;
+                    case 'global_1_1.ymax':
+                        data['global']['ymax'] = parseFloat(value);
+                        break;
                     case 'global_1_1.global_defaults':
                         data['global']['global_defaults'] = parseInt(value);
                         break;
@@ -161,6 +167,10 @@ export async function importFile(file) {
         globalDefaults.title_expr = data['global'].title;
         globalDefaults.y_expr = data['global'].y;
         globalDefaults.x_expr = data['global'].x;
+        globalDefaults.x_min = data['global'].xmin;
+        globalDefaults.x_max = data['global'].xmax;
+        globalDefaults.y_min = data['global'].ymin;
+        globalDefaults.y_max = data['global'].ymax;
 
         for (var i = 0; i < data['plots'].length; ++i) {
             let plot = data['plots'][i];
@@ -168,7 +178,7 @@ export async function importFile(file) {
                 plot.experiment,
                 plot.shot,
                 plot.default_node,
-                plot.title,
+                // plot.title,
                 plot.y,
                 plot.x,
                 plot.global_defaults,
