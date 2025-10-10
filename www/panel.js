@@ -365,7 +365,8 @@ export default class Panel {
                     `translate(60,10)`
                 );
 
-        let xScale = d3.scaleLinear()
+
+        const xScale = d3.scaleLinear()
             .domain([ bounds.xMin, bounds.xMax ])
             .range([ 0, width ]);
 
@@ -373,7 +374,7 @@ export default class Panel {
             .attr('transform', `translate(0,${height})`)
             .call(d3.axisBottom(xScale));
 
-        let yScale = d3.scaleLinear()
+        const yScale = d3.scaleLinear()
             .domain([ bounds.yMin, bounds.yMax ])
             .range([ height, 0 ]);
             
@@ -391,6 +392,56 @@ export default class Panel {
         for (var i = 0; i < this.traces.length; ++i) {
             this.traces[i].render(svg, xScale, yScale);
         }
+
+        const brush = d3.brush()
+            .extent([[0, 0],[width, height]]);
+            // .on('end', zoomChart);
+        
+        var zoom_brush = svg.append('g')
+            .attr('clip-path', 'url(#clip)')
+            .append('g')
+            .attr('class', 'brush')
+            .call(brush);
+
+        let zoomChart = (e) => {
+            // the selected boundries
+            // console.log("zoomies")
+            let extent = e.selection;
+
+            
+            if (!extent) {
+                return;
+                // brush.end seems to be called on `call(brush.move, null)`
+                // Setting the domains here will clear zooming.
+            } else {
+                // console.log('extent')
+                xScale.domain([xScale.invert(extent[0][0]), xScale.invert(extent[1][0])]);
+                yScale.domain([yScale.invert(extent[1][1]), yScale.invert(extent[0][1])]);
+                
+                zoom_brush.call(brush.move, null);
+            }
+
+            xAxis.transition().duration(500).call(d3.axisBottom(xScale));
+            yAxis.transition().duration(500).call(d3.axisLeft(yScale));
+
+            for (var i = 0; i < this.traces.length; ++i) {
+                this.traces[i].zoom(xScale, yScale);
+            }
+        }
+
+        svg.on("dblclick",() => {
+
+            xScale.domain([ bounds.xMin, bounds.xMax ])
+            yScale.domain([ bounds.yMin, bounds.yMax ])
+            xAxis.transition().call(d3.axisBottom(xScale));
+            yAxis.transition().call(d3.axisLeft(yScale));
+            for (var i = 0; i < this.traces.length; ++i) {
+                this.traces[i].zoom(xScale, yScale);
+            }
+            zoom_brush.call(brush.move, null);
+        });
+
+        brush.on('end', zoomChart);
     }
 
     margin() {

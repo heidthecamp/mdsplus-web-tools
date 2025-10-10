@@ -32,6 +32,7 @@ export default class Trace {
         this.title = null;
         this.data = null;
         this.bounds = new Bounds();
+        this.line = null;
     }
 
     useDefault(property) {
@@ -156,7 +157,7 @@ export default class Trace {
             return;
         }
 
-        let line = svg.append('g')
+        this.line = svg.append('g')
             .attr('clip-path', 'url(#clip)')
             .append('path')
                 .datum(this.data)
@@ -165,8 +166,21 @@ export default class Trace {
                 .attr('stroke', this.trace_color)
                 .attr('stroke-width', 1.5)
                 .attr('d', d3.line()
-                    .x((d) => { return xScale(d[0]); })
-                    .y((d) => { return yScale(d[1]); })
+                    .x((d) => xScale(d[0]))
+                    .y((d) => yScale(d[1]))
                 );
+    }
+
+    zoom(xScale, yScale) {
+
+        console.log("hello");
+        console.log(xScale);
+
+        this.line
+            .transition()
+            .attr('d', d3.line()
+                .x(function (d) { return xScale(d[0])} )
+                .y(function (d) { return yScale(d[1])} )
+            );
     }
 };
