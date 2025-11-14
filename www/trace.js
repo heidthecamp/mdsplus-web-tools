@@ -8,7 +8,6 @@ export default class Trace {
         tree = null,
         shot = null,
         default_node = null,
-        // title = null, // TODO: Move to Panel
         y_expr = null,
         x_expr = null,
         global_defaults = 0xFFFF,
@@ -20,7 +19,6 @@ export default class Trace {
         this.tree = tree;
         this.shot = shot;
         this.default_node = default_node;
-        // this.title_expr = title;
         this.y_expr = y_expr;
         this.x_expr = x_expr;
         this.global_defaults = global_defaults;
@@ -29,7 +27,6 @@ export default class Trace {
         this.point_type = point_type;
         this.point_color = point_color;
 
-        this.title = null;
         this.data = null;
         this.bounds = new Bounds();
         this.line = null;
@@ -39,7 +36,7 @@ export default class Trace {
         return useDefault(property, this.global_defaults);
     }
 
-    async update(title_expr = null) {
+    async update() {
         let tree = this.tree;
         if (this.useDefault('tree')) {
             tree = globalDefaults.tree;
@@ -53,19 +50,6 @@ export default class Trace {
         let request = {
             'open': `TreeOpen("${tree}",${shot})`,
         };
-
-        // TODO: Move?
-        if(this.useDefault('title_expr')) {
-            if (globalDefaults.title_expr) {
-                request.title = globalDefaults.title_expr;
-            }
-        }
-        else if (title_expr) {
-            request.title = title_expr;
-        }
-        else {
-            request.title = "";
-        }
         
         request.default_node = 'TreeSetDefault("\\\\TOP")';
         if(this.useDefault('default_node')) {
@@ -106,14 +90,6 @@ export default class Trace {
 
         await MDSplus.getMany(request)
         .then((response) => {
-            if (response.hasOwnProperty('title')) {
-                if (response.title.hasOwnProperty('error')) {
-                    console.error('Title', response.title.error);
-                    return;
-                }
-
-                this.title = response.title.value;
-            }
 
             let y_data = null;
             if (response.hasOwnProperty('y')) {

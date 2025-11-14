@@ -29,7 +29,8 @@ async def handle_connection(ws):
             # gm.execute()
 
             for name, expr in request.items():
-                # TODO: Check for None
+                if name is None:
+                    pass
                 try:
                     print(name, expr)
                     value = conn.get(expr).data()
@@ -39,10 +40,9 @@ async def handle_connection(ws):
                         value = value.item()
                     elif isinstance(value, numpy.ndarray):
                         value = value.tolist()
-                    else:
-                        # TODO: Improve
+                    elif value is not None:
                         value = str(value)
-
+                        
                     response[name] = { 'value': value }
                 
                 except mdsthin.MdsException as e:

@@ -174,17 +174,18 @@ export async function importFile(file) {
 
         for (var i = 0; i < data['plots'].length; ++i) {
             let plot = data['plots'][i];
+            
             let trace = new Trace(
                 plot.experiment,
                 plot.shot,
                 plot.default_node,
-                // plot.title,
                 plot.y,
                 plot.x,
                 plot.global_defaults,
             );
             // TODO: Take the title from the first trace that has one
-            panels.push(new Panel(trace));
+            let title = data['plots'][i].title;
+            panels.push(new Panel(title, trace));
         }
     };
 

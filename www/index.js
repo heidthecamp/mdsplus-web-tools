@@ -18,7 +18,9 @@ let panels = [];
 window.onload = () => {
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
-            panels.push(new Panel());
+            const newPanel = new Panel();
+            panels.push(newPanel);
+            newPanel.edit()
         });
 
     document.querySelector('*[data-action="refresh"]')
@@ -35,7 +37,7 @@ window.onload = () => {
 
     MDSplus.connect()
     .then((e) => {
-        panels.push(new Panel(new Trace(
+        panels.push(new Panel("", new Trace(
             "cmod", 1090909010,
             null,
             // null, // title

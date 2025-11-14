@@ -40,13 +40,13 @@ export default class GlobalDefaults {
 
     edit() {
         let $overlay = document.getElementById('overlay');
-
+        
         // Clear out the overlay
         $overlay.innerHTML = '';
-
+        
         // Show the overlay
         $overlay.classList.add('shown');
-
+        
         let globalDefaultsFormTemplate = document.getElementById('global-defaults-form-template');
         $overlay.appendChild(globalDefaultsFormTemplate.content.cloneNode(true));
 
@@ -99,5 +99,20 @@ export default class GlobalDefaults {
                     $overlay.classList.remove('shown');
                 });
             });
+
+        function outerClick(event){
+            if (!document.querySelector(`#panel-form`).contains(event.target)) {
+                $overlay.innerHTML = '';
+                $overlay.classList.remove('shown');
+            }
+        }
+        $overlay.addEventListener("click", outerClick, true);
+        function keyPress (event) {
+            if(event.key === "Escape") {
+                $overlay.innerHTML = '';
+                $overlay.classList.remove('shown');
+            }
+        }
+        $overlay.addEventListener("keypress", keyPress)
     }
 };

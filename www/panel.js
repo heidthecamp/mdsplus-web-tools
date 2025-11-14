@@ -1,13 +1,14 @@
 import Bounds from "./bounds.js";
+import { getMany } from "./connection.js";
 import { GlobalDefaultFlags, useDefault } from "./globalDefaults.js";
 import Trace from "./trace.js";
 
 let NextId = 1;
 
 export default class Panel {
-    constructor(...traces) {
+    constructor(title = null, ...traces) {
         this.id = NextId++;
-        this.title;
+        this.title_expr = title;
         this.y_min;
         this.y_max;
         this.yGridLines;
@@ -16,6 +17,8 @@ export default class Panel {
         this.xGridLines;
         this.global_defaults;
         this.traces = traces;
+        
+        this.title = null;
 
         this.addElement();
         this.render();
@@ -140,19 +143,26 @@ export default class Panel {
         setupGlobalDefaults('shot');
         setupGlobalDefaults('default_node');
 
-        document.getElementById('panel-title_expr').value = this.title;
-        document.getElementById('panel-y-min').value = this.y_min;
-        document.getElementById('panel-y-max').value = this.y_max;
-        document.getElementById('panel-x-min').value = this.x_min;
-        document.getElementById('panel-x-max').value = this.x_max;
-        
+        let valueOrEmpty = (value) => {
+            if (value === null){
+                return "";
+            }
+            return value
+        }
+
+        document.getElementById('panel-title_expr').value = valueOrEmpty(this.title_expr);
+        document.getElementById('panel-y-min').value = valueOrEmpty(this.y_min);
+        document.getElementById('panel-y-max').value = valueOrEmpty(this.y_max);
+        document.getElementById('panel-x-min').value = valueOrEmpty(this.x_min);
+        document.getElementById('panel-x-max').value = valueOrEmpty(this.x_max);
+
         if (trace) {
             // Update the form values
-            document.getElementById(`trace-y_expr-${id}`).value = trace.y_expr;
-            document.getElementById(`trace-x_expr-${id}`).value = trace.x_expr;
-            document.getElementById(`trace-tree-${id}`).value = trace.tree;
-            document.getElementById(`trace-shot-${id}`).value = trace.shot;
-            document.getElementById(`trace-default_node-${id}`).value = trace.default_node;
+            document.getElementById(`trace-y_expr-${id}`).value = valueOrEmpty(trace.y_expr);
+            document.getElementById(`trace-x_expr-${id}`).value = valueOrEmpty(trace.x_expr);
+            document.getElementById(`trace-tree-${id}`).value = valueOrEmpty(trace.tree);
+            document.getElementById(`trace-shot-${id}`).value = valueOrEmpty(trace.shot);
+            document.getElementById(`trace-default_node-${id}`).value = valueOrEmpty(trace.default_node);
         }
     }
 
@@ -210,7 +220,7 @@ export default class Panel {
                     let $traceForms = document.getElementsByClassName('trace-form');
                     let _global_defaults = 0;
                     if (document.getElementById('panel-title_expr-default').checked) {
-                        _global_defaults |= GlobalDefaultFlags['title_expr'];
+                        _global_defaults |= GlobalDefaultFlags['title'];
                     }
                     if (document.getElementById('panel-y-min-default').checked){
                         _global_defaults |= GlobalDefaultFlags['y_min'];
@@ -260,7 +270,9 @@ export default class Panel {
                             return Number(value);
                         }
                         
-                        this.title = valueOrNull(document.getElementById('panel-title_expr').value);
+                        if (! this.useDefault("x_min")){
+                            this.title_expr = valueOrNull(valueOrNull(document.getElementById('panel-title_expr').value));
+                        }
                         this.y_min = numberOrNull(valueOrNull(document.getElementById('panel-y-min').value));
                         this.y_max = numberOrNull(valueOrNull(document.getElementById('panel-y-max').value));
                         this.x_min = numberOrNull(valueOrNull(document.getElementById('panel-x-min').value));
@@ -297,6 +309,14 @@ export default class Panel {
                     $overlay.classList.remove('shown');
                 });
             });
+
+        function outerClick(event){
+            if (!document.querySelector(`#panel-form`).contains(event.target)) {
+                    $overlay.innerHTML = '';
+                    $overlay.classList.remove('shown');
+            }
+        }
+        $overlay.addEventListener("click", outerClick, true);
     }
 
     async render() {
@@ -310,12 +330,42 @@ export default class Panel {
 
         let bounds = null;
         
-        if (this.title) {
+        let request = null;
+
+        
+        if (this.useDefault("title")){
+            request = {
+                'title_expr': this.globalDefaults.title_expr
+            };
+        }
+        else if (this.title_expr) {
+            request = {
+                'title_expr': this.title_expr
+            };
+        }
+
+        if (request) {
+            console.log(request.title_expr);
+            await MDSplus.getMany(request)
+            .then((response) => {
+                if (response.title_expr.hasOwnProperty('error')) {
+                    console.error('Title', response.title_expr.error);
+                    return;
+                }
+                this.title = response.title_expr.value;
+            });
+    
             document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
+        }
+        else {
+            document.querySelector(`#panel-${this.id} .title`).innerText = '';
         }
 
         for (var i = 0; i < this.traces.length; ++i) {
-            await this.traces[i].update(this.title);
+            await this.traces[i].update(this.title_expr, (t) => {
+                console.log(t);
+                this.title = t;
+            });
 
             // TODO: Move
             if (bounds) {
@@ -327,27 +377,35 @@ export default class Panel {
         }
 
         if (this.useDefault("x_min")){
-            bounds.xMin = globalDefaults.x_min;
+            if (!! globalDefaults.x_min) {
+                bounds.xMin = globalDefaults.x_min;
+            }
         }
-        else if (this.x_min) {
+        else if (!!this.x_min) {
             bounds.xMin = this.x_min;
         }
         if (this.useDefault("x_max")){
-            bounds.xMax = globalDefaults.x_max;
+            if (!! globalDefaults.x_max) {
+                bounds.xMax = globalDefaults.x_max;
+            }
         }
-        else if (this.x_max) {
+        else if (!!this.x_max) {
             bounds.xMax = this.x_max;
         }
         if (this.useDefault("y_min")){
-            bounds.yMin = globalDefaults.y_min;
+            if (!!globalDefaults.y_min) {
+                bounds.yMin = globalDefaults.y_min;
+            }
         }
-        else if (this.y_min) {
+        else if (!!this.y_min) {
             bounds.yMin = this.y_min;
         }
         if (this.useDefault("y_max")){
-            bounds.yMax = globalDefaults.y_max;
+            if (!!globalDefaults.y_max) {
+                bounds.yMax = globalDefaults.y_max;
+            }
         }
-        else if (this.y_max) {
+        else if (!!this.y_max) {
             bounds.yMax = this.y_max;
         }
 
@@ -377,7 +435,7 @@ export default class Panel {
         const yScale = d3.scaleLinear()
             .domain([ bounds.yMin, bounds.yMax ])
             .range([ height, 0 ]);
-            
+        
         let yAxis = svg.append('g')
             .call(d3.axisLeft(yScale));
             
@@ -421,8 +479,8 @@ export default class Panel {
                 zoom_brush.call(brush.move, null);
             }
 
-            xAxis.transition().duration(500).call(d3.axisBottom(xScale));
-            yAxis.transition().duration(500).call(d3.axisLeft(yScale));
+            xAxis.transition().call(d3.axisBottom(xScale));
+            yAxis.transition().call(d3.axisLeft(yScale));
 
             for (var i = 0; i < this.traces.length; ++i) {
                 this.traces[i].zoom(xScale, yScale);
