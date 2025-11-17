@@ -6,16 +6,18 @@ import Trace from "./trace.js";
 let NextId = 1;
 
 export default class Panel {
-    constructor(title = null, ...traces) {
+    constructor(title = null, row = null, col = null, ...traces) {
         this.id = NextId++;
         this.title_expr = title;
-        this.y_min;
-        this.y_max;
-        this.yGridLines;
-        this.x_min;
-        this.x_max;
-        this.xGridLines;
-        this.global_defaults;
+        // this.y_min;
+        // this.y_max;
+        // this.yGridLines;
+        // this.x_min;
+        // this.x_max;
+        // this.xGridLines;
+        // this.global_defaults;
+        this.row = row;
+        this.col = col;
         this.traces = traces;
         
         this.title = null;
@@ -30,7 +32,13 @@ export default class Panel {
         $panel.classList.add('panel');
 
         $panel.appendChild(document.getElementById('panel-template').content.cloneNode(true));
-        document.getElementById('panels').appendChild($panel);
+
+        if (this.row === null && this.col === null) {
+            document.getElementById('panels').appendChild($panel);
+        }
+        else {
+            document.getElementById(`cell-${this.row}-${this.col}`).appendChild($panel);
+        }
 
         document.querySelectorAll(`#panel-${this.id} *[data-action="edit"]`)
             .forEach((node) => {
@@ -521,6 +529,7 @@ export default class Panel {
 
 
     useDefault(property) {
-        return useDefault(property, this.global_defaults);
+        // HACK: Need to sort out Panels and Global Defaults
+        return useDefault(property, this.traces[0].global_defaults);
     }
 };

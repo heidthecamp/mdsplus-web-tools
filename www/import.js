@@ -68,8 +68,13 @@ export async function importFile(file) {
                         'title': null,
                         'y': null,
                         'x': null,
+                        'row': null,
+                        'col': null,
                     });
                 }
+
+                data['plots'][index]['row'] = row;
+                data['plots'][index]['col'] = col;
 
                 switch (plotKey) {
                     case 'height':
@@ -172,6 +177,26 @@ export async function importFile(file) {
         globalDefaults.y_min = data['global'].ymin;
         globalDefaults.y_max = data['global'].ymax;
 
+        let $panels = document.getElementById('panels');
+        console.log(rows_in_column);
+        for (var i = 0; i < rows_in_column.length; ++i) {
+            let $column = document.createElement('table');
+            $column.id = `column-${i}`;
+
+            for (var j = 0; j < rows_in_column[i]; ++j) {
+                let $row = document.createElement('tr');
+                $row.id = `row-${j}`;
+
+                let $cell = document.createElement('td');
+                $cell.id = `cell-${j}-${i}`;
+
+                $row.appendChild($cell);
+                $column.appendChild($row);
+            }
+
+            $panels.appendChild($column);
+        }
+
         for (var i = 0; i < data['plots'].length; ++i) {
             let plot = data['plots'][i];
             
@@ -185,7 +210,7 @@ export async function importFile(file) {
             );
             // TODO: Take the title from the first trace that has one
             let title = data['plots'][i].title;
-            panels.push(new Panel(title, trace));
+            panels.push(new Panel(title, plot.row, plot.col, trace));
         }
     };
 

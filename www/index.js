@@ -37,7 +37,7 @@ window.onload = () => {
 
     MDSplus.connect()
     .then((e) => {
-        panels.push(new Panel("", new Trace(
+        panels.push(new Panel("", null, null, new Trace(
             "cmod", 1090909010,
             null,
             // null, // title
