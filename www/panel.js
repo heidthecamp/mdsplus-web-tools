@@ -341,7 +341,7 @@ export default class Panel {
         
         if (this.useDefault("title")){
             request = {
-                'title_expr': this.globalDefaults.title_expr
+                'title_expr': globalDefaults.title_expr
             };
         }
         else if (this.title_expr) {
