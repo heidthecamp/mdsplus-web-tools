@@ -278,9 +278,7 @@ export default class Panel {
                             return Number(value);
                         }
                         
-                        if (! this.useDefault("x_min")){
-                            this.title_expr = valueOrNull(valueOrNull(document.getElementById('panel-title_expr').value));
-                        }
+                        this.title_expr = valueOrNull(document.getElementById('panel-title_expr').value);
                         this.y_min = numberOrNull(valueOrNull(document.getElementById('panel-y-min').value));
                         this.y_max = numberOrNull(valueOrNull(document.getElementById('panel-y-max').value));
                         this.x_min = numberOrNull(valueOrNull(document.getElementById('panel-x-min').value));
@@ -530,6 +528,10 @@ export default class Panel {
 
     useDefault(property) {
         // HACK: Need to sort out Panels and Global Defaults
-        return useDefault(property, this.traces[0].global_defaults);
+        try {
+            return useDefault(property, this.traces[0].global_defaults);
+        } catch(e) {
+            console.error("Could not resolve", e);
+        }
     }
 };
