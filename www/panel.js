@@ -48,7 +48,7 @@ export default class Panel {
                 });
             });
 
-        document.querySelectorAll(`#panel-${this.id} *[data-action="remove]"`)
+        document.querySelectorAll(`#panel-${this.id} *[data-action="remove"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
