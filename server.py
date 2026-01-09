@@ -21,6 +21,8 @@ async def handle_connection(ws):
 
         action = request.get('action', 'get')
 
+        data_packets = []
+
         if action == 'get':
             # Get many breaks logic of chaining scopes.
             # gm = conn.getMany()
@@ -39,10 +41,14 @@ async def handle_connection(ws):
                     if isinstance(value, numpy.number):
                         value = value.item()
                     elif isinstance(value, numpy.ndarray):
-                        value = value.tolist()
+                        if isinstance(value.dtype, (numpy.dtypes.StrDType, numpy.dtypes.BytesDType)):
+                            value = value.tolist()
+                        else:
+                            data_packets.append(value)
+                            value = { 'type': str(value.dtype), 'size': len(value) }
                     elif value is not None:
                         value = str(value)
-                        
+
                     response[name] = { 'value': value }
                 
                 except mdsthin.MdsException as e:
@@ -57,6 +63,9 @@ async def handle_connection(ws):
             response = json.dumps({ 'error': str(e) })
         
         await ws.send(response)
+
+        for data in data_packets:
+            await ws.send(data.tobytes())
     
     conn.disconnect()
 
