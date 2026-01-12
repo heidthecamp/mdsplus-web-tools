@@ -43,7 +43,7 @@ export async function connect() {
 
                     let outstanding = 0;
                     for (const [key, value] of Object.entries(response)) {
-                        if (Object.getPrototypeOf(value.value) === Object.prototype) {
+                        if (!!value.value && Object.getPrototypeOf(value.value) === Object.prototype) {
                             ++outstanding;
                         }
                     }
@@ -61,7 +61,7 @@ export async function connect() {
                     // Handle one outstanding data message
                     let outstanding = 0;
                     for (const [key, value] of Object.entries(response)) {
-                        if (Object.getPrototypeOf(value.value) === Object.prototype) {
+                        if (!!value.value && Object.getPrototypeOf(value.value) === Object.prototype) {
                             if (data == null) {
                                 ++outstanding;
                             }

@@ -316,13 +316,32 @@ export default class Panel {
                 });
             });
 
-        function outerClick(event){
+        let primed = false;
+
+        $overlay.addEventListener('mousedown', (event) => {
             if (!document.querySelector(`#panel-form`).contains(event.target)) {
+                primed = true;
+                console.log("primed")
+            } else {
+                primed = false;
+            }
+        }, true);
+
+        function outerClick(event){
+            if (primed && !document.querySelector(`#panel-form`).contains(event.target)) {
                     $overlay.innerHTML = '';
                     $overlay.classList.remove('shown');
             }
+            primed = false;
         }
-        $overlay.addEventListener("click", outerClick, true);
+        $overlay.addEventListener("mouseup", outerClick, true);
+
+        $overlay.addEventListener("keydown", (event) => {
+            if (event.key === 'Escape') {
+                $overlay.innerHTML = '';
+                $overlay.classList.remove('shown');
+            }
+        });
     }
 
     async render() {
