@@ -47,14 +47,14 @@ window.onload = () => {
     });
 }
 
-document.addEventListener('drop', (e) => {
+document.addEventListener('drop', async (e) => {
     e.preventDefault();
     const file = e.dataTransfer.items[0].getAsFile();
 
     for (var i = 0; i < panels.length; ++i) {
         panels[i].removeElement();
     }
-    panels = Import.importFile(file);
+    panels = await Import.importFile(file);
 });
 
 document.addEventListener("dragover", (e) => {

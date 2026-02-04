@@ -32,19 +32,19 @@ export default class Bounds {
     }
 
     extend(x, y) {
-        if (x < this.xMin) {
+        if (x < this.xMin || !isFinite(this.xMin)) {
             this.xMin = x;
         }
         
-        if (x > this.xMax) {
+        if (x > this.xMax || !isFinite(this.xMax)) {
             this.xMax = x;
         }
 
-        if (y < this.yMin) {
+        if (y < this.yMin || !isFinite(this.yMin)) {
             this.yMin = y;
         }
         
-        if (y > this.yMax) {
+        if (y > this.yMax || !isFinite(this.yMax)) {
             this.yMax = y;
         }
     }

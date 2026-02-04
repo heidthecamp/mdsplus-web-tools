@@ -37,6 +37,7 @@ export default class Trace {
     }
 
     async update() {
+        
         let tree = this.tree;
         if (this.useDefault('tree')) {
             tree = globalDefaults.tree;
@@ -47,27 +48,32 @@ export default class Trace {
             shot = globalDefaults.shot;
         }
 
-        let request = {
-            'open': `TreeOpen("${tree}",${shot})`,
-        };
+        let request = [
+            ['open', `TreeOpen("${tree}",${shot})`],
+        ];
         
-        request.default_node = 'TreeSetDefault("\\\\TOP")';
+        let default_node = 'TreeSetDefault("\\\\TOP")';
         if(this.useDefault('default_node')) {
             if (globalDefaults.default_node) {
-                request.default_node = `TreeSetDefault("${globalDefaults.default_node.replace('\\', '\\\\')}")`;
+                default_node = `TreeSetDefault("${globalDefaults.default_node.replace('\\', '\\\\')}")`;
             }
         }
         else if (this.default_node) {
             if (this.default_node) {
-                request.default_node = `TreeSetDefault("${this.default_node.replace('\\', '\\\\')}")`;
+                default_node = `TreeSetDefault("${this.default_node.replace('\\', '\\\\')}")`;
             }
         }
 
+        request.push([ 'default_node', default_node ]);
+
+        let y_expr = null;
+        let x_expr = null;
+
         if(this.useDefault('y_expr')) {
-            request.y = globalDefaults.y_expr;
+            y_expr = globalDefaults.y_expr;
         }
         else if (this.y_expr) {
-            request.y = this.y_expr;
+            y_expr = this.y_expr;
         }
 
         if (request.y == null) {
@@ -75,18 +81,21 @@ export default class Trace {
         }
 
         if(this.useDefault('x_expr')) {
-            request.x = globalDefaults.x_expr;
+            x_expr = globalDefaults.x_expr;
         }
         else if (this.x_expr) {
-            request.x = this.x_expr;
+            x_expr = this.x_expr;
         }
         
         // TODO: Improve
         // Fallback default
-        if (request.x == null || request.x == '') {
-            request.y = `_wssig=${request.y}`;
-            request.x = 'dim_of(_wssig)';
+        if (x_expr == null || x_expr == '') {
+            y_expr = `_wssig=${y_expr}`;
+            x_expr = 'dim_of(_wssig)';
         }
+
+        request.push([ 'y', y_expr ]);
+        request.push([ 'x', x_expr ]);
 
         await MDSplus.getMany(request)
         .then((response) => {
@@ -94,7 +103,7 @@ export default class Trace {
             let y_data = null;
             if (response.hasOwnProperty('y')) {
                 if (response.y.hasOwnProperty('error')) {
-                    console.error('Y', response.y.error);
+                    console.error('y', response.y.error);
                     return;
                 }
                 
@@ -104,7 +113,7 @@ export default class Trace {
             let x_data = null;
             if (response.hasOwnProperty('x')) {
                 if (response.x.hasOwnProperty('error')) {
-                    console.error('X', response.x.error);
+                    console.error('x', response.x.error);
                     return;
                 }
                 
@@ -121,6 +130,11 @@ export default class Trace {
             for (var i = 0; i < y_data.length; ++i) {
                 let x = x_data[i];
                 let y = y_data[i];
+
+                // Check for NaN and Infinity
+                if (!isFinite(x) || !isFinite(y)) {
+                    continue;
+                }
 
                 this.data.push([x, y]);
                 this.bounds.extend(x, y);

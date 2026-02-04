@@ -355,22 +355,30 @@ export default class Panel {
 
         let bounds = null;
         
-        let request = null;
+        for (var i = 0; i < this.traces.length; ++i) {
+            await this.traces[i].update(this.title_expr, (t) => {
+                console.log(t);
+                this.title = t;
+            });
 
-        
+            // TODO: Move
+            if (bounds) {
+                bounds.join(this.traces[i].bounds);
+            }
+            else {
+                bounds = this.traces[i].bounds;
+            }
+        }
+
+        let request = [];
         if (this.useDefault("title")){
-            request = {
-                'title_expr': globalDefaults.title_expr
-            };
+            request.push([ 'title_expr', globalDefaults.title_expr ]);
         }
         else if (this.title_expr) {
-            request = {
-                'title_expr': this.title_expr
-            };
+            request.push([ 'title_expr', this.title_expr ]);
         }
 
-        if (request) {
-            console.log(request.title_expr);
+        if (request.length > 0) {
             await MDSplus.getMany(request)
             .then((response) => {
                 if (response.title_expr.hasOwnProperty('error')) {
@@ -386,20 +394,6 @@ export default class Panel {
             document.querySelector(`#panel-${this.id} .title`).innerText = '';
         }
 
-        for (var i = 0; i < this.traces.length; ++i) {
-            await this.traces[i].update(this.title_expr, (t) => {
-                console.log(t);
-                this.title = t;
-            });
-
-            // TODO: Move
-            if (bounds) {
-                bounds.join(this.traces[i].bounds);
-            }
-            else {
-                bounds = this.traces[i].bounds;
-            }
-        }
 
         if (this.useDefault("x_min")){
             if (!! globalDefaults.x_min) {

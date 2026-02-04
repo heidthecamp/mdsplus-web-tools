@@ -19,43 +19,38 @@ async def handle_connection(ws):
         request = json.loads(message)
         response = {}
 
-        action = request.get('action', 'get')
-
         data_packets = []
 
-        if action == 'get':
-            # Get many breaks logic of chaining scopes.
-            # gm = conn.getMany()
-            # for name, expr in request.items():
-            #     gm.append(name, expr)
-            # gm.execute()
+        # Get many breaks logic of chaining scopes.
+        # gm = conn.getMany()
+        # for name, expr in request.items():
+        #     gm.append(name, expr)
+        # gm.execute()
 
-            for name, expr in request.items():
-                if name is None:
-                    pass
-                try:
-                    print(name, expr)
-                    value = conn.get(expr).data()
+        for item in request:
+            name, expr = item
+            if name is None:
+                pass
+            try:
+                print(name, expr)
+                value = conn.get(expr).data()
 
-                    # Convert to native python type
-                    if isinstance(value, numpy.number):
-                        value = value.item()
-                    elif isinstance(value, numpy.ndarray):
-                        if isinstance(value.dtype, (numpy.dtypes.StrDType, numpy.dtypes.BytesDType)):
-                            value = value.tolist()
-                        else:
-                            data_packets.append(value)
-                            value = { 'type': str(value.dtype), 'size': len(value) }
-                    elif value is not None:
-                        value = str(value)
+                # Convert to native python type
+                if isinstance(value, numpy.number):
+                    value = value.item()
+                elif isinstance(value, numpy.ndarray):
+                    if isinstance(value.dtype, (numpy.dtypes.StrDType, numpy.dtypes.BytesDType)):
+                        value = value.tolist()
+                    else:
+                        data_packets.append(value)
+                        value = { 'type': str(value.dtype), 'size': len(value) }
+                elif value is not None:
+                    value = str(value)
 
-                    response[name] = { 'value': value }
-                
-                except mdsthin.MdsException as e:
-                    response[name] = { 'error': str(e) }
+                response[name] = { 'value': value }
             
-        elif action == 'put':
-            pass
+            except mdsthin.MdsException as e:
+                response[name] = { 'error': str(e) }
         
         try:
             response = json.dumps(response)
