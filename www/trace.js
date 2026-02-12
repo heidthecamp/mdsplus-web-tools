@@ -120,14 +120,15 @@ export default class Trace {
                 x_data = response.x.value;
             }
 
-            if (y_data.length != x_data.length) {
-                console.error('Length mismatch len(y) != len(x)');
+            // y truncates to match x.
+            if (y_data.length < x_data.length) {
+                console.error('Length mismatch len(y) < len(x)');
                 return;
             }
 
             this.data = [];
             this.bounds = new Bounds(x_data[0], x_data[0], y_data[0], y_data[0]);
-            for (var i = 0; i < y_data.length; ++i) {
+            for (var i = 0; i < x_data.length; ++i) {
                 let x = x_data[i];
                 let y = y_data[i];
 
