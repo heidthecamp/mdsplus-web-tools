@@ -6,7 +6,6 @@ window.MDSplus = MDSplus; // HACK: For use with the console
 import * as Import from "./import.js";
 
 import Panel from "./panel.js";
-import Trace from "./trace.js";
 import GlobalDefaults from "./globalDefaults.js";
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
@@ -37,13 +36,13 @@ window.onload = () => {
 
     MDSplus.connect()
     .then((e) => {
-        panels.push(new Panel("", null, null, new Trace(
+        let p = new Panel("", null, null, 0x0000);
+        p.addTrace(
             "cmod", 1090909010,
             null,
-            // null, // title
-            "\\IP", null,
-            0x0000
-        )));
+            "\\IP", null
+        );
+        panels.push(p);
     });
 }
 

@@ -33,7 +33,10 @@ async def handle_connection(ws):
                 pass
             try:
                 print(name, expr)
-                value = conn.get(expr).data()
+                if expr is None:
+                    value = None
+                else:
+                    value = conn.get(expr).data()
 
                 # Convert to native python type
                 if isinstance(value, numpy.number):

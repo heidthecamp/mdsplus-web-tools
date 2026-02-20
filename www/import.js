@@ -1,6 +1,5 @@
 
 import Panel from "./panel.js";
-import Trace from "./trace.js";
 
 export async function importFile(file) {
     if (!file.name.endsWith("dat") && !file.name.endsWith("jscp")) {
@@ -200,17 +199,17 @@ export async function importFile(file) {
         for (var i = 0; i < data['plots'].length; ++i) {
             let plot = data['plots'][i];
             
-            let trace = new Trace(
+            // TODO: Take the title from the first trace that has one
+            let title = data['plots'][i].title;
+            let panel = new Panel(title, plot.row, plot.col, plot.global_defaults);
+            panel.addTrace(
                 plot.experiment,
                 plot.shot,
                 plot.default_node,
                 plot.y,
                 plot.x,
-                plot.global_defaults,
             );
-            // TODO: Take the title from the first trace that has one
-            let title = data['plots'][i].title;
-            panels.push(new Panel(title, plot.row, plot.col, trace));
+            panels.push(panel);
         }
     };
 
