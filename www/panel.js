@@ -205,6 +205,7 @@ export default class Panel {
         document.getElementById(`trace-tree-${id}`).value = valueOrEmpty(this.tree[id - 1]);
         document.getElementById(`trace-shot-${id}`).value = valueOrEmpty(this.shot[id - 1]);
         document.getElementById(`trace-default_node-${id}`).value = valueOrEmpty(this.default_node[id - 1]);
+        document.getElementById(`trace-color-${id}`).value = valueOrEmpty(this.trace_color[id - 1]);
     }
 
     edit() {
@@ -324,6 +325,7 @@ export default class Panel {
                         this.default_node[i] = valueOrNull(document.getElementById(`trace-default_node-${id}`).value);
                         this.y_expr[i] = valueOrNull(document.getElementById(`trace-y_expr-${id}`).value);
                         this.x_expr[i] = valueOrNull(document.getElementById(`trace-x_expr-${id}`).value);
+                        this.trace_color[i] = valueOrNull(document.getElementById(`trace-color-${id}`).value);
                     }
 
                     $overlay.innerHTML = '';
@@ -503,7 +505,7 @@ export default class Panel {
     }
 
     async render() {
-        let m = this.margin();
+        // let m = this.margin();
         let width = this.width();
         let height = this.height();
 
@@ -512,9 +514,9 @@ export default class Panel {
         }
 
         // TODO: Don't call every render
-        if (this.data.length == 0) {
-            await this.update();
-        }
+        // if (this.data.length == 0) {
+        await this.update();
+        // }
 
         let bounds = this.bounds[0];
         for (var i = 1; i < this.bounds.length; ++i) {
@@ -617,6 +619,8 @@ export default class Panel {
             .attr('x', 0)
             .attr('y', 0);
 
+
+        this.line = [];
         // TODO: Handle NaN's breaking lines
         for (var i = 0; i < this.data.length; ++i) {
             let lines = [];
@@ -624,6 +628,7 @@ export default class Panel {
                 if (this.data[i][j].length == 1) {
                     console.log('point');
                 }
+                debugger;
                 let line = svg.append('g')
                     .attr('clip-path', 'url(#clip)')
                     .append('path')
@@ -631,6 +636,7 @@ export default class Panel {
                         .attr('class', 'line')
                         .attr('fill', 'none')
                         .attr('stroke', this.trace_color[i])
+                        // .attr('stroke', "steelblue")
                         .attr('stroke-width', 1.5)
                         .attr('d', d3.line()
                             .x((d) => xScale(d[0]))
@@ -641,6 +647,25 @@ export default class Panel {
             this.line.push(lines);
         }
         console.log(this.line);
+
+    //     render(svg, xScale, yScale) {
+    //     if (this.data == null) {
+    //         return;
+    //     }
+
+    //     this.line = svg.append('g')
+    //         .attr('clip-path', 'url(#clip)')
+    //         .append('path')
+    //             .datum(this.data)
+    //             .attr('class', 'line')
+    //             .attr('fill', 'none')
+    //             .attr('stroke', this.trace_color)
+    //             .attr('stroke-width', 1.5)
+    //             .attr('d', d3.line()
+    //                 .x((d) => xScale(d[0]))
+    //                 .y((d) => yScale(d[1]))
+    //             );
+    // }
 
         const brush = d3.brush()
             .extent([[0, 0],[width, height]]);
@@ -709,14 +734,14 @@ export default class Panel {
         brush.on('end', zoomChart);
     }
 
-    margin() {
-        return {
-            'top': 10,
-            'left': 90,
-            'bottom': 30,
-            'right': 30,
-        }
-    }
+    // margin() {
+    //     return {
+    //         'top': 10,
+    //         'left': 90,
+    //         'bottom': 30,
+    //         'right': 30,
+    //     }
+    // }
 
     width() {
         return 500;
