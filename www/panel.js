@@ -148,42 +148,12 @@ export default class Panel {
                 document.getElementById(`trace-form-${id}`).classList.add('shown');
             });
 
-        let setupGlobalDefaults = (property, inputId=null, checkboxId=null) => {
-            // TODO: Remove when title gets moved
-            let $input = document.getElementById(inputId ? inputId : `trace-${property}-${id}`);
-            let $checkbox = document.getElementById(checkboxId ? checkboxId : `trace-${property}-default-${id}`);
 
-            $checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    $input.disabled = true;
-                    $input.placeholder = globalDefaults[property] ? globalDefaults[property] : '';
-                }
-                else {
-                    $input.disabled = false;
-                    $input.placeholder = '';
-                }
-            });
-
-            // TODO: Fix this after removing Trace
-            $checkbox.checked = true;
-            // $checkbox.checked = trace ? trace.useDefault(property) : true;
-            // TODO: Remove, this should be automatic when onchange is called
-            if ($checkbox.checked) {
-                $input.disabled = true;
-                $input.placeholder = globalDefaults[property] ? globalDefaults[property] : '';
-            }
-        }
-
-        setupGlobalDefaults('title_expr', 'panel-title_expr', 'panel-title_expr-default');
-        setupGlobalDefaults('y_min', 'panel-y-min', 'panel-y-min-default');
-        setupGlobalDefaults('y_max', 'panel-y-max', 'panel-y-max-default');
-        setupGlobalDefaults('x_min', 'panel-x-min', 'panel-x-min-default');
-        setupGlobalDefaults('x_max', 'panel-x-max', 'panel-x-max-default');
-        setupGlobalDefaults('y_expr');
-        setupGlobalDefaults('x_expr');
-        setupGlobalDefaults('tree');
-        setupGlobalDefaults('shot');
-        setupGlobalDefaults('default_node');
+        this.setupGlobalDefaults('y_expr', `trace-y_expr-${id}`, `trace-y_expr-default-${id}`);
+        this.setupGlobalDefaults('x_expr', `trace-x_expr-${id}`, `trace-x_expr-default-${id}`);
+        this.setupGlobalDefaults('tree', `trace-tree-${id}`, `trace-tree-default-${id}`);
+        this.setupGlobalDefaults('shot', `trace-shot-${id}`, `trace-shot-default-${id}`);
+        this.setupGlobalDefaults('default_node', `trace-default_node-${id}`, `trace-default_node-default-${id}`);
 
         let valueOrEmpty = (value) => {
             if (value === null || typeof value == "undefined"){
@@ -205,7 +175,12 @@ export default class Panel {
         document.getElementById(`trace-tree-${id}`).value = valueOrEmpty(this.tree[id - 1]);
         document.getElementById(`trace-shot-${id}`).value = valueOrEmpty(this.shot[id - 1]);
         document.getElementById(`trace-default_node-${id}`).value = valueOrEmpty(this.default_node[id - 1]);
-        document.getElementById(`trace-color-${id}`).value = valueOrEmpty(this.trace_color[id - 1]);
+        let color = valueOrEmpty(this.trace_color[id - 1]);
+        if (color == ""){
+            color = "steelblue"
+        }
+        document.getElementById(`trace-color-${id}`).value = color;
+        
     }
 
     edit() {
@@ -238,6 +213,12 @@ export default class Panel {
 
         let $panelForm = document.getElementById('panel-form');
         $panelForm.dataset.nextDataId = this.tree.length + 1;
+
+        this.setupGlobalDefaults('title_expr', 'panel-title_expr', 'panel-title_expr-default');
+        this.setupGlobalDefaults('y_min', 'panel-y-min', 'panel-y-min-default');
+        this.setupGlobalDefaults('y_max', 'panel-y-max', 'panel-y-max-default');
+        this.setupGlobalDefaults('x_min', 'panel-x-min', 'panel-x-min-default');
+        this.setupGlobalDefaults('x_max', 'panel-x-max', 'panel-x-max-default');
 
         // TODO: Improve
         document.querySelectorAll(`#panel-form *[data-action="add-trace"]`)
@@ -628,7 +609,6 @@ export default class Panel {
                 if (this.data[i][j].length == 1) {
                     console.log('point');
                 }
-                debugger;
                 let line = svg.append('g')
                     .attr('clip-path', 'url(#clip)')
                     .append('path')
@@ -751,6 +731,35 @@ export default class Panel {
         return 300;
     }
 
+    setupGlobalDefaults(property, inputId=null, checkboxId=null) {
+        let $input = document.getElementById(inputId);
+        let $checkbox = document.getElementById(checkboxId);
+
+        $checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                $input.disabled = true;
+                $input.placeholder = globalDefaults[property] ? globalDefaults[property] : '';
+            }
+            else {
+                $input.disabled = false;
+                $input.placeholder = '';
+            }
+        });
+
+
+        try {
+            $checkbox.checked = this.useDefault(property);
+        } catch(e) {
+            console.error(e);
+            $checkbox.checked = true;
+        }
+        
+        // TODO: Remove, this should be automatic when onchange is called
+        if ($checkbox.checked) {
+            $input.disabled = true;
+            $input.placeholder = globalDefaults[property] ? globalDefaults[property] : '';
+        }
+    }
 
     useDefault(property) {
         // HACK: Need to sort out Panels and Global Defaults

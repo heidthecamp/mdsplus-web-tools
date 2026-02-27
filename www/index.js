@@ -36,7 +36,7 @@ window.onload = () => {
 
     MDSplus.connect()
     .then((e) => {
-        let p = new Panel("", null, null, 0x0000);
+        let p = new Panel("", null, null, 62976);
         p.addTrace(
             "cmod", 1090909010,
             null,
