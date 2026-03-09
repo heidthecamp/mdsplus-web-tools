@@ -1,5 +1,5 @@
 import Bounds from "./bounds.js";
-import { getMany } from "./connection.js";
+import Connection from "./connection.js";
 import { GlobalDefaultFlags, useDefault } from "./globalDefaults.js";
 
 let NextId = 1;
@@ -12,6 +12,8 @@ export default class Panel {
         this.title_expr = title;
         this.row = row;
         this.col = col;
+
+        this.setConnection(window.globalConnection);
 
         this.global_defaults = global_defaults;
 
@@ -35,6 +37,15 @@ export default class Panel {
         this.line = [];
 
         this.addElement();
+    }
+
+    setConnection(conn) {
+        if (conn == null) {
+            this.connection = new Connection();
+        }
+        else {
+            this.connection = conn;
+        }
     }
 
     addTrace(
@@ -121,31 +132,6 @@ export default class Panel {
         for (var i = 1; i < this.bounds.length; ++i) {
             bounds.join(this.bounds[i]);
         }
-        
-        let request = [];
-        if (this.useDefault("title")){
-            request.push([ 'title_expr', globalDefaults.title_expr ]);
-        }
-        else if (this.title_expr) {
-            request.push([ 'title_expr', this.title_expr ]);
-        }
-
-        if (request.length > 0) {
-            await MDSplus.getMany(request)
-            .then((response) => {
-                if (response.title_expr.hasOwnProperty('error')) {
-                    console.error('Title', response.title_expr.error);
-                    return;
-                }
-                this.title = response.title_expr.value;
-            });
-    
-            document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
-        }
-        else {
-            document.querySelector(`#panel-${this.id} .title`).innerText = '';
-        }
-
 
         if (this.useDefault("x_min")){
             if (!! globalDefaults.x_min) {
@@ -536,7 +522,8 @@ export default class Panel {
             request.push([ 'y', y_expr ]);
             request.push([ 'x', x_expr ]);
 
-            await MDSplus.getMany(request)
+            await this.connection.ready();
+            await this.connection.getMany(request)
             .then((response) => {
 
                 let y_data = null;
@@ -769,6 +756,33 @@ export default class Panel {
         });
 
         brush.on('end', zoomChart);
+
+        document.getElementById(`panel-${this.id}`).style.opacity = 1;
+
+        let request = [];
+        if (this.useDefault("title")){
+            request.push([ 'title_expr', globalDefaults.title_expr ]);
+        }
+        else if (this.title_expr) {
+            request.push([ 'title_expr', this.title_expr ]);
+        }
+
+        if (request.length > 0) {
+            await this.connection.getMany(request)
+            .then((response) => {
+                if (response.title_expr.hasOwnProperty('error')) {
+                    console.error('Title', response.title_expr.error);
+                    return;
+                }
+                this.title = response.title_expr.value;
+            });
+    
+            document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
+        }
+        else {
+            document.querySelector(`#panel-${this.id} .title`).innerText = '';
+        }
+
     }
 
     // margin() {

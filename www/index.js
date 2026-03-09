@@ -1,8 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 window.d3 = d3; // TODO: Investigate
 
-import * as MDSplus from "./connection.js";
-window.MDSplus = MDSplus; // HACK: For use with the console
+import Connection from "./connection.js";
 import * as Import from "./import.js";
 
 import Panel from "./panel.js";
@@ -12,6 +11,24 @@ import GlobalDefaults from "./globalDefaults.js";
 
 // TODO: Improve
 window.globalDefaults = new GlobalDefaults();
+
+window.globalConnection = null;
+
+function setParallel(parallel) {
+    if (parallel) {
+        for (var i = 0; i < Panel.panels.length; ++i) {
+            Panel.panels[i].setConnection(null);
+        }
+    }
+    else {
+        window.globalConnection = new Connection();
+        for (var i = 0; i < Panel.panels.length; ++i) {
+            Panel.panels[i].setConnection(window.globalConnection);
+        }
+    }
+
+    document.getElementById('parallel').checked = parallel;
+}
 
 window.onload = () => {
     document.querySelector('*[data-action="add-panel"]')
@@ -33,33 +50,30 @@ window.onload = () => {
             globalDefaults.edit();
         });
 
-    MDSplus.connect()
-    .then((e) => {
-        let p = new Panel("", null, null, 62976);
-        p.addTrace(
-            "cmod", 1090909010,
-            null,
-            "\\IP", null
-        );
-        Panel.panels.push(p);
-        
-        let q = new Panel("", null, null, 62976);
-        q.addTrace(
-            "cmod", 1090909010,
-            null,
-            "\\IP", null
-        );
-        Panel.panels.push(q);
-    });
+    document.querySelector('#parallel')
+        .addEventListener('change', (e) => { setParallel(e.target.checked); })
+
+    let p = new Panel("", null, null, 62976);
+    p.addTrace(
+        "cmod", 1090909010,
+        null,
+        "\\IP", null,
+    );
+    Panel.panels.push(p);
 }
 
 document.addEventListener('drop', async (e) => {
     e.preventDefault();
+
     const file = e.dataTransfer.items[0].getAsFile();
+
+    setParallel(false);
 
     for (var i = 0; i < panels.length; ++i) {
         Panel.panels[i].removeElement();
     }
+    document.getElementById('panels').innerHTML = ''; // HACK:
+
     Panel.panels = await Import.importFile(file);
 });
 

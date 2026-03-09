@@ -141,6 +141,9 @@ export async function importFile(file) {
                     case 'columns':
                         data['columns'] = parseInt(value);
                         break;
+                    case 'global_1_1.experiment':
+                        data['global']['experiment'] = value;
+                        break;
                     case 'global_1_1.shot':
                         data['global']['shot'] = value;
                         break;
