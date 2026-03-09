@@ -5,17 +5,18 @@ import mdsthin
 import asyncio
 import threading
 
-from websockets.legacy.server import serve
+from websockets.sync.server import ServerConnection, serve
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-async def handle_connection(ws):
-    print(f"New websocket connection from {ws.origin}")
+def handle_connection(ws: ServerConnection):
+    origin = ws.request.headers['Origin']
+    print(f"New websocket connection from {origin}")
 
     # conn = mdsthin.Connection('localhost')
     # conn = mdsthin.Connection('sshp://heidcamp@mfews-heidcamp-public.psfc.mit.edu', ssh_port=9224, sshp_host='alcdata-archives')
-    conn = mdsthin.Connection('alcdata-archives')
+    conn = mdsthin.Connection('mfedata01')
 
-    async for message in ws:
+    for message in ws:
         request = json.loads(message)
         response = {}
 
@@ -60,10 +61,10 @@ async def handle_connection(ws):
         except Exception as e:
             response = json.dumps({ 'error': str(e) })
         
-        await ws.send(response)
+        ws.send(response)
 
         for data in data_packets:
-            await ws.send(data.tobytes())
+            ws.send(data.tobytes())
     
     conn.disconnect()
 
@@ -71,18 +72,15 @@ address = '0.0.0.0'
 websocket_port = 8123
 webserver_port = 8888
 
-async def asyncio_main():
-    print(f'Serving websocket on http://{address}:{websocket_port}')
-
-    async with serve(handle_connection, address, websocket_port):
-        await asyncio.Future()
-
 class HTTPRequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, directory='www')
 
 def websocket_main():
-    asyncio.run(asyncio_main())
+    print(f'Serving websocket on http://{address}:{websocket_port}')
+
+    server = serve(handle_connection, address, websocket_port)
+    server.serve_forever()
 
 def webserver_main():
     print(f'Serving on http://{address}:{webserver_port}')
