@@ -12,20 +12,19 @@ import GlobalDefaults from "./globalDefaults.js";
 
 // TODO: Improve
 window.globalDefaults = new GlobalDefaults();
-let panels = [];
 
 window.onload = () => {
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
             const newPanel = new Panel();
-            panels.push(newPanel);
+            Panel.panels.push(newPanel);
             newPanel.edit()
         });
 
     document.querySelector('*[data-action="refresh"]')
         .addEventListener('click', (e) => {
-            for (var i = 0; i < panels.length; ++i) {
-                panels[i].render();
+            for (var i = 0; i < Panel.panels.length; ++i) {
+                Panel.panels[i].render();
             }
         });
 
@@ -42,7 +41,15 @@ window.onload = () => {
             null,
             "\\IP", null
         );
-        panels.push(p);
+        Panel.panels.push(p);
+        
+        let q = new Panel("", null, null, 62976);
+        q.addTrace(
+            "cmod", 1090909010,
+            null,
+            "\\IP", null
+        );
+        Panel.panels.push(q);
     });
 }
 
@@ -51,9 +58,9 @@ document.addEventListener('drop', async (e) => {
     const file = e.dataTransfer.items[0].getAsFile();
 
     for (var i = 0; i < panels.length; ++i) {
-        panels[i].removeElement();
+        Panel.panels[i].removeElement();
     }
-    panels = await Import.importFile(file);
+    Panel.panels = await Import.importFile(file);
 });
 
 document.addEventListener("dragover", (e) => {

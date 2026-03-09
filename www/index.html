@@ -51,7 +51,11 @@
 
     <template id="panel-template">
         <div class="controls">
-            <button data-action="edit">Edit</button> <button data-action="remove">Remove</button>
+            <button data-action="edit">Edit</button>
+            <button data-action="remove">Remove</button>
+            <button data-action="auto-x">Auto X</button>
+            <button data-action="auto-y">Auto Y</button>
+            <button data-action="all-x-auto-y">All X Auto Y</button>
         </div>
         <b class="title"></b>
         <div class="plot">Loading...</div>
@@ -104,7 +108,9 @@
 
     <div id="overlay"></div>
 
-    <button data-action="global-defaults">Global Defaults</button> <button data-action="add-panel">Add Panel</button> <button id="refresh" data-action="refresh">Refresh</button>
+    <button data-action="global-defaults">Global Defaults</button>
+    <button data-action="add-panel">Add Panel</button>
+    <button id="refresh" data-action="refresh">Refresh</button>
     <div id="panels"></div>
 </body>
 </html>

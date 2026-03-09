@@ -5,6 +5,8 @@ import { GlobalDefaultFlags, useDefault } from "./globalDefaults.js";
 let NextId = 1;
 
 export default class Panel {
+    static panels = [];
+
     constructor(title = null, row = null, col = null, global_defaults = 0xFFFF) {
         this.id = NextId++;
         this.title_expr = title;
@@ -27,6 +29,8 @@ export default class Panel {
         this.title = null;
         this.data = [];
         this.bounds = new Bounds();
+        this.viewStack = [];
+        this.viewport = new Bounds();
 
         this.line = [];
 
@@ -39,7 +43,6 @@ export default class Panel {
         default_node = null,
         y_expr = null,
         x_expr = null,
-        // global_defaults = 0xFFFF,
         trace_type = "line",
         trace_color = "steelblue",
         point_type = null,
@@ -54,8 +57,7 @@ export default class Panel {
         this.trace_color.push(trace_color);
         this.point_type.push(point_type);
         this.point_color.push(point_color);
-        // this.update();
-        this.render();
+        this.update();
     }
 
     addElement() {
@@ -87,6 +89,108 @@ export default class Panel {
                     this.removeElement();
                 });
             });
+
+        document.querySelectorAll(`#panel-${this.id} *[data-action="auto-x"]`)
+            .forEach((node) => {
+                node.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await this.getViewport();
+                })
+            })
+        document.querySelectorAll(`#panel-${this.id} *[data-action="auto-y"]`)
+            .forEach((node) => {
+                node.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.setViewport(new Bounds(-1,1,-1,1));
+                })
+            })
+        document.querySelectorAll(`#panel-${this.id} *[data-action="all-x-auto-y"]`)
+            .forEach((node) => {
+                node.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    let v = this.getViewport();
+                    for(let i = 0; i < Panel.panels.length; ++i) {
+                        Panel.panels[i].setViewport(v);
+                    }
+                })
+            })
+    }
+
+    async calculateBounds() {
+        let bounds = this.bounds[0];
+        for (var i = 1; i < this.bounds.length; ++i) {
+            bounds.join(this.bounds[i]);
+        }
+        
+        let request = [];
+        if (this.useDefault("title")){
+            request.push([ 'title_expr', globalDefaults.title_expr ]);
+        }
+        else if (this.title_expr) {
+            request.push([ 'title_expr', this.title_expr ]);
+        }
+
+        if (request.length > 0) {
+            await MDSplus.getMany(request)
+            .then((response) => {
+                if (response.title_expr.hasOwnProperty('error')) {
+                    console.error('Title', response.title_expr.error);
+                    return;
+                }
+                this.title = response.title_expr.value;
+            });
+    
+            document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
+        }
+        else {
+            document.querySelector(`#panel-${this.id} .title`).innerText = '';
+        }
+
+
+        if (this.useDefault("x_min")){
+            if (!! globalDefaults.x_min) {
+                bounds.xMin = globalDefaults.x_min;
+            }
+        }
+        else if (!!this.x_min) {
+            bounds.xMin = this.x_min;
+        }
+        if (this.useDefault("x_max")){
+            if (!! globalDefaults.x_max) {
+                bounds.xMax = globalDefaults.x_max;
+            }
+        }
+        else if (!!this.x_max) {
+            bounds.xMax = this.x_max;
+        }
+        if (this.useDefault("y_min")){
+            if (!!globalDefaults.y_min) {
+                bounds.yMin = globalDefaults.y_min;
+            }
+        }
+        else if (!!this.y_min) {
+            bounds.yMin = this.y_min;
+        }
+        if (this.useDefault("y_max")){
+            if (!!globalDefaults.y_max) {
+                bounds.yMax = globalDefaults.y_max;
+            }
+        }
+        else if (!!this.y_max) {
+            bounds.yMax = this.y_max;
+        }
+        
+        return bounds;
+    }
+
+    getViewport() {
+        return this.viewport;
+    }
+
+    setViewport(view) {
+        this.viewStack.push(view);
+        this.viewport = this.viewStack[this.viewStack.length - 1];
+        this.render();
     }
 
     removeElement() {
@@ -312,7 +416,7 @@ export default class Panel {
                     $overlay.innerHTML = '';
                     $overlay.classList.remove('shown');
 
-                    this.render();
+                    this.update();
                 });
             });
 
@@ -483,6 +587,12 @@ export default class Panel {
                 this.bounds.push(bounds);
             });
         }
+        
+        this.viewStack = [];
+        this.viewStack.push(await this.calculateBounds());
+        this.viewport = this.viewStack[0];
+
+        this.render();
     }
 
     async render() {
@@ -492,74 +602,6 @@ export default class Panel {
 
         if (this.tree.length == 0) {
             return;
-        }
-
-        // TODO: Don't call every render
-        // if (this.data.length == 0) {
-        await this.update();
-        // }
-
-        let bounds = this.bounds[0];
-        for (var i = 1; i < this.bounds.length; ++i) {
-            bounds.join(this.bounds[i]);
-        }
-        
-        let request = [];
-        if (this.useDefault("title")){
-            request.push([ 'title_expr', globalDefaults.title_expr ]);
-        }
-        else if (this.title_expr) {
-            request.push([ 'title_expr', this.title_expr ]);
-        }
-
-        if (request.length > 0) {
-            await MDSplus.getMany(request)
-            .then((response) => {
-                if (response.title_expr.hasOwnProperty('error')) {
-                    console.error('Title', response.title_expr.error);
-                    return;
-                }
-                this.title = response.title_expr.value;
-            });
-    
-            document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
-        }
-        else {
-            document.querySelector(`#panel-${this.id} .title`).innerText = '';
-        }
-
-
-        if (this.useDefault("x_min")){
-            if (!! globalDefaults.x_min) {
-                bounds.xMin = globalDefaults.x_min;
-            }
-        }
-        else if (!!this.x_min) {
-            bounds.xMin = this.x_min;
-        }
-        if (this.useDefault("x_max")){
-            if (!! globalDefaults.x_max) {
-                bounds.xMax = globalDefaults.x_max;
-            }
-        }
-        else if (!!this.x_max) {
-            bounds.xMax = this.x_max;
-        }
-        if (this.useDefault("y_min")){
-            if (!!globalDefaults.y_min) {
-                bounds.yMin = globalDefaults.y_min;
-            }
-        }
-        else if (!!this.y_min) {
-            bounds.yMin = this.y_min;
-        }
-        if (this.useDefault("y_max")){
-            if (!!globalDefaults.y_max) {
-                bounds.yMax = globalDefaults.y_max;
-            }
-        }
-        else if (!!this.y_max) {
-            bounds.yMax = this.y_max;
         }
 
         // TODO: Replace .plot
@@ -578,7 +620,7 @@ export default class Panel {
 
 
         const xScale = d3.scaleLinear()
-            .domain([ bounds.xMin, bounds.xMax ])
+            .domain([ this.viewport.xMin, this.viewport.xMax ])
             .range([ 0, width ]);
 
         let xAxis = svg.append('g')
@@ -586,7 +628,7 @@ export default class Panel {
             .call(d3.axisBottom(xScale));
 
         const yScale = d3.scaleLinear()
-            .domain([ bounds.yMin, bounds.yMax ])
+            .domain([ this.viewport.yMin, this.viewport.yMax ])
             .range([ height, 0 ]);
         
         let yAxis = svg.append('g')
@@ -607,6 +649,16 @@ export default class Panel {
             let lines = [];
             for (var j = 0; j < this.data[i].length; ++j) {
                 if (this.data[i][j].length == 1) {
+                    svg.selectAll("myPoints")
+                        .data(this.data[i][j])
+                        .enter()
+                        .append('circle')
+                        .attr("stroke-width", .75)
+                        .attr('fill', this.trace_color[i])
+                        .attr("stroke", this.trace_color[i])
+                        .attr("cx", d => xScale(d[0]))
+                        .attr("cy", d => yScale(d[1]))
+                        .attr("r", .75);
                     console.log('point');
                 }
                 let line = svg.append('g')
@@ -616,7 +668,6 @@ export default class Panel {
                         .attr('class', 'line')
                         .attr('fill', 'none')
                         .attr('stroke', this.trace_color[i])
-                        // .attr('stroke', "steelblue")
                         .attr('stroke-width', 1.5)
                         .attr('d', d3.line()
                             .x((d) => xScale(d[0]))
@@ -626,26 +677,6 @@ export default class Panel {
             }
             this.line.push(lines);
         }
-        console.log(this.line);
-
-    //     render(svg, xScale, yScale) {
-    //     if (this.data == null) {
-    //         return;
-    //     }
-
-    //     this.line = svg.append('g')
-    //         .attr('clip-path', 'url(#clip)')
-    //         .append('path')
-    //             .datum(this.data)
-    //             .attr('class', 'line')
-    //             .attr('fill', 'none')
-    //             .attr('stroke', this.trace_color)
-    //             .attr('stroke-width', 1.5)
-    //             .attr('d', d3.line()
-    //                 .x((d) => xScale(d[0]))
-    //                 .y((d) => yScale(d[1]))
-    //             );
-    // }
 
         const brush = d3.brush()
             .extent([[0, 0],[width, height]]);
@@ -659,7 +690,6 @@ export default class Panel {
 
         let zoomChart = (e) => {
             // the selected boundries
-            // console.log("zoomies")
             let extent = e.selection;
 
             
@@ -668,9 +698,17 @@ export default class Panel {
                 // brush.end seems to be called on `call(brush.move, null)`
                 // Setting the domains here will clear zooming.
             } else {
-                // console.log('extent')
-                xScale.domain([xScale.invert(extent[0][0]), xScale.invert(extent[1][0])]);
-                yScale.domain([yScale.invert(extent[1][1]), yScale.invert(extent[0][1])]);
+                let bounds = new Bounds;
+                bounds.xMin = xScale.invert(extent[0][0]);
+                bounds.xMax = xScale.invert(extent[1][0]);
+                bounds.yMin = yScale.invert(extent[1][1]);
+                bounds.yMax = yScale.invert(extent[0][1]);
+
+                this.viewStack.push(bounds);
+                this.viewport = this.viewStack[this.viewStack.length - 1];
+
+                xScale.domain([this.viewport.xMin, this.viewport.xMax]);
+                yScale.domain([this.viewport.yMin, this.viewport.yMax]);
                 
                 zoom_brush.call(brush.move, null);
             }
@@ -678,33 +716,52 @@ export default class Panel {
             xAxis.transition().call(d3.axisBottom(xScale));
             yAxis.transition().call(d3.axisLeft(yScale));
 
+            svg.selectAll('circle')
+                .attr('cx', function(d) { return xScale(d[0])})
+                .attr('cy', function(d) { return yScale(d[1])})
+                .transition();
+
             for (var i = 0; i < this.line.length; ++i) {
                 for (var j = 0; j < this.line[i].length; ++j) {
-                    this.line[i][j]
+                    if (this.data[i][j].length != 1) {
+                        this.line[i][j]
                         .transition()
                         .attr('d', d3.line()
                             .x(function (d) { return xScale(d[0])} )
                             .y(function (d) { return yScale(d[1])} )
                         );
+                    }
                 }
             }
         }
 
-        svg.on("dblclick",() => {
+        svg.on("dblclick", async() => {
+            // this.viewStack = [this.viewStack[0]];
+            this.viewStack.pop();
+            this.viewport = this.viewStack[this.viewStack.length - 1];
 
-            xScale.domain([ bounds.xMin, bounds.xMax ])
-            yScale.domain([ bounds.yMin, bounds.yMax ])
+            xScale.domain([ this.viewport.xMin, this.viewport.xMax ])
+            yScale.domain([ this.viewport.yMin, this.viewport.yMax ])
             xAxis.transition().call(d3.axisBottom(xScale));
             yAxis.transition().call(d3.axisLeft(yScale));
 
+            let points = svg.selectAll('circle');
+
+            points
+            .attr('cx', function(d) { return xScale(d[0])})
+            .attr('cy', function(d) { return yScale(d[1])})
+            .transition();
+
             for (var i = 0; i < this.line.length; ++i) {
                 for (var j = 0; j < this.line[i].length; ++j) {
-                    this.line[i][j]
-                        .transition()
-                        .attr('d', d3.line()
-                            .x(function (d) { return xScale(d[0])} )
-                            .y(function (d) { return yScale(d[1])} )
-                        );
+                    if (this.data[i][j].length != 1) {
+                        this.line[i][j]
+                            .transition()
+                            .attr('d', d3.line()
+                                .x(function (d) { return xScale(d[0])} )
+                                .y(function (d) { return yScale(d[1])} )
+                            );
+                    }
                 }
             }
 
