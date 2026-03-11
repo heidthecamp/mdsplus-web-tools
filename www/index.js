@@ -58,8 +58,17 @@ window.onload = () => {
         "cmod", 1090909010,
         null,
         "\\IP", null,
+        null, "steelblue",
+        null, "steelblue",
+    );
+    p.addTrace("cmod", 1090909010,
+        null,
+        "abs(\\IP)", null,
+        null, "red",
+        null, "red",
     );
     Panel.panels.push(p);
+    p.update();
 }
 
 document.addEventListener('drop', async (e) => {

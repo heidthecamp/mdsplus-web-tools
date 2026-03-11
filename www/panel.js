@@ -30,7 +30,6 @@ export default class Panel {
         
         this.title = null;
         this.data = [];
-        this.bounds = new Bounds();
         this.viewStack = [];
         this.viewport = new Bounds();
 
@@ -68,7 +67,6 @@ export default class Panel {
         this.trace_color.push(trace_color);
         this.point_type.push(point_type);
         this.point_color.push(point_color);
-        this.update();
     }
 
     addElement() {
@@ -112,7 +110,8 @@ export default class Panel {
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.setViewport(new Bounds(-1,1,-1,1));
+                    this.autoY();
+                    this.render();
                 })
             })
         document.querySelectorAll(`#panel-${this.id} *[data-action="all-x-auto-y"]`)
@@ -122,15 +121,17 @@ export default class Panel {
                     let v = this.getViewport();
                     for(let i = 0; i < Panel.panels.length; ++i) {
                         Panel.panels[i].setViewport(v);
+                        Panel.panels[i].autoY();
+                        Panel.panels[i].render();
                     }
                 })
             })
     }
 
-    async calculateBounds() {
-        let bounds = this.bounds[0];
-        for (var i = 1; i < this.bounds.length; ++i) {
-            bounds.join(this.bounds[i]);
+    async calculateBounds(boundArray) {
+        let bounds = boundArray[0];
+        for (var i = 1; i < boundArray.length; ++i) {
+            bounds.join(boundArray[i]);
         }
 
         if (this.useDefault("x_min")){
@@ -176,7 +177,26 @@ export default class Panel {
     setViewport(view) {
         this.viewStack.push(view);
         this.viewport = this.viewStack[this.viewStack.length - 1];
-        this.render();
+    }
+
+    autoY() {
+        let b = new Bounds();
+        for (let h = 0; h < this.data.length; h++){
+            for (let i = 0; i < this.data[h].length; ++i) {
+                for (let j = 0; j < this.data[h][i].length; ++j){
+                    let val = this.data[h][i][j];
+                    if (
+                        this.viewport.xMin < val[0] &&
+                        val[0] < this.viewport.xMax
+                    ) {
+                        b.extend(val[0], val[1]);
+                    }
+                }
+            }
+        }
+        
+        this.viewStack.push(b);
+        this.viewport = this.viewStack[ this.viewStack.length -1 ]
     }
 
     removeElement() {
@@ -456,7 +476,7 @@ export default class Panel {
         let shot;
         let default_node;
 
-        this.bounds = [];
+        let boundsArray = [];
         this.data = [];
         for (var i = 0; i < this.tree.length; ++i) {
             let request = [];
@@ -569,14 +589,14 @@ export default class Panel {
                     data.at(-1).push([x, y]);
                     bounds.extend(x, y);
                 }
-
+                
                 this.data.push(data);
-                this.bounds.push(bounds);
+                boundsArray.push(bounds);
             });
         }
         
         this.viewStack = [];
-        this.viewStack.push(await this.calculateBounds());
+        this.viewStack.push(await this.calculateBounds(boundsArray));
         this.viewport = this.viewStack[0];
 
         this.render();
