@@ -103,7 +103,8 @@ export default class Panel {
             .forEach((node) => {
                 node.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    await this.getViewport();
+                    this.autoX();
+                    this.render();
                 })
             })
         document.querySelectorAll(`#panel-${this.id} *[data-action="auto-y"]`)
@@ -179,8 +180,29 @@ export default class Panel {
         this.viewport = this.viewStack[this.viewStack.length - 1];
     }
 
+    autoX() {
+        let b = new Bounds(
+            null, null,
+            this.viewport.yMin, this.viewport.yMax
+        );
+        for (let h = 0; h < this.data.length; h++){
+            for (let i = 0; i < this.data[h].length; ++i) {
+                for (let j = 0; j < this.data[h][i].length; ++j){
+                    let val = this.data[h][i][j];
+                    b.extend(val[0], null);
+                }
+            }
+        }
+        
+        this.viewStack.push(b);
+        this.viewport = this.viewStack[ this.viewStack.length -1 ]
+    }
+
     autoY() {
-        let b = new Bounds();
+        let b = new Bounds(
+            this.viewport.xMin, this.viewport.xMax,
+            null, null
+        );
         for (let h = 0; h < this.data.length; h++){
             for (let i = 0; i < this.data[h].length; ++i) {
                 for (let j = 0; j < this.data[h][i].length; ++j){

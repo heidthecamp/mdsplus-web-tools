@@ -213,6 +213,7 @@ export async function importFile(file) {
                 plot.x,
             );
             panels.push(panel);
+            panel.update();
         }
     };
 
