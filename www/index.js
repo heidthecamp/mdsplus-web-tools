@@ -41,7 +41,7 @@ window.onload = () => {
     document.querySelector('*[data-action="refresh"]')
         .addEventListener('click', (e) => {
             for (var i = 0; i < Panel.panels.length; ++i) {
-                Panel.panels[i].render();
+                Panel.panels[i].update();
             }
         });
 
