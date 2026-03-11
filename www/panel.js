@@ -181,10 +181,10 @@ export default class Panel {
     }
 
     autoX() {
-        let b = new Bounds(
-            null, null,
-            this.viewport.yMin, this.viewport.yMax
-        );
+        let b = new Bounds()
+        b.yMin = this.viewport.yMin;
+        b.yMax = this.viewport.yMax;
+        
         for (let h = 0; h < this.data.length; h++){
             for (let i = 0; i < this.data[h].length; ++i) {
                 for (let j = 0; j < this.data[h][i].length; ++j){
@@ -199,10 +199,9 @@ export default class Panel {
     }
 
     autoY() {
-        let b = new Bounds(
-            this.viewport.xMin, this.viewport.xMax,
-            null, null
-        );
+        let b = new Bounds()
+        b.xMin = this.viewport.xMin;
+        b.xMax = this.viewport.xMax;
         for (let h = 0; h < this.data.length; h++){
             for (let i = 0; i < this.data[h].length; ++i) {
                 for (let j = 0; j < this.data[h][i].length; ++j){
