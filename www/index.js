@@ -14,6 +14,9 @@ window.globalDefaults = new GlobalDefaults();
 
 window.globalConnection = null;
 
+// HACK: Remove
+window.nextPanelY = 4;
+
 function setParallel(parallel) {
     if (parallel) {
         for (var i = 0; i < Panel.panels.length; ++i) {
@@ -33,9 +36,16 @@ function setParallel(parallel) {
 window.onload = () => {
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
-            const newPanel = new Panel();
+            const newPanel = new Panel(null, {
+                x: 0,
+                y: window.nextPanelY,
+                width: 6,
+                height: 2,
+            });
             Panel.panels.push(newPanel);
             newPanel.edit()
+
+            window.nextPanelY += 2;
         });
 
     document.querySelector('*[data-action="refresh"]')
@@ -58,7 +68,12 @@ window.onload = () => {
             Panel.panels.forEach(panel => panel.render());
         });
 
-    let p = new Panel("", { x: 0, y: 0, width: 6, height: 2 }, 62976);
+    let p = new Panel("'SIN()'", { x: 0, y: 0, width: 12, height: 2 });
+    p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
+    Panel.panels.push(p);
+    p.update();
+
+    p = new Panel("$SHOT", { x: 0, y: 2, width: 6, height: 2 }, 62976);
     p.addTrace(
         "cmod", 1090909010,
         null,
@@ -71,6 +86,17 @@ window.onload = () => {
         "abs(\\IP)", null,
         null, "red",
         null, "red",
+    );
+    Panel.panels.push(p);
+    p.update();
+
+    p = new Panel("$SHOT", { x: 6, y: 2, width: 6, height: 2 }, 62976);
+    p.addTrace(
+        "cmod", 0,
+        null,
+        "abs(\\IP)", null,
+        null, "steelblue",
+        null, "steelblue",
     );
     Panel.panels.push(p);
     p.update();

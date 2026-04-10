@@ -20,8 +20,8 @@ export async function importFile(file) {
                 shot: null,
                 default_node: null,
                 title: null,
-                y: null,
-                x: null,
+                y_expr: null,
+                x_expr: null,
             },
             plots: [],
         };

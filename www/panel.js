@@ -70,6 +70,23 @@ export default class Panel {
         this.trace_color.push(trace_color);
         this.point_type.push(point_type);
         this.point_color.push(point_color);
+
+        if (tree !== null) {
+            this.global_defaults &= ~GlobalDefaultFlags.tree;
+        }
+        if (shot !== null) {
+            this.global_defaults &= ~GlobalDefaultFlags.shot;
+        }
+        if (default_node !== null) {
+            this.global_defaults &= ~GlobalDefaultFlags.default_node;
+        }
+        if (y_expr !== null) {
+            this.global_defaults &= ~GlobalDefaultFlags.y_expr;
+        }
+        if (x_expr !== null) {
+            this.global_defaults &= ~GlobalDefaultFlags.x_expr;
+        }
+        // TODO: x_min / x_max / y_min / y_max / title
     }
 
     addElement() {
@@ -498,14 +515,14 @@ export default class Panel {
             if (this.useDefault('tree')) {
                 tree = globalDefaults.tree;
             }
-            else if (this.tree[i]) {
+            else if (this.tree[i] !== null) {
                 tree = this.tree[i];
             }
 
             if (this.useDefault('shot')) {
                 shot = globalDefaults.shot;
             }
-            else if (this.shot[i]) {
+            else if (this.shot[i] !== null) {
                 shot = this.shot[i];
             }
 
@@ -518,7 +535,7 @@ export default class Panel {
                     default_node = `TreeSetDefault("${globalDefaults.default_node.replace('\\', '\\\\')}")`;
                 }
             }
-            else if (this.default_node[i]) {
+            else if (this.default_node[i] !== null) {
                 default_node = `TreeSetDefault("${this.default_node[i].replace('\\', '\\\\')}")`;
             }
 
@@ -531,7 +548,7 @@ export default class Panel {
             if(this.useDefault('y_expr')) {
                 y_expr = globalDefaults.y_expr;
             }
-            else if (this.y_expr[i]) {
+            else if (this.y_expr[i] !== null) {
                 y_expr = this.y_expr[i];
             }
 
@@ -542,7 +559,7 @@ export default class Panel {
             if(this.useDefault('x_expr')) {
                 x_expr = globalDefaults.x_expr;
             }
-            else if (this.x_expr[i]) {
+            else if (this.x_expr[i] !== null) {
                 x_expr = this.x_expr[i];
             }
             
@@ -580,8 +597,12 @@ export default class Panel {
                     x_data = response.x_expr.value;
                 }
 
+                if (y_data === null || x_data === null) {
+                    console.error(`Could not retrieve x or y data\ny_data: ${y_data}\nx_data: ${x_data}`);
+                    return
+                }
                 // y truncates to match x.
-                if (y_data.length < x_data.length) {
+                else if (y_data.length < x_data.length) {
                     console.error('Length mismatch len(y) < len(x)');
                     return;
                 }
