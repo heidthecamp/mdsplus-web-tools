@@ -13,17 +13,17 @@ export async function importFile(file) {
     // TODO: Add a confirmation
     reader.onload = async () => {
         let data = {
-            "title": '',
-            "columns": 1,
-            "global": {
-                "experiment": null,
-                "shot": null,
-                "default_node": null,
-                "title": null,
-                "y": null,
-                "x": null,
+            title: '',
+            columns: 1,
+            global: {
+                experiment: null,
+                shot: null,
+                default_node: null,
+                title: null,
+                y: null,
+                x: null,
             },
-            "plots": [],
+            plots: [],
         };
 
         let rows_in_column = [];
@@ -52,23 +52,23 @@ export async function importFile(file) {
             }
             else if (key.startsWith('plot_')) {
                 var [plotIndex, plotKey] = key.split('.', 2);
-                var [_, row, col] = plotIndex.split('_', 3);
-                row = parseInt(row) - 1;
-                col = parseInt(col) - 1;
+                var [_, rowString, colString] = plotIndex.split('_', 3);
+                let row = parseInt(rowString) - 1;
+                let col = parseInt(colString) - 1;
 
                 var offset = rows_in_column.slice(0, col).reduce((sum, x) => sum + x, 0);
                 var index = offset + row;
 
                 while (data['plots'].length <= index) {
                     data['plots'].push({
-                        'experiment': null,
-                        'shot': null,
-                        'default_node': null,
-                        'title': null,
-                        'y': null,
-                        'x': null,
-                        'row': null,
-                        'col': null,
+                        experiment: null,
+                        shot: null,
+                        default_node: null,
+                        title: null,
+                        y_expr: null,
+                        x_expr: null,
+                        row: null,
+                        col: null,
                     });
                 }
 
@@ -83,10 +83,10 @@ export async function importFile(file) {
                         data['plots'][index]['experiment'] = value;
                         break;
                     case 'y':
-                        data['plots'][index]['y'] = value.replaceAll('|||', '\n'); // TODO: Make a wrapper function?
+                        data['plots'][index]['y_expr'] = value.replaceAll('|||', '\n'); // TODO: Make a wrapper function?
                         break;
                     case 'x':
-                        data['plots'][index]['x'] = value.replaceAll('|||', '\n');
+                        data['plots'][index]['x_expr'] = value.replaceAll('|||', '\n');
                         break;
                     case 'ymin':
                         data['plots'][index]['ymin'] = parseFloat(value);
@@ -116,7 +116,7 @@ export async function importFile(file) {
                         data['plots'][index]['global_defaults'] = parseInt(value);
                         break;
                     default:
-                        console.log(`Ignoring ${key}`)
+                        console.info(`Ignoring ${key}`)
                 }
             }
             else {
@@ -163,7 +163,7 @@ export async function importFile(file) {
                         data['global']['global_defaults'] = parseInt(value);
                         break;
                     default:
-                        console.log(`Ignoring ${key}`)
+                        console.info(`Ignoring ${key}`)
                 }
             }
         }
@@ -172,48 +172,53 @@ export async function importFile(file) {
         globalDefaults.shot = data['global'].shot;
         globalDefaults.default_node = data['global'].default_node;
         globalDefaults.title_expr = data['global'].title;
-        globalDefaults.y_expr = data['global'].y;
-        globalDefaults.x_expr = data['global'].x;
+        globalDefaults.y_expr = data['global'].y_expr;
+        globalDefaults.x_expr = data['global'].x_expr;
         globalDefaults.x_min = data['global'].xmin;
         globalDefaults.x_max = data['global'].xmax;
         globalDefaults.y_min = data['global'].ymin;
         globalDefaults.y_max = data['global'].ymax;
 
-        let $panels = document.getElementById('panels');
-        console.log(rows_in_column);
-        for (var i = 0; i < rows_in_column.length; ++i) {
-            let $column = document.createElement('table');
-            $column.id = `column-${i}`;
+        let columnWidth = Math.max(1, 12 / data['columns']);
 
-            for (var j = 0; j < rows_in_column[i]; ++j) {
-                let $row = document.createElement('tr');
-                $row.id = `row-${j}`;
-
-                let $cell = document.createElement('td');
-                $cell.id = `cell-${j}-${i}`;
-
-                $row.appendChild($cell);
-                $column.appendChild($row);
-            }
-
-            $panels.appendChild($column);
-        }
-
+        let row = 0;
+        let column = 0;
+        
         for (var i = 0; i < data['plots'].length; ++i) {
             let plot = data['plots'][i];
+
+            // TODO: The max rows in dwscope/jScope is 16, which we can't reasonably fit
+            let rowHeight = Math.max(1, 12 / rows_in_column[column]);
             
             // TODO: Take the title from the first trace that has one
             let title = data['plots'][i].title;
-            let panel = new Panel(title, plot.row, plot.col, plot.global_defaults);
+            // TODO: Use plot.row, plot.col to set _ROW and _COL
+            let panel = new Panel(
+                title,
+                {
+                    x: column * columnWidth,
+                    y: row * rowHeight,
+                    width: columnWidth,
+                    height: rowHeight,
+                },
+                plot.global_defaults
+            );
+
             panel.addTrace(
                 plot.experiment,
                 plot.shot,
                 plot.default_node,
-                plot.y,
-                plot.x,
+                plot.y_expr,
+                plot.x_expr,
             );
             panels.push(panel);
             panel.update();
+
+            ++row;
+            if (row >= rows_in_column[column]) {
+                row = 0;
+                ++column;
+            }
         }
     };
 

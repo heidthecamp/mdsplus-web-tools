@@ -53,7 +53,12 @@ window.onload = () => {
     document.querySelector('#parallel')
         .addEventListener('change', (e) => { setParallel(e.target.checked); })
 
-    let p = new Panel("", null, null, 62976);
+    document.querySelector('#shrink-to-fit')
+        .addEventListener('change', (e) => {
+            Panel.panels.forEach(panel => panel.render());
+        });
+
+    let p = new Panel("", { x: 0, y: 0, width: 6, height: 2 }, 62976);
     p.addTrace(
         "cmod", 1090909010,
         null,
@@ -89,3 +94,12 @@ document.addEventListener('drop', async (e) => {
 document.addEventListener("dragover", (e) => {
     e.preventDefault();
 });
+
+function finishResize() {
+    Panel.panels.forEach(panel => panel.render());
+}
+
+window.addEventListener('resize', (e) => {
+    clearTimeout(window.resizeTimeout);
+    window.resizeTimeout = setTimeout(finishResize, 100);
+})

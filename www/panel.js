@@ -7,11 +7,14 @@ let NextId = 1;
 export default class Panel {
     static panels = [];
 
-    constructor(title = null, row = null, col = null, global_defaults = 0xFFFF) {
+    constructor(
+        title = null,
+        position = null,
+        global_defaults = 0xFFFF
+    ) {
         this.id = NextId++;
         this.title_expr = title;
-        this.row = row;
-        this.col = col;
+        this.position = position;
 
         this.setConnection(window.globalConnection);
 
@@ -75,13 +78,7 @@ export default class Panel {
         $panel.classList.add('panel');
 
         $panel.appendChild(document.getElementById('panel-template').content.cloneNode(true));
-
-        if (this.row === null && this.col === null) {
-            document.getElementById('panels').appendChild($panel);
-        }
-        else {
-            document.getElementById(`cell-${this.row}-${this.col}`).appendChild($panel);
-        }
+        document.getElementById('panels').appendChild($panel);
 
         document.querySelectorAll(`#panel-${this.id} *[data-action="edit"]`)
             .forEach((node) => {
@@ -103,7 +100,7 @@ export default class Panel {
             .forEach((node) => {
                 node.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    this.autoX();
+                    this.setViewport(this.autoX(this.viewport));
                     this.render();
                 })
             })
@@ -111,7 +108,7 @@ export default class Panel {
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.autoY();
+                    this.setViewport(this.autoY(this.viewport));
                     this.render();
                 })
             })
@@ -121,8 +118,7 @@ export default class Panel {
                     e.preventDefault();
                     let v = this.getViewport();
                     for(let i = 0; i < Panel.panels.length; ++i) {
-                        Panel.panels[i].setViewport(v);
-                        Panel.panels[i].autoY();
+                        Panel.panels[i].setViewport(Panel.panels[i].autoY(v));
                         Panel.panels[i].render();
                     }
                 })
@@ -180,35 +176,34 @@ export default class Panel {
         this.viewport = this.viewStack[this.viewStack.length - 1];
     }
 
-    autoX() {
+    autoX(view) {
         let b = new Bounds()
-        b.yMin = this.viewport.yMin;
-        b.yMax = this.viewport.yMax;
+        b.yMin = view.yMin;
+        b.yMax = view.yMax;
         
         for (let h = 0; h < this.data.length; h++){
             for (let i = 0; i < this.data[h].length; ++i) {
                 for (let j = 0; j < this.data[h][i].length; ++j){
                     let val = this.data[h][i][j];
-                    b.extend(val[0], null);
+                    b.extend(val[0], NaN);
                 }
             }
         }
         
-        this.viewStack.push(b);
-        this.viewport = this.viewStack[ this.viewStack.length -1 ]
+        return b;
     }
 
-    autoY() {
+    autoY(view) {
         let b = new Bounds()
-        b.xMin = this.viewport.xMin;
-        b.xMax = this.viewport.xMax;
+        b.xMin = view.xMin;
+        b.xMax = view.xMax;
         for (let h = 0; h < this.data.length; h++){
             for (let i = 0; i < this.data[h].length; ++i) {
                 for (let j = 0; j < this.data[h][i].length; ++j){
                     let val = this.data[h][i][j];
                     if (
-                        this.viewport.xMin < val[0] &&
-                        val[0] < this.viewport.xMax
+                        view.xMin < val[0] &&
+                        val[0] < view.xMax
                     ) {
                         b.extend(val[0], val[1]);
                     }
@@ -216,8 +211,7 @@ export default class Panel {
             }
         }
         
-        this.viewStack.push(b);
-        this.viewport = this.viewStack[ this.viewStack.length -1 ]
+        return b;
     }
 
     removeElement() {
@@ -467,7 +461,6 @@ export default class Panel {
         $overlay.addEventListener('mousedown', (event) => {
             if (!document.querySelector(`#panel-form`).contains(event.target)) {
                 primed = true;
-                console.log("primed")
             } else {
                 primed = false;
             }
@@ -542,7 +535,7 @@ export default class Panel {
                 y_expr = this.y_expr[i];
             }
 
-            if (request.y == null) {
+            if (request.y_expr == null) {
                 // Freak out
             }
 
@@ -560,31 +553,31 @@ export default class Panel {
                 x_expr = 'dim_of(_wssig)';
             }
 
-            request.push([ 'y', y_expr ]);
-            request.push([ 'x', x_expr ]);
+            request.push([ 'y_expr', y_expr ]);
+            request.push([ 'x_expr', x_expr ]);
 
             await this.connection.ready();
             await this.connection.getMany(request)
             .then((response) => {
 
                 let y_data = null;
-                if (response.hasOwnProperty('y')) {
-                    if (response.y.hasOwnProperty('error')) {
-                        console.error('y', response.y.error);
+                if (response.hasOwnProperty('y_expr')) {
+                    if (response.y_expr.hasOwnProperty('error')) {
+                        console.error('y_expr', response.y_expr.error);
                         return;
                     }
                     
-                    y_data = response.y.value;
+                    y_data = response.y_expr.value;
                 }
 
                 let x_data = null;
-                if (response.hasOwnProperty('x')) {
-                    if (response.x.hasOwnProperty('error')) {
-                        console.error('x', response.x.error);
+                if (response.hasOwnProperty('x_expr')) {
+                    if (response.x_expr.hasOwnProperty('error')) {
+                        console.error('x_expr', response.x_expr.error);
                         return;
                     }
                     
-                    x_data = response.x.value;
+                    x_data = response.x_expr.value;
                 }
 
                 // y truncates to match x.
@@ -624,9 +617,32 @@ export default class Panel {
     }
 
     async render() {
-        // let m = this.margin();
-        let width = this.width();
-        let height = this.height();
+        let panelsRect = document.querySelector('#panels').getBoundingClientRect();
+        let x_grixl = panelsRect.width / 12;
+        let y_grixl = x_grixl;
+        if (document.getElementById('shrink-to-fit').checked) {
+            y_grixl = (window.innerHeight - panelsRect.y + window.scrollY) / 12;
+        }
+        let x_pos = (this.position.x * x_grixl) + panelsRect.x + window.scrollX;
+        let y_pos = (this.position.y * y_grixl) + panelsRect.y + window.scrollY;
+        let width = this.position.width * x_grixl;
+        let height = this.position.height * y_grixl;
+
+        let $panel = document.querySelector(`#panel-${this.id}`);
+        $panel.style.position = "absolute"
+        $panel.style.top = y_pos;
+        $panel.style.left = x_pos;
+        $panel.style.width = width;
+        $panel.style.height = height;
+
+        let $plot = document.querySelector(`#panel-${this.id} .plot`);
+        let plotRect = $plot.getBoundingClientRect();
+
+        let svgWidth = plotRect.width;
+        let svgHeight = plotRect.height;
+
+        let dataWidth = plotRect.width - 120;
+        let dataHeight = plotRect.height - 40;
 
         if (this.tree.length == 0) {
             return;
@@ -637,27 +653,24 @@ export default class Panel {
         const svg = d3.select(`#panel-${this.id} .plot`)
             .html(null)
             .append('svg')
-                // .attr('width', width + m.left + m.right)
-                // .attr('height', height + m.top + m.bottom)
-                .attr('width', '100%')
-                .attr('height', '100%')
+                .attr('width', svgWidth)
+                .attr('height', svgHeight)
             .append('g')
                 .attr('transform',
                     `translate(60,10)`
                 );
 
-
         const xScale = d3.scaleLinear()
             .domain([ this.viewport.xMin, this.viewport.xMax ])
-            .range([ 0, width ]);
+            .range([ 0, dataWidth ]);
 
         let xAxis = svg.append('g')
-            .attr('transform', `translate(0,${height})`)
+            .attr('transform', `translate(0,${dataHeight})`)
             .call(d3.axisBottom(xScale));
 
         const yScale = d3.scaleLinear()
             .domain([ this.viewport.yMin, this.viewport.yMax ])
-            .range([ height, 0 ]);
+            .range([ dataHeight, 0 ]);
         
         let yAxis = svg.append('g')
             .call(d3.axisLeft(yScale));
@@ -665,8 +678,8 @@ export default class Panel {
         let clip = svg.append('defs').append('SVG:clipPath')
             .attr('id', 'clip')
             .append('svg:rect')
-            .attr('width', width)
-            .attr('height', height)
+            .attr('width', dataWidth)
+            .attr('height', dataHeight)
             .attr('x', 0)
             .attr('y', 0);
 
@@ -687,7 +700,6 @@ export default class Panel {
                         .attr("cx", d => xScale(d[0]))
                         .attr("cy", d => yScale(d[1]))
                         .attr("r", .75);
-                    console.log('point');
                 }
                 let line = svg.append('g')
                     .attr('clip-path', 'url(#clip)')
@@ -707,7 +719,7 @@ export default class Panel {
         }
 
         const brush = d3.brush()
-            .extent([[0, 0],[width, height]]);
+            .extent([[0, 0],[dataWidth, dataHeight]]);
             // .on('end', zoomChart);
         
         var zoom_brush = svg.append('g')
@@ -824,23 +836,6 @@ export default class Panel {
             document.querySelector(`#panel-${this.id} .title`).innerText = '';
         }
 
-    }
-
-    // margin() {
-    //     return {
-    //         'top': 10,
-    //         'left': 90,
-    //         'bottom': 30,
-    //         'right': 30,
-    //     }
-    // }
-
-    width() {
-        return 500;
-    }
-
-    height() {
-        return 300;
     }
 
     setupGlobalDefaults(property, inputId=null, checkboxId=null) {

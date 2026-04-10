@@ -1,9 +1,18 @@
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <style>
         body, html {
             margin: 0;
             padding: 0;
+            --bs-gutter-x: 0.5rem;
+            .container {
+                --bs-gutter-x: 0.5rem;
+                --bs-gutter-y: 0;
+                margin: 10px;
+            }
         }
         button:disabled {
             color: #888;
@@ -13,11 +22,17 @@
             margin-bottom: 5px;
             font-size: 20px;
         }
-
         .panel {
-            width: 620px;
-            height: 400px;
-            float: left;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel .plot {
+            flex: 1;
+            height: 100%;
+        }
+        .panel .navbar {
+            flex: none;
+            padding: 0;
         }
         #overlay {
             display: none;
@@ -44,20 +59,36 @@
         .trace-form.shown {
             display: block;
         }
-        #panels table {
-            float: left;
+        .column {
+            flex-direction: column;
         }
     </style>
 
     <template id="panel-template">
-        <div class="controls">
-            <button data-action="edit">Edit</button>
-            <button data-action="remove">Remove</button>
-            <button data-action="auto-x">Auto X</button>
-            <button data-action="auto-y">Auto Y</button>
-            <button data-action="all-x-auto-y">All X Auto Y</button>
-        </div>
-        <b class="title"></b>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <div class="navbar-brand title"></div>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" type="button" data-action="edit" role="button">Edit</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" type="button" data-action="remove" role="button">Remove</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Auto Align
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" data-action="auto-x">Auto X</a></li>
+                            <li><a class="dropdown-item" data-action="auto-y">Auto Y</a></li>
+                            <li><a class="dropdown-item" data-action="all-x-auto-y">All X Auto Y</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- <b class="title"></b> -->
         <div class="plot">Loading...</div>
     </template>
 
@@ -108,10 +139,15 @@
 
     <div id="overlay"></div>
 
-    <button data-action="global-defaults">Global Defaults</button>
-    <button data-action="add-panel">Add Panel</button>
-    <button id="refresh" data-action="refresh">Refresh</button>
-    <label for="parallel">Parallel</label> <input type="checkbox" id="parallel" checked="checked" />
-    <div id="panels"></div>
+    <div class="container text-center align-left">
+
+        <button type="button" class="btn btn-primary" data-action="global-defaults">Global Defaults</button>
+        <button type="button" class="btn btn-primary"  data-action="add-panel">Add Panel</button>
+        <button type="button" class="btn btn-primary"  id="refresh" data-action="refresh">Refresh</button>
+        <label for="parallel">Parallel</label> <input type="checkbox" id="parallel" checked="checked" />
+        <label for="shrink-to-fit">Shrink to Fit</label> <input type="checkbox" id="shrink-to-fit" />
+    </div>
+    <div id="panels">
+    </div>
 </body>
 </html>
