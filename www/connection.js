@@ -107,9 +107,9 @@ export default class Connection
                             case 'int32':
                                 this.response[key].value = new Int32Array(data);
                                 break;
-                            case 'int64':
-                                this.response[key].value = new Int64Array(data);
-                                break;
+                            // case 'int64':
+                            //     this.response[key].value = new BigInt64Array(data);
+                            //     break;
                             case 'uint8':
                                 this.response[key].value = new Uint8Array(data);
                                 break;
@@ -119,9 +119,9 @@ export default class Connection
                             case 'uint32':
                                 this.response[key].value = new Uint32Array(data);
                                 break;
-                            case 'uint64':
-                                this.response[key].value = new Uint64Array(data);
-                                break;
+                            // case 'uint64':
+                            //     this.response[key].value = new BigUint64Array(data);
+                            //     break;
                             case 'float32':
                                 this.response[key].value = new Float32Array(data);
                                 break;

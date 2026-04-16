@@ -1,20 +1,84 @@
 
 import json
 import numpy
-import mdsthin
-import asyncio
 import threading
+import argparse
+import warnings
 
 from websockets.sync.server import ServerConnection, serve
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    'server',
+    nargs='?'
+)
+
+parser.add_argument(
+    '--ssh_port',
+    help='ssh_port for use with ssh:// sshp://',
+)
+
+parser.add_argument(
+    '--sshp_host',
+    help='sshp_host for use with sshp://'
+)
+
+parser.add_argument(
+    '--address',
+    nargs='?',
+    default='0.0.0.0',
+    help='Address that the web and websocket servers will use when listening, defaults to 0.0.0.0',
+)
+
+parser.add_argument(
+    '-p', '--port',
+    nargs='?',
+    default=8888,
+    help='Port that the web server will use when listening, defaults to 8888',
+)
+
+# TODO: Make configurable or somehow switch to /ws
+# parser.add_argument(
+#     '--ws-port',
+#     nargs='?',
+#     default=8123,
+#     help='Port that the websocket server will use when listening, defaults to 8123',
+# )
+
+args = parser.parse_args()
+
+connection_kwargs = {}
+
+if args.ssh_port is not None:
+    connection_kwargs['ssh_port'] = args.ssh_port
+if args.sshp_host is not None:
+    connection_kwargs['sshp_host'] = args.sshp_host
+
+if args.server is None or args.server == 'local' or args.server == 'localhost':
+    import MDSplus
+    args.server = 'local://0'
+else:
+    try:
+        from mdsthin import MDSplus
+
+    except:
+        print('Unable to import mdsthin, trying MDSplus')
+
+        import MDSplus
+        
+        if args.ssh_port is not None:
+            raise Exception('ssh_port is not supported without mdsthin')
+        if args.sshp_host is not None:
+            raise Exception('sshp_host is not supported without mdsthin')
 
 def handle_connection(ws: ServerConnection):
     origin = ws.request.headers['Origin']
     print(f"New websocket connection from {origin}")
 
-    # conn = mdsthin.Connection('localhost')
-    # conn = mdsthin.Connection('sshp://heidcamp@mfews-heidcamp-public.psfc.mit.edu', ssh_port=9224, sshp_host='alcdata-archives')
-    conn = mdsthin.Connection('mfedata01')
+    print('MDSplus Connection to', args.server, 'with arguments:', ', '.join([ f'{k}={v}' for k,v in connection_kwargs.items() ]))
+    conn = MDSplus.Connection(args.server, **connection_kwargs)
 
     for message in ws:
         request = json.loads(message)
@@ -37,7 +101,11 @@ def handle_connection(ws: ServerConnection):
                 if expr is None:
                     value = None
                 else:
-                    value = conn.get(expr).data()
+                    try:
+                        value = conn.get(expr).data()
+                    except MDSplus.mdsExceptions.SsSUCCESS:
+                        ws.close()
+                        break
 
                 # Convert to native python type
                 if isinstance(value, numpy.number):
@@ -46,6 +114,15 @@ def handle_connection(ws: ServerConnection):
                     if isinstance(value.dtype, (numpy.dtypes.StrDType, numpy.dtypes.BytesDType)):
                         value = value.tolist()
                     else:
+                        print(value.dtype)
+
+                        if value.dtype in ['int64', 'uint64']:
+                            warnings.warn('int64 and uint64 are not supported, casting to float64')
+                            value = value.astype('float64')
+
+                        # while len(value) > (300240 / 16): #(500 * 10): # TODO: Don't hardcode
+                        #     value = value[ :: 2]
+
                         data_packets.append(value)
                         value = { 'type': str(value.dtype), 'size': len(value) }
                 elif value is not None:
@@ -53,7 +130,7 @@ def handle_connection(ws: ServerConnection):
 
                 response[name] = { 'value': value }
             
-            except mdsthin.MdsException as e:
+            except MDSplus.mdsExceptions.MdsException as e:
                 response[name] = { 'error': str(e) }
         
         try:
@@ -68,9 +145,9 @@ def handle_connection(ws: ServerConnection):
     
     conn.disconnect()
 
-address = '0.0.0.0'
-websocket_port = 8123
-webserver_port = 8888
+address = args.address
+websocket_port = 8123 # args.ws_port
+webserver_port = args.port
 
 class HTTPRequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
