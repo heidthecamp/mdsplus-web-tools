@@ -3,6 +3,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" /> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="./gridstack-all.js"></script>
+    <link href="./gridstack.min.css" rel="stylesheet"></link>
     <style>
         body, html {
             margin: 0;
@@ -22,11 +24,16 @@
             margin-bottom: 5px;
             font-size: 20px;
         }
-        .panel {
+        /* .grid-stack-item {
+        } */
+        .grid-stack-item-content {
             display: flex;
             flex-direction: column;
         }
-        .panel .plot {
+        .panel {
+            background-color: black;
+        }
+        .plot {
             flex: 1;
             height: 100%;
         }
@@ -37,6 +44,8 @@
         #overlay {
             display: none;
             position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.4);
@@ -80,6 +89,7 @@
                             Auto Align
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" data-action="auto-x-y">Auto X & Y</a></li>
                             <li><a class="dropdown-item" data-action="auto-x">Auto X</a></li>
                             <li><a class="dropdown-item" data-action="auto-y">Auto Y</a></li>
                             <li><a class="dropdown-item" data-action="all-x-auto-y">All X Auto Y</a></li>
@@ -143,9 +153,9 @@
         <button type="button" class="btn btn-primary"  data-action="add-panel">Add Panel</button>
         <button type="button" class="btn btn-primary"  id="refresh" data-action="refresh">Refresh</button>
         <label for="parallel">Parallel</label> <input type="checkbox" id="parallel" checked="checked" />
-        <label for="shrink-to-fit">Shrink to Fit</label> <input type="checkbox" id="shrink-to-fit" />
     </div>
-    <div id="panels">
+
+    <div id="panels" class="grid-stack">
     </div>
 
     <div id="overlay"></div>

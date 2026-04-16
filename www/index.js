@@ -14,9 +14,6 @@ window.globalDefaults = new GlobalDefaults();
 
 window.globalConnection = null;
 
-// HACK: Remove
-window.nextPanelY = 4;
-
 function setParallel(parallel) {
     if (parallel) {
         for (var i = 0; i < Panel.panels.length; ++i) {
@@ -37,15 +34,11 @@ window.onload = () => {
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
             const newPanel = new Panel(null, {
-                x: 0,
-                y: window.nextPanelY,
                 width: 6,
                 height: 2,
             });
             Panel.panels.push(newPanel);
-            newPanel.edit()
-
-            window.nextPanelY += 2;
+            newPanel.edit();
         });
 
     document.querySelector('*[data-action="refresh"]')
@@ -61,16 +54,12 @@ window.onload = () => {
         });
 
     document.querySelector('#parallel')
-        .addEventListener('change', (e) => { setParallel(e.target.checked); })
+        .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
-    document.querySelector('#shrink-to-fit')
-        .addEventListener('change', (e) => {
-            Panel.panels.forEach(panel => panel.render());
-        });
+    Panel.initGrid();
 
     let p = new Panel("'SIN()'", { x: 0, y: 0, width: 12, height: 2 });
     p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
-    Panel.panels.push(p);
     p.update();
 
     p = new Panel("$SHOT", { x: 0, y: 2, width: 6, height: 2 }, 62976);
@@ -87,7 +76,6 @@ window.onload = () => {
         null, "red",
         null, "red",
     );
-    Panel.panels.push(p);
     p.update();
 
     p = new Panel("$SHOT", { x: 6, y: 2, width: 6, height: 2 }, 62976);
@@ -98,7 +86,6 @@ window.onload = () => {
         null, "steelblue",
         null, "steelblue",
     );
-    Panel.panels.push(p);
     p.update();
 }
 
@@ -109,7 +96,7 @@ document.addEventListener('drop', async (e) => {
 
     setParallel(false);
 
-    for (var i = 0; i < panels.length; ++i) {
+    for (var i = 0; i < Panel.panels.length; ++i) {
         Panel.panels[i].removeElement();
     }
     document.getElementById('panels').innerHTML = ''; // HACK:

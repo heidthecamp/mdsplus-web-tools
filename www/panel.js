@@ -1,20 +1,55 @@
 import Bounds from "./bounds.js";
 import Connection from "./connection.js";
 import { GlobalDefaultFlags, useDefault } from "./globalDefaults.js";
+import "./gridstack-all.js";
 
 let NextId = 1;
 
-export default class Panel {
+export default class Panel
+{
     static panels = [];
+
+    static getPanelById(id) {
+        id = parseInt(id);
+
+        for (let i = 0; i < this.panels.length; ++i) {
+            if (this.panels[i].id == id) {
+                return this.panels[i];
+            }
+        }
+
+        return null;
+    }
+
+    static grid = null;
+
+    static initGrid() {
+        // Otherwise it will render the HTML as text :(
+        GridStack.renderCB = function(el, w) {
+            el.innerHTML = w.content;
+        };
+        
+        Panel.grid = GridStack.init({
+            itemClass: 'panel',
+            column: 12,
+            handle: '.navbar',
+            animate: false,
+        });
+
+        Panel.grid.on("resizestop", (e) => {
+            let id = e.target.ddElement.el.getAttribute('gs-id');
+            let panel = Panel.getPanelById(id);
+            panel.render();
+        });
+    };
 
     constructor(
         title = null,
-        position = null,
+        position = {},
         global_defaults = 0xFFFF
     ) {
         this.id = NextId++;
         this.title_expr = title;
-        this.position = position;
 
         this.setConnection(window.globalConnection);
 
@@ -38,7 +73,9 @@ export default class Panel {
 
         this.line = [];
 
-        this.addElement();
+        this.addElement(position);
+
+        Panel.panels.push(this);
     }
 
     setConnection(conn) {
@@ -89,15 +126,34 @@ export default class Panel {
         // TODO: x_min / x_max / y_min / y_max / title
     }
 
-    addElement() {
-        let $panel = document.createElement('div');
-        $panel.id = `panel-${this.id}`;
-        $panel.classList.add('panel');
+    addElement(position = {}) {
+        if (!position.hasOwnProperty('x')) {
+            position.x = null;
+        }
 
-        $panel.appendChild(document.getElementById('panel-template').content.cloneNode(true));
-        document.getElementById('panels').appendChild($panel);
+        if (!position.hasOwnProperty('y')) {
+            position.y = null;
+        }
 
-        document.querySelectorAll(`#panel-${this.id} *[data-action="edit"]`)
+        if (!position.hasOwnProperty('width')) {
+            position.width = 6;
+        }
+
+        if (!position.hasOwnProperty('height')) {
+            position.height = 2;
+        }
+
+        this.widget = Panel.grid.addWidget({
+            w: position.width,
+            h: position.height,
+            x: position.x,
+            y: position.y,
+            id: this.id,
+            // This wants a string, not an HTML Element
+            content: document.getElementById('panel-template').innerHTML,
+        });
+
+        this.widget.querySelectorAll('*[data-action="edit"]')
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -105,31 +161,42 @@ export default class Panel {
                 });
             });
 
-        document.querySelectorAll(`#panel-${this.id} *[data-action="remove"]`)
+        this.widget.querySelectorAll('*[data-action="remove"]')
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.removeElement();
                 });
             });
+            
+        this.widget.querySelectorAll('*[data-action="auto-x-y"]')
+            .forEach((node) => {
+                node.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    this.setViewport(this.autoXY(this.viewport));
+                    this.render();
+                })
+            });
 
-        document.querySelectorAll(`#panel-${this.id} *[data-action="auto-x"]`)
+        this.widget.querySelectorAll('*[data-action="auto-x"]')
             .forEach((node) => {
                 node.addEventListener('click', async (e) => {
                     e.preventDefault();
                     this.setViewport(this.autoX(this.viewport));
                     this.render();
                 })
-            })
-        document.querySelectorAll(`#panel-${this.id} *[data-action="auto-y"]`)
+            });
+
+        this.widget.querySelectorAll('*[data-action="auto-y"]')
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.setViewport(this.autoY(this.viewport));
                     this.render();
                 })
-            })
-        document.querySelectorAll(`#panel-${this.id} *[data-action="all-x-auto-y"]`)
+            });
+
+        this.widget.querySelectorAll('*[data-action="all-x-auto-y"]')
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -139,7 +206,18 @@ export default class Panel {
                         Panel.panels[i].render();
                     }
                 })
-            })
+            });
+    }
+
+    removeElement() {
+        // TODO: call Panel.grid.removeWidget, and null out widget
+        // TODO: 
+        // document.getElementById(`panel-${this.id}`).remove();
+
+        Panel.grid.removeWidget(this.widget, true, true)
+
+        let index = Panel.panels.indexOf(this);
+        Panel.panels.splice(index, 1);
     }
 
     async calculateBounds(boundArray) {
@@ -231,8 +309,23 @@ export default class Panel {
         return b;
     }
 
-    removeElement() {
-        document.getElementById(`panel-${this.id}`).remove();
+    autoXY(view) {
+        let b = new Bounds()
+        b.yMin = view.yMin;
+        b.yMax = view.yMax;
+        b.xMin = view.xMin;
+        b.xMax = view.xMax;
+        
+        for (let h = 0; h < this.data.length; h++){
+            for (let i = 0; i < this.data[h].length; ++i) {
+                for (let j = 0; j < this.data[h][i].length; ++j){
+                    let val = this.data[h][i][j];
+                    b.extend(val[0], val[1]);
+                }
+            }
+        }
+        
+        return b;
     }
 
     // TODO: Improve by adding more general event listeners and using data-id
@@ -507,6 +600,8 @@ export default class Panel {
         let shot;
         let default_node;
 
+        this.widget.style.opacity = 0.2;
+
         let boundsArray = [];
         this.data = [];
         for (var i = 0; i < this.tree.length; ++i) {
@@ -526,9 +621,15 @@ export default class Panel {
                 shot = this.shot[i];
             }
 
-            // TODO: Only call if needed?
-            request.push(['open', `TreeOpen("${tree}",${shot})`])
-            
+            if (tree != null) {
+                if (shot != null) {
+                    request.push(['open', `TreeOpen("${tree}",${shot})`])
+                }
+                else {
+                    request.push(['open', `TreeOpen("${tree}",0)`])
+                }
+            }
+
             default_node = 'TreeSetDefault("\\\\TOP")';
             if(this.useDefault('default_node')) {
                 if (globalDefaults.default_node) {
@@ -638,32 +739,21 @@ export default class Panel {
     }
 
     async render() {
-        let panelsRect = document.querySelector('#panels').getBoundingClientRect();
-        let x_grixl = panelsRect.width / 12;
-        let y_grixl = x_grixl;
-        if (document.getElementById('shrink-to-fit').checked) {
-            y_grixl = (window.innerHeight - panelsRect.y + window.scrollY) / 12;
-        }
-        let x_pos = (this.position.x * x_grixl) + panelsRect.x + window.scrollX;
-        let y_pos = (this.position.y * y_grixl) + panelsRect.y + window.scrollY;
-        let width = this.position.width * x_grixl;
-        let height = this.position.height * y_grixl;
-
-        let $panel = document.querySelector(`#panel-${this.id}`);
-        $panel.style.position = "absolute"
-        $panel.style.top = y_pos;
-        $panel.style.left = x_pos;
-        $panel.style.width = width;
-        $panel.style.height = height;
-
-        let $plot = document.querySelector(`#panel-${this.id} .plot`);
+        let $plot = this.widget.querySelector('.plot');
         let plotRect = $plot.getBoundingClientRect();
+
+        let margin = {
+            left: 60,
+            right: 60,
+            top: 10,
+            bottom: 30,
+        };
 
         let svgWidth = plotRect.width;
         let svgHeight = plotRect.height;
 
-        let dataWidth = plotRect.width - 120;
-        let dataHeight = plotRect.height - 40;
+        let dataWidth = plotRect.width - margin.left - margin.right;
+        let dataHeight = plotRect.height - margin.top - margin.bottom;
 
         if (this.tree.length == 0) {
             return;
@@ -671,14 +761,14 @@ export default class Panel {
 
         // TODO: Replace .plot
         // data-role? data-id?
-        const svg = d3.select(`#panel-${this.id} .plot`)
+        const svg = d3.select($plot)
             .html(null)
             .append('svg')
                 .attr('width', svgWidth)
                 .attr('height', svgHeight)
             .append('g')
                 .attr('transform',
-                    `translate(60,10)`
+                    `translate(${margin.left},${margin.top})`
                 );
 
         const xScale = d3.scaleLinear()
@@ -831,7 +921,7 @@ export default class Panel {
 
         brush.on('end', zoomChart);
 
-        document.getElementById(`panel-${this.id}`).style.opacity = 1;
+        this.widget.style.opacity = 1;
 
         let request = [];
         if (this.useDefault("title")){
@@ -841,6 +931,7 @@ export default class Panel {
             request.push([ 'title_expr', this.title_expr ]);
         }
 
+        let $title = this.widget.querySelector('.title');
         if (request.length > 0) {
             await this.connection.getMany(request)
             .then((response) => {
@@ -851,10 +942,10 @@ export default class Panel {
                 this.title = response.title_expr.value;
             });
     
-            document.querySelector(`#panel-${this.id} .title`).innerText = this.title;
+            $title.innerText = this.title;
         }
         else {
-            document.querySelector(`#panel-${this.id} .title`).innerText = '';
+            $title.innerText = '';
         }
 
     }
