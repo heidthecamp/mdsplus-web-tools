@@ -56,6 +56,9 @@ window.onload = () => {
     document.querySelector('#parallel')
         .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
+    document.querySelector('#use-canvas')
+        .addEventListener('change', (e) => { Panel.panels.forEach(panel => panel.render()); });
+
     Panel.initGrid();
 
     let p = new Panel("'SIN()'", { x: 0, y: 0, width: 12, height: 2 });

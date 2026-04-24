@@ -33,6 +33,7 @@ export default class Connection
 
                 this.ws.onclose = (e) => {
                     this.open = false;
+                    this.response = null;
 
                     // TODO: Implement backoff and exponential wait
                     console.warn('Socket is closed and will attempt to reconnect in 1 second', e.reason);

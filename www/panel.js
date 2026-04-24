@@ -65,7 +65,7 @@ export default class Panel
         this.point_type = [];
         this.point_color = [];
 
-        
+        this.useCanvas = false;
         this.title = null;
         this.data = [];
         this.viewStack = [];
@@ -402,6 +402,7 @@ export default class Panel
         document.getElementById('panel-y-max').value = valueOrEmpty(this.y_max);
         document.getElementById('panel-x-min').value = valueOrEmpty(this.x_min);
         document.getElementById('panel-x-max').value = valueOrEmpty(this.x_max);
+        document.getElementById('panel-use-canvas').checked = this.useCanvas;
 
         // Update the form values
         // TODO: Improve
@@ -511,7 +512,8 @@ export default class Panel
                     this.y_max = numberOrNull(valueOrNull(document.getElementById('panel-y-max').value));
                     this.x_min = numberOrNull(valueOrNull(document.getElementById('panel-x-min').value));
                     this.x_max = numberOrNull(valueOrNull(document.getElementById('panel-x-max').value));
-                    
+                    this.useCanvas = document.getElementById('panel-use-canvas').checked;
+
                     for (var i = 0; i < $traceForms.length; ++i) {
                         let id = parseInt($traceForms[i].dataset.id);
                         let t_global_defaults = _global_defaults;
@@ -729,13 +731,13 @@ export default class Panel
                 this.data.push(data);
                 boundsArray.push(bounds);
             });
-        }
         
-        this.viewStack = [];
-        this.viewStack.push(await this.calculateBounds(boundsArray));
-        this.viewport = this.viewStack[0];
+            this.viewStack = [];
+            this.viewStack.push(await this.calculateBounds(boundsArray));
+            this.viewport = this.viewStack[0];
 
-        this.render();
+            this.render();
+        }
     }
 
     async render() {
@@ -744,7 +746,7 @@ export default class Panel
 
         let margin = {
             left: 60,
-            right: 60,
+            right: 10,
             top: 10,
             bottom: 30,
         };
@@ -759,167 +761,268 @@ export default class Panel
             return;
         }
 
-        // TODO: Replace .plot
-        // data-role? data-id?
-        const svg = d3.select($plot)
-            .html(null)
-            .append('svg')
-                .attr('width', svgWidth)
-                .attr('height', svgHeight)
-            .append('g')
-                .attr('transform',
-                    `translate(${margin.left},${margin.top})`
-                );
+        let useCanvas = document.getElementById('use-canvas').checked;
+        if (useCanvas || this.useCanvas) {
+            $plot.innerHTML = '';
 
-        const xScale = d3.scaleLinear()
-            .domain([ this.viewport.xMin, this.viewport.xMax ])
-            .range([ 0, dataWidth ]);
+            let canvas = document.createElement('canvas');
+            // canvas.style.marginLeft = 60;
+            // canvas.style.marginTop = 10;
+            canvas.width = svgWidth;
+            canvas.height = svgHeight;
+            $plot.appendChild(canvas);
 
-        let xAxis = svg.append('g')
-            .attr('transform', `translate(0,${dataHeight})`)
-            .call(d3.axisBottom(xScale));
+            /** @{CanvasRenderingContext2D} */
+            let ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const yScale = d3.scaleLinear()
-            .domain([ this.viewport.yMin, this.viewport.yMax ])
-            .range([ dataHeight, 0 ]);
-        
-        let yAxis = svg.append('g')
-            .call(d3.axisLeft(yScale));
-            
-        let clip = svg.append('defs').append('SVG:clipPath')
-            .attr('id', 'clip')
-            .append('svg:rect')
-            .attr('width', dataWidth)
-            .attr('height', dataHeight)
-            .attr('x', 0)
-            .attr('y', 0);
+            let viewportWidth = (this.viewport.xMax - this.viewport.xMin);
+            let viewportHeight = (this.viewport.yMax - this.viewport.yMin);
 
+            let scaleX = (value) => {
+                return (((value - this.viewport.xMin) / viewportWidth) * dataWidth) + margin.left;
+            };
+            let scaleY = (value) => {
+                return ((1 - ((value - this.viewport.yMin) / viewportHeight)) * dataHeight) + margin.top;
+            };
 
-        this.line = [];
-        // TODO: Handle NaN's breaking lines
-        for (var i = 0; i < this.data.length; ++i) {
-            let lines = [];
-            for (var j = 0; j < this.data[i].length; ++j) {
-                if (this.data[i][j].length == 1) {
-                    svg.selectAll("myPoints")
-                        .data(this.data[i][j])
-                        .enter()
-                        .append('circle')
-                        .attr("stroke-width", .75)
-                        .attr('fill', this.trace_color[i])
-                        .attr("stroke", this.trace_color[i])
-                        .attr("cx", d => xScale(d[0]))
-                        .attr("cy", d => yScale(d[1]))
-                        .attr("r", .75);
+            for (var i = 0; i < this.data.length; ++i) {
+                if (this.trace_color[i] == null) {
+                    ctx.strokeStyle = 'white';
                 }
-                let line = svg.append('g')
-                    .attr('clip-path', 'url(#clip)')
-                    .append('path')
-                        .datum(this.data[i][j])
-                        .attr('class', 'line')
-                        .attr('fill', 'none')
-                        .attr('stroke', this.trace_color[i])
-                        .attr('stroke-width', 1.5)
-                        .attr('d', d3.line()
-                            .x((d) => xScale(d[0]))
-                            .y((d) => yScale(d[1]))
-                        );
-                lines.push(line);
-            }
-            this.line.push(lines);
-        }
+                else {
+                    ctx.strokeStyle = this.trace_color[i];
+                }
 
-        const brush = d3.brush()
-            .extent([[0, 0],[dataWidth, dataHeight]]);
-            // .on('end', zoomChart);
-        
-        var zoom_brush = svg.append('g')
-            .attr('clip-path', 'url(#clip)')
-            .append('g')
-            .attr('class', 'brush')
-            .call(brush);
+                for (var j = 0; j < this.data[i].length; ++j) {
+                    ctx.beginPath();
 
-        let zoomChart = (e) => {
-            // the selected boundries
-            let extent = e.selection;
-
-            
-            if (!extent) {
-                return;
-                // brush.end seems to be called on `call(brush.move, null)`
-                // Setting the domains here will clear zooming.
-            } else {
-                let bounds = new Bounds;
-                bounds.xMin = xScale.invert(extent[0][0]);
-                bounds.xMax = xScale.invert(extent[1][0]);
-                bounds.yMin = yScale.invert(extent[1][1]);
-                bounds.yMax = yScale.invert(extent[0][1]);
-
-                this.viewStack.push(bounds);
-                this.viewport = this.viewStack[this.viewStack.length - 1];
-
-                xScale.domain([this.viewport.xMin, this.viewport.xMax]);
-                yScale.domain([this.viewport.yMin, this.viewport.yMax]);
-                
-                zoom_brush.call(brush.move, null);
-            }
-
-            xAxis.transition().call(d3.axisBottom(xScale));
-            yAxis.transition().call(d3.axisLeft(yScale));
-
-            svg.selectAll('circle')
-                .attr('cx', function(d) { return xScale(d[0])})
-                .attr('cy', function(d) { return yScale(d[1])})
-                .transition();
-
-            for (var i = 0; i < this.line.length; ++i) {
-                for (var j = 0; j < this.line[i].length; ++j) {
-                    if (this.data[i][j].length != 1) {
-                        this.line[i][j]
-                        .transition()
-                        .attr('d', d3.line()
-                            .x(function (d) { return xScale(d[0])} )
-                            .y(function (d) { return yScale(d[1])} )
-                        );
+                    let point = this.data[i][j][0];
+                    ctx.moveTo(scaleX(point[0]), scaleY(point[1]));
+                    
+                    for (var k = 1; k < this.data[i][j].length; ++k) {
+                        point = this.data[i][j][k];
+                        ctx.lineTo(scaleX(point[0]), scaleY(point[1]));
                     }
+
+                    ctx.stroke();
                 }
             }
+
+            ctx.strokeStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(margin.left, margin.top - 1);
+            ctx.lineTo(margin.left, canvas.height - margin.bottom + 1);
+            ctx.lineTo(canvas.width - margin.right - 1, canvas.height - margin.bottom + 1);
+            ctx.stroke();
+
+            ctx.font = 'normal 10px sans-serif';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+
+            // TODO: Determine "good" number of grid lines
+            let gridLinesX = Math.floor(dataWidth / 120);
+            let gridLinesY = Math.floor(dataHeight / 20);
+
+            let gridValue = this.viewport.yMax;
+            let gridValueStep = (viewportHeight / gridLinesY);
+            let gridLineStep = (dataHeight / (gridLinesY - 1));
+            for (let i = 0; i < gridLinesY; ++i) {
+                let text = gridValue.toFixed(3).toString();
+                
+                let size = ctx.measureText(text);
+                if (size.width > (margin.left - 20)) {
+                    text = gridValue.toExponential().toString();
+                    size = ctx.measureText(text);
+                }
+                
+                ctx.fillText(text, margin.left - size.width - 20, margin.top + (i * gridLineStep));
+
+                ctx.moveTo(margin.left - 10, margin.top + (i * gridLineStep));
+                ctx.lineTo(margin.left, margin.top + (i * gridLineStep));
+                ctx.stroke();
+                
+                gridValue -= gridValueStep;
+            }
+
+            ctx.textBaseline = "top";
+
+            gridValue = this.viewport.xMin;
+            gridValueStep = (viewportWidth / gridLinesX);
+            gridLineStep = (dataWidth / (gridLinesX - 1));
+            for (let i = 0; i < gridLinesX; ++i) {
+                let text = gridValue.toFixed(3).toString();
+                let size = ctx.measureText(text);
+                
+                ctx.fillText(text, margin.left - (size.width / 2) + (i * gridLineStep), margin.top + dataHeight + 20);
+                
+                ctx.moveTo(margin.left + (i * gridLineStep), margin.top + dataHeight);
+                ctx.lineTo(margin.left + (i * gridLineStep), margin.top + dataHeight + 10);
+                ctx.stroke();
+                
+                gridValue += gridValueStep;
+            }
         }
+        else {
+            const svg = d3.select($plot)
+                .html(null)
+                .append('svg')
+                    .attr('width', svgWidth)
+                    .attr('height', svgHeight)
+                .append('g')
+                    .attr('transform',
+                        `translate(60,10)`
+                    );
 
-        svg.on("dblclick", async() => {
-            // this.viewStack = [this.viewStack[0]];
-            this.viewStack.pop();
-            this.viewport = this.viewStack[this.viewStack.length - 1];
+            const xScale = d3.scaleLinear()
+                .domain([ this.viewport.xMin, this.viewport.xMax ])
+                .range([ 0, dataWidth ]);
 
-            xScale.domain([ this.viewport.xMin, this.viewport.xMax ])
-            yScale.domain([ this.viewport.yMin, this.viewport.yMax ])
-            xAxis.transition().call(d3.axisBottom(xScale));
-            yAxis.transition().call(d3.axisLeft(yScale));
+            let xAxis = svg.append('g')
+                .attr('transform', `translate(0,${dataHeight})`)
+                .call(d3.axisBottom(xScale));
 
-            let points = svg.selectAll('circle');
+            const yScale = d3.scaleLinear()
+                .domain([ this.viewport.yMin, this.viewport.yMax ])
+                .range([ dataHeight, 0 ]);
+            
+            let yAxis = svg.append('g')
+                .call(d3.axisLeft(yScale));
+                
+            let clip = svg.append('defs').append('SVG:clipPath')
+                .attr('id', 'clip')
+                .append('svg:rect')
+                .attr('width', dataWidth)
+                .attr('height', dataHeight)
+                .attr('x', 0)
+                .attr('y', 0);
 
-            points
-            .attr('cx', function(d) { return xScale(d[0])})
-            .attr('cy', function(d) { return yScale(d[1])})
-            .transition();
+            this.line = [];
+            // TODO: Handle NaN's breaking lines
+            for (var i = 0; i < this.data.length; ++i) {
+                let lines = [];
+                for (var j = 0; j < this.data[i].length; ++j) {
+                    if (this.data[i][j].length == 1) {
+                        svg.selectAll("myPoints")
+                            .data(this.data[i][j])
+                            .enter()
+                            .append('circle')
+                            .attr("stroke-width", .75)
+                            .attr('fill', this.trace_color[i])
+                            .attr("stroke", this.trace_color[i])
+                            .attr("cx", d => xScale(d[0]))
+                            .attr("cy", d => yScale(d[1]))
+                            .attr("r", .75);
+                    }
+                    let line = svg.append('g')
+                        .attr('clip-path', 'url(#clip)')
+                        .append('path')
+                            .datum(this.data[i][j])
+                            .attr('class', 'line')
+                            .attr('fill', 'none')
+                            .attr('stroke', this.trace_color[i])
+                            .attr('stroke-width', 1.5)
+                            .attr('d', d3.line()
+                                .x((d) => xScale(d[0]))
+                                .y((d) => yScale(d[1]))
+                            );
+                    lines.push(line);
+                }
+                this.line.push(lines);
+            }
 
-            for (var i = 0; i < this.line.length; ++i) {
-                for (var j = 0; j < this.line[i].length; ++j) {
-                    if (this.data[i][j].length != 1) {
-                        this.line[i][j]
+            const brush = d3.brush()
+                .extent([[0, 0],[dataWidth, dataHeight]]);
+                // .on('end', zoomChart);
+            
+            var zoom_brush = svg.append('g')
+                .attr('clip-path', 'url(#clip)')
+                .append('g')
+                .attr('class', 'brush')
+                .call(brush);
+
+            let zoomChart = (e) => {
+                // the selected boundries
+                let extent = e.selection;
+                
+                if (!extent) {
+                    return;
+                    // brush.end seems to be called on `call(brush.move, null)`
+                    // Setting the domains here will clear zooming.
+                } else {
+                    let bounds = new Bounds;
+                    bounds.xMin = xScale.invert(extent[0][0]);
+                    bounds.xMax = xScale.invert(extent[1][0]);
+                    bounds.yMin = yScale.invert(extent[1][1]);
+                    bounds.yMax = yScale.invert(extent[0][1]);
+
+                    this.viewStack.push(bounds);
+                    this.viewport = this.viewStack[this.viewStack.length - 1];
+
+                    xScale.domain([this.viewport.xMin, this.viewport.xMax]);
+                    yScale.domain([this.viewport.yMin, this.viewport.yMax]);
+                    
+                    zoom_brush.call(brush.move, null);
+                }
+
+                xAxis.transition().call(d3.axisBottom(xScale));
+                yAxis.transition().call(d3.axisLeft(yScale));
+
+                svg.selectAll('circle')
+                    .attr('cx', function(d) { return xScale(d[0])})
+                    .attr('cy', function(d) { return yScale(d[1])})
+                    .transition();
+
+                for (var i = 0; i < this.line.length; ++i) {
+                    for (var j = 0; j < this.line[i].length; ++j) {
+                        if (this.data[i][j].length != 1) {
+                            this.line[i][j]
                             .transition()
                             .attr('d', d3.line()
                                 .x(function (d) { return xScale(d[0])} )
                                 .y(function (d) { return yScale(d[1])} )
                             );
+                        }
                     }
                 }
             }
 
-            zoom_brush.call(brush.move, null);
-        });
+            svg.on("dblclick", async() => {
+                // this.viewStack = [this.viewStack[0]];
+                this.viewStack.pop();
+                this.viewport = this.viewStack[this.viewStack.length - 1];
 
-        brush.on('end', zoomChart);
+                xScale.domain([ this.viewport.xMin, this.viewport.xMax ])
+                yScale.domain([ this.viewport.yMin, this.viewport.yMax ])
+                xAxis.transition().call(d3.axisBottom(xScale));
+                yAxis.transition().call(d3.axisLeft(yScale));
+
+                let points = svg.selectAll('circle');
+
+                points
+                .attr('cx', function(d) { return xScale(d[0])})
+                .attr('cy', function(d) { return yScale(d[1])})
+                .transition();
+
+                for (var i = 0; i < this.line.length; ++i) {
+                    for (var j = 0; j < this.line[i].length; ++j) {
+                        if (this.data[i][j].length != 1) {
+                            this.line[i][j]
+                                .transition()
+                                .attr('d', d3.line()
+                                    .x(function (d) { return xScale(d[0])} )
+                                    .y(function (d) { return yScale(d[1])} )
+                                );
+                        }
+                    }
+                }
+
+                zoom_brush.call(brush.move, null);
+            });
+
+            brush.on('end', zoomChart);
+        }
 
         this.widget.style.opacity = 1;
 

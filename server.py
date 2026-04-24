@@ -101,11 +101,7 @@ def handle_connection(ws: ServerConnection):
                 if expr is None:
                     value = None
                 else:
-                    try:
-                        value = conn.get(expr).data()
-                    except MDSplus.mdsExceptions.SsSUCCESS:
-                        ws.close()
-                        break
+                    value = conn.get(expr).data()
 
                 # Convert to native python type
                 if isinstance(value, numpy.number):
