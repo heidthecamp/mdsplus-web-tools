@@ -676,7 +676,6 @@ export default class Panel
             request.push([ 'y_expr', y_expr ]);
             request.push([ 'x_expr', x_expr ]);
 
-            await this.connection.ready();
             await this.connection.getMany(request)
             .then((response) => {
 
@@ -730,6 +729,7 @@ export default class Panel
                 
                 this.data.push(data);
                 boundsArray.push(bounds);
+
             });
         
             this.viewStack = [];
@@ -796,6 +796,10 @@ export default class Panel
                 }
 
                 for (var j = 0; j < this.data[i].length; ++j) {
+                    if (this.data[i][j].length == 0) {
+                        continue;
+                    }
+                    
                     ctx.beginPath();
 
                     let point = this.data[i][j][0];

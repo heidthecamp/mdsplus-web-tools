@@ -12,23 +12,24 @@ import GlobalDefaults from "./globalDefaults.js";
 // TODO: Improve
 window.globalDefaults = new GlobalDefaults();
 
-window.globalConnection = null;
+window.globalConnection = new Connection();
 
-function setParallel(parallel) {
-    if (parallel) {
-        for (var i = 0; i < Panel.panels.length; ++i) {
-            Panel.panels[i].setConnection(null);
-        }
-    }
-    else {
-        window.globalConnection = new Connection();
-        for (var i = 0; i < Panel.panels.length; ++i) {
-            Panel.panels[i].setConnection(window.globalConnection);
-        }
-    }
+window.title_expr = '';
+// function setParallel(parallel) {
+//     if (parallel) {
+//         for (var i = 0; i < Panel.panels.length; ++i) {
+//             Panel.panels[i].setConnection(null);
+//         }
+//     }
+//     else {
+//         window.globalConnection = new Connection();
+//         for (var i = 0; i < Panel.panels.length; ++i) {
+//             Panel.panels[i].setConnection(window.globalConnection);
+//         }
+//     }
 
-    document.getElementById('parallel').checked = parallel;
-}
+//     document.getElementById('parallel').checked = parallel;
+// }
 
 window.onload = () => {
     document.querySelector('*[data-action="add-panel"]')
@@ -53,8 +54,8 @@ window.onload = () => {
             globalDefaults.edit();
         });
 
-    document.querySelector('#parallel')
-        .addEventListener('change', (e) => { setParallel(e.target.checked); });
+    // document.querySelector('#parallel')
+    //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
     document.querySelector('#use-canvas')
         .addEventListener('change', (e) => { Panel.panels.forEach(panel => panel.render()); });

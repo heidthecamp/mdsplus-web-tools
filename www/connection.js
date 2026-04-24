@@ -152,13 +152,14 @@ export default class Connection
         }
 
         let promise = new Promise(
-            (resolve, reject) => {
+            async (resolve, reject) => {
                 this.requests.push({
                     'request': request, // TODO: Remove
                     'resolve': resolve,
                     'reject': reject,
                 });
 
+                await this.ready();
                 this.ws.send(JSON.stringify(request));
             }
         );

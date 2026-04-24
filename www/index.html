@@ -148,14 +148,39 @@
 <body>
     <script type="module" src="index.js"></script>
 
-    <div class="container text-center align-left">
-
-        <button type="button" class="btn btn-primary" data-action="global-defaults">Global Defaults</button>
-        <button type="button" class="btn btn-primary"  data-action="add-panel">Add Panel</button>
-        <button type="button" class="btn btn-primary"  id="refresh" data-action="refresh">Refresh</button>
-        <label for="parallel">Parallel</label> <input type="checkbox" id="parallel" checked="checked" />
-        <label for="use-canvas">Canvas</label> <input type="checkbox" id="use-canvas" checked="checked" />
-    </div>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <div class="navbar-brand window-title">Window Title</div>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" data-action="add-panel">Add</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" data-action="refresh">Refresh</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Settings
+                    </a>
+                    <ul class="dropdown-menu">
+                    
+                    
+                        <li><a class="dropdown-item" data-action="global-defaults">Global Defaults</a></li>
+                        <!-- <li>
+                            <span class="dropdown-item">
+                                <label for="parallel">Parallel</label> <input type="checkbox" id="parallel" checked="checked" />
+                            </span>
+                        </li> -->
+                        <li>
+                            <span class="dropdown-item">
+                                <label for="use-canvas">Canvas</label> <input type="checkbox" id="use-canvas" checked="checked" />
+                            </span>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
     <div id="panels" class="grid-stack">
     </div>
