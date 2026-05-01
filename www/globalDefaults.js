@@ -1,6 +1,6 @@
 
 // TODO: Improve
-export var GlobalDefaultFlags = {
+export var GlobalDefaultMask = {
     update: (1 << 0),
     tree: (1 << 7),
     shot: (1 << 8),
@@ -15,12 +15,74 @@ export var GlobalDefaultFlags = {
     event: (1 << 17),
 };
 
-// TODO: Improve?
-export function useDefault(property, global_defaults) {
-    return ((global_defaults & GlobalDefaultFlags[property]) > 0);
+export class GlobalDefaultFlags
+{
+    constructor() {
+        // Legacy defaults
+        // TODO: Determine reasonable set of default defaults
+        this.tree = true;
+        this.update = true;
+        this.tree = true;
+        this.shot = true;
+        this.default_node = true;
+        this.x_expr = false;
+        this.y_expr = false;
+        this.x_min = true;
+        this.x_max = true;
+        this.y_min = true;
+        this.y_max = true;
+        this.title = true;
+        this.event = true;
+
+        // Expanded defaults
+        this.useCanvas = true;
+    }
+
+    static fromMask(mask, useCanvas = true) {
+        let flags = new GlobalDefaultFlags();
+
+        // Legacy defaults
+        flags.tree = ((mask & GlobalDefaultMask.tree) > 0);
+        flags.update = ((mask & GlobalDefaultMask.update) > 0);
+        flags.tree = ((mask & GlobalDefaultMask.tree) > 0);
+        flags.shot = ((mask & GlobalDefaultMask.shot) > 0);
+        flags.default_node = ((mask & GlobalDefaultMask.default_node) > 0);
+        flags.x_expr = ((mask & GlobalDefaultMask.x_expr) > 0);
+        flags.y_expr = ((mask & GlobalDefaultMask.y_expr) > 0);
+        flags.x_min = ((mask & GlobalDefaultMask.x_min) > 0);
+        flags.x_max = ((mask & GlobalDefaultMask.x_max) > 0);
+        flags.y_min = ((mask & GlobalDefaultMask.y_min) > 0);
+        flags.y_max = ((mask & GlobalDefaultMask.y_max) > 0);
+        flags.title = ((mask & GlobalDefaultMask.title) > 0);
+        flags.event = ((mask & GlobalDefaultMask.event) > 0);
+
+        // Expanded defaults
+        flags.useCanvas = useCanvas;
+
+        return flags;
+    }
+
+    toMask() {
+        return (
+            (this.tree ? GlobalDefaultMask.tree : 0)
+            | (this.update ? GlobalDefaultMask.update : 0)
+            | (this.tree ? GlobalDefaultMask.tree : 0)
+            | (this.shot ? GlobalDefaultMask.shot : 0)
+            | (this.default_node ? GlobalDefaultMask.default_node : 0)
+            | (this.x_expr ? GlobalDefaultMask.x_expr : 0)
+            | (this.y_expr ? GlobalDefaultMask.y_expr : 0)
+            | (this.x_min ? GlobalDefaultMask.x_min : 0)
+            | (this.x_max ? GlobalDefaultMask.x_max : 0)
+            | (this.y_min ? GlobalDefaultMask.y_min : 0)
+            | (this.y_max ? GlobalDefaultMask.y_max : 0)
+            | (this.title ? GlobalDefaultMask.title : 0)
+            | (this.event ? GlobalDefaultMask.event : 0)
+        );
+    }
+
 }
 
-export default class GlobalDefaults {
+export class GlobalDefaults {
     constructor() {
         this.tree = null;
         this.shot = null;
@@ -36,6 +98,8 @@ export default class GlobalDefaults {
         this.trace_color = 'steelblue';
         this.point_type = null;
         this.point_color = null;
+
+        this.useCanvas = document.querySelector('#use-canvas').checked;
     }
 
     edit() {

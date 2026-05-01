@@ -5,7 +5,7 @@ import Connection from "./connection.js";
 import * as Import from "./import.js";
 
 import Panel from "./panel.js";
-import GlobalDefaults from "./globalDefaults.js";
+import { GlobalDefaults } from "./globalDefaults.js";
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
 
@@ -58,7 +58,10 @@ window.onload = () => {
     //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
     document.querySelector('#use-canvas')
-        .addEventListener('change', (e) => { Panel.panels.forEach(panel => panel.render()); });
+        .addEventListener('change', (e) => {
+            window.globalDefaults.useCanvas = e.target.checked;
+            Panel.panels.forEach(panel => panel.render());
+        });
 
     Panel.initGrid();
 
@@ -98,7 +101,7 @@ document.addEventListener('drop', async (e) => {
 
     const file = e.dataTransfer.items[0].getAsFile();
 
-    setParallel(false);
+    // setParallel(false);
 
     for (var i = 0; i < Panel.panels.length; ++i) {
         Panel.panels[i].removeElement();

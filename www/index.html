@@ -30,9 +30,9 @@
             display: flex;
             flex-direction: column;
         }
-        .panel {
+        /* .panel {
             background-color: black;
-        }
+        } */
         .plot {
             flex: 1;
             height: 100%;
@@ -71,6 +71,9 @@
         .column {
             flex-direction: column;
         }
+        .nav-link:hover {
+            opacity: 0.5;
+        }
     </style>
 
     <template id="panel-template">
@@ -79,16 +82,20 @@
                 <div class="navbar-brand title"></div>
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" type="button" data-action="edit" role="button">Edit</a>
+                        <a class="nav-link active" type="button" data-action="edit" role="button">
+                            <img src="octicons/pencil.svg" />
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" type="button" data-action="remove" role="button">Remove</a>
+                        <a class="nav-link active" type="button" data-action="remove" role="button">
+                            <img src="octicons/trash.svg" />
+                        </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Auto Align
+                             <img src="octicons/graph.svg" />
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" data-action="auto-x-y">Auto X & Y</a></li>
                             <li><a class="dropdown-item" data-action="auto-x">Auto X</a></li>
                             <li><a class="dropdown-item" data-action="auto-y">Auto Y</a></li>
@@ -104,27 +111,34 @@
 
     <template id="panel-form-template">
         <div id="panel-form">
-            <label for="panel-title_expr">Title:</label> <input id="panel-title_expr" type="text" /> <input id="panel-title_expr-default" type="checkbox" /><br />
-            <label for="panel-y-min">y-min:</label> <input id="panel-y-min" type="number" /> <input id="panel-y-min-default" type="checkbox" /><br />
-            <label for="panel-y-max">y-max:</label> <input id="panel-y-max" type="number" /> <input id="panel-y-max-default" type="checkbox" /><br />
-            <label for="panel-x-min">x-min:</label> <input id="panel-x-min" type="number" /> <input id="panel-x-min-default" type="checkbox" /><br />
-            <label for="panel-x-max">x-max:</label> <input id="panel-x-max" type="number" /> <input id="panel-x-max-default" type="checkbox" /><br />
-            <label for="panel-use-canvas">canvas:</label> <input id="panel-use-canvas" type="checkbox" /><br />
+            <input tabindex="0" id="panel-title_expr-default" type="checkbox" /> <label for="panel-title_expr">Title:</label> <input tabindex="1" id="panel-title_expr" type="text" /> <br />
+            <input tabindex="2" id="panel-y-min-default" type="checkbox" /> <label for="panel-y-min">y-min:</label> <input tabindex="3" id="panel-y-min" type="number" /> <br />
+            <input tabindex="4" id="panel-y-max-default" type="checkbox" /> <label for="panel-y-max">y-max:</label> <input tabindex="5" id="panel-y-max" type="number" /> <br />
+            <input tabindex="6" id="panel-x-min-default" type="checkbox" /> <label for="panel-x-min">x-min:</label> <input tabindex="7" id="panel-x-min" type="number" /> <br />
+            <input tabindex="8" id="panel-x-max-default" type="checkbox" /> <label for="panel-x-max">x-max:</label> <input tabindex="9" id="panel-x-max" type="number" /> <br />
+            <input tabindex="10" id="panel-use-canvas-default" type="checkbox" /> <label for="panel-use-canvas">canvas:</label> <input tabindex="11" id="panel-use-canvas" type="checkbox" /> <br />
             <div id="trace-form-tabs">
                 <button class="add-trace-button" data-action="add-trace">+</button>
             </div>
-            <div id="trace-forms"></div>
+            <div style="float: left; padding-top: 5px;">
+                <input tabindex="12" id="trace-y_expr-default" type="checkbox" style="height: 29px;" /> <br />
+                <input tabindex="14" id="trace-x_expr-default" type="checkbox" style="height: 29px;" /> <br />
+                <input tabindex="16" id="trace-tree-default" type="checkbox" style="height: 29px;" /> <br />
+                <input tabindex="18" id="trace-shot-default" type="checkbox" style="height: 29px;" /> <br />
+                <input tabindex="20" id="trace-default_node-default" type="checkbox" style="height: 29px;" /> <br />
+            </div>
+            <div id="trace-forms" style="float: right;"></div>
             <button data-action="save">Save</button> <button data-action="reset">Reset</button> <button data-action="cancel">Cancel</button>
         </div>
     </template>
 
     <template id="trace-form-template">
-        <label for="trace-y_expr">Y Axis:</label> <input id="trace-y_expr" type="text" /> <input id="trace-y_expr-default" type="checkbox" /><br />
-        <label for="trace-x_expr">X Axis:</label> <input id="trace-x_expr" type="text" /> <input id="trace-x_expr-default" type="checkbox" /><br />
-        <label for="trace-tree">Tree:</label> <input id="trace-tree" type="text" /> <input id="trace-tree-default" type="checkbox" /><br />
-        <label for="trace-shot">Shot:</label> <input id="trace-shot" type="text" /> <input id="trace-shot-default" type="checkbox" /><br />
-        <label for="trace-default_node">Default Node:</label> <input id="trace-default_node" type="text" /> <input id="trace-default_node-default" type="checkbox" /><br />
-        <label for="trace-color">Trace Color:</label> <input id="trace-color" type="text" />
+        <label for="trace-y_expr">Y Axis:</label> <input tabindex="13" id="trace-y_expr" type="text" /> <br />
+        <label for="trace-x_expr">X Axis:</label> <input tabindex="15" id="trace-x_expr" type="text" /> <br />
+        <label for="trace-tree">Tree:</label> <input tabindex="17" id="trace-tree" type="text" /> <br />
+        <label for="trace-shot">Shot:</label> <input tabindex="19" id="trace-shot" type="text" /> <br />
+        <label for="trace-default_node">Default Node:</label> <input tabindex="21" id="trace-default_node" type="text" /> <br />
+        <label for="trace-color">Trace Color:</label> <input tabindex="23" id="trace-color" type="text" />
     </template>
 
     <template id="global-defaults-form-template">
@@ -150,30 +164,30 @@
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
+            <div style="width: 56px;"></div>
             <div class="navbar-brand window-title">Window Title</div>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" data-action="add-panel">Add</a>
+                    <a class="nav-link active" data-action="refresh" role="button">
+                        <img src="./octicons/sync.svg" />
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" data-action="refresh">Refresh</a>
+                    <a class="nav-link active" data-action="add-panel" role="button">
+                         <img src="./octicons/diff-added.svg" />
+                    </a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Settings
+                        <img src="./octicons/gear.svg" />
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                     
                     
                         <li><a class="dropdown-item" data-action="global-defaults">Global Defaults</a></li>
-                        <!-- <li>
-                            <span class="dropdown-item">
-                                <label for="parallel">Parallel</label> <input type="checkbox" id="parallel" checked="checked" />
-                            </span>
-                        </li> -->
                         <li>
                             <span class="dropdown-item">
-                                <label for="use-canvas">Canvas</label> <input type="checkbox" id="use-canvas" checked="checked" />
+                                <label for="use-canvas">Canvas</label> <input type="checkbox" id="use-canvas" />
                             </span>
                         </li>
                     </ul>

@@ -1,6 +1,6 @@
 import Bounds from "./bounds.js";
 import Connection from "./connection.js";
-import { GlobalDefaultFlags, useDefault } from "./globalDefaults.js";
+import { GlobalDefaults, GlobalDefaultFlags } from "./globalDefaults.js";
 import "./gridstack-all.js";
 
 let NextId = 1;
@@ -46,14 +46,14 @@ export default class Panel
     constructor(
         title = null,
         position = {},
-        global_defaults = 0xFFFF
+        global_defaults_mask = 0xFFFF
     ) {
         this.id = NextId++;
         this.title_expr = title;
 
         this.setConnection(window.globalConnection);
 
-        this.global_defaults = global_defaults;
+        this.global_defaults_flags = GlobalDefaultFlags.fromMask(global_defaults_mask);
 
         this.tree = [];
         this.shot = [];
@@ -109,19 +109,19 @@ export default class Panel
         this.point_color.push(point_color);
 
         if (tree !== null) {
-            this.global_defaults &= ~GlobalDefaultFlags.tree;
+            this.global_defaults_flags.tree = false;
         }
         if (shot !== null) {
-            this.global_defaults &= ~GlobalDefaultFlags.shot;
+            this.global_defaults_flags.shot = false;
         }
         if (default_node !== null) {
-            this.global_defaults &= ~GlobalDefaultFlags.default_node;
+            this.global_defaults_flags.default_node = false;
         }
         if (y_expr !== null) {
-            this.global_defaults &= ~GlobalDefaultFlags.y_expr;
+            this.global_defaults_flags.y_expr = false;
         }
         if (x_expr !== null) {
-            this.global_defaults &= ~GlobalDefaultFlags.x_expr;
+            this.global_defaults_flags.x_expr = false;
         }
         // TODO: x_min / x_max / y_min / y_max / title
     }
@@ -226,37 +226,50 @@ export default class Panel
             bounds.join(boundArray[i]);
         }
 
-        if (this.useDefault("x_min")){
-            if (!! globalDefaults.x_min) {
-                bounds.xMin = globalDefaults.x_min;
-            }
+        let request = [];
+
+        let xMin = this.getValueOrDefault('x_min');
+        if (!!xMin) {
+            request.push([ 'x_min', xMin ]);
         }
-        else if (!!this.x_min) {
-            bounds.xMin = this.x_min;
+        
+        let xMax = this.getValueOrDefault('x_max');
+        if (!!xMax) {
+            request.push([ 'x_max', xMax ]);
         }
-        if (this.useDefault("x_max")){
-            if (!! globalDefaults.x_max) {
-                bounds.xMax = globalDefaults.x_max;
-            }
+
+        let yMin = this.getValueOrDefault('y_min');
+        if (!!yMin) {
+            request.push([ 'y_min', yMin ]);
         }
-        else if (!!this.x_max) {
-            bounds.xMax = this.x_max;
+        
+        let yMax = this.getValueOrDefault('y_max');
+        if (!!yMax) {
+            request.push([ 'y_max', yMax ]);
         }
-        if (this.useDefault("y_min")){
-            if (!!globalDefaults.y_min) {
-                bounds.yMin = globalDefaults.y_min;
-            }
-        }
-        else if (!!this.y_min) {
-            bounds.yMin = this.y_min;
-        }
-        if (this.useDefault("y_max")){
-            if (!!globalDefaults.y_max) {
-                bounds.yMax = globalDefaults.y_max;
-            }
-        }
-        else if (!!this.y_max) {
-            bounds.yMax = this.y_max;
+        
+        // TODO: Move to Panel.update()
+        if (request.length > 0) {
+            await this.connection.getMany(request)
+            .then((response) => {
+                // TODO: error handling
+                if (response.hasOwnProperty('x_min')) {
+                    bounds.xMin = response.x_min.value;
+                }
+
+                if (response.hasOwnProperty('x_max')) {
+                    bounds.xMax = response.x_max.value;
+                }
+
+                if (response.hasOwnProperty('y_min')) {
+                    bounds.yMin = response.y_min.value;
+                }
+
+                if (response.hasOwnProperty('y_max')) {
+                    bounds.yMax = response.y_max.value;
+                }
+
+            });
         }
         
         return bounds;
@@ -384,11 +397,11 @@ export default class Panel
             });
 
 
-        this.setupGlobalDefaults('y_expr', `trace-y_expr-${id}`, `trace-y_expr-default-${id}`);
-        this.setupGlobalDefaults('x_expr', `trace-x_expr-${id}`, `trace-x_expr-default-${id}`);
-        this.setupGlobalDefaults('tree', `trace-tree-${id}`, `trace-tree-default-${id}`);
-        this.setupGlobalDefaults('shot', `trace-shot-${id}`, `trace-shot-default-${id}`);
-        this.setupGlobalDefaults('default_node', `trace-default_node-${id}`, `trace-default_node-default-${id}`);
+        this.setupGlobalDefaults('y_expr', `trace-y_expr-${id}`, `trace-y_expr-default`);
+        this.setupGlobalDefaults('x_expr', `trace-x_expr-${id}`, `trace-x_expr-default`);
+        this.setupGlobalDefaults('tree', `trace-tree-${id}`, `trace-tree-default`);
+        this.setupGlobalDefaults('shot', `trace-shot-${id}`, `trace-shot-default`);
+        this.setupGlobalDefaults('default_node', `trace-default_node-${id}`, `trace-default_node-default`);
 
         let valueOrEmpty = (value) => {
             if (value === null || typeof value == "undefined"){
@@ -455,6 +468,7 @@ export default class Panel
         this.setupGlobalDefaults('y_max', 'panel-y-max', 'panel-y-max-default');
         this.setupGlobalDefaults('x_min', 'panel-x-min', 'panel-x-min-default');
         this.setupGlobalDefaults('x_max', 'panel-x-max', 'panel-x-max-default');
+        this.setupGlobalDefaults('useCanvas', 'panel-use-canvas', 'panel-use-canvas-default');
 
         // TODO: Improve
         document.querySelectorAll(`#panel-form *[data-action="add-trace"]`)
@@ -480,63 +494,46 @@ export default class Panel
                         }
                         return value
                     }
-                    let numberOrNull = (value) => {
-                        if (value === null){
-                            return null;
-                        }
-                        return Number(value);
-                    }
 
                     let $traceForms = document.getElementsByClassName('trace-form');
 
-                    let _global_defaults = 0;
-                    if (document.getElementById('panel-title_expr-default').checked) {
-                        _global_defaults |= GlobalDefaultFlags['title'];
-                    }
-                    if (document.getElementById('panel-y-min-default').checked){
-                        _global_defaults |= GlobalDefaultFlags['y_min'];
-                    }
-                    if (document.getElementById('panel-y-max-default').checked){
-                        _global_defaults |= GlobalDefaultFlags['y_max'];
-                    }
-                    if (document.getElementById('panel-x-min-default').checked){
-                        _global_defaults |= GlobalDefaultFlags['x_min'];
-                    }
-                    if (document.getElementById('panel-x-max-default').checked){
-                        _global_defaults |= GlobalDefaultFlags['x_max'];
-                    }
-                    this.global_defaults = _global_defaults;
+                    this.global_defaults_flags['title'] = document.getElementById('panel-title_expr-default').checked;
+                    this.global_defaults_flags['y_min'] = document.getElementById('panel-y-min-default').checked;
+                    this.global_defaults_flags['y_max'] = document.getElementById('panel-y-max-default').checked;
+                    this.global_defaults_flags['x_min'] = document.getElementById('panel-x-min-default').checked;
+                    this.global_defaults_flags['x_max'] = document.getElementById('panel-x-max-default').checked;
+                    this.global_defaults_flags['useCanvas'] = document.getElementById('panel-use-canvas-default').checked;
 
                     this.title_expr = valueOrNull(document.getElementById('panel-title_expr').value);
-                    this.y_min = numberOrNull(valueOrNull(document.getElementById('panel-y-min').value));
-                    this.y_max = numberOrNull(valueOrNull(document.getElementById('panel-y-max').value));
-                    this.x_min = numberOrNull(valueOrNull(document.getElementById('panel-x-min').value));
-                    this.x_max = numberOrNull(valueOrNull(document.getElementById('panel-x-max').value));
+                    this.y_min = valueOrNull(document.getElementById('panel-y-min').value);
+                    this.y_max = valueOrNull(document.getElementById('panel-y-max').value);
+                    this.x_min = valueOrNull(document.getElementById('panel-x-min').value);
+                    this.x_max = valueOrNull(document.getElementById('panel-x-max').value);
                     this.useCanvas = document.getElementById('panel-use-canvas').checked;
 
                     for (var i = 0; i < $traceForms.length; ++i) {
                         let id = parseInt($traceForms[i].dataset.id);
-                        let t_global_defaults = _global_defaults;
+
+                        // TODO: Sync checkbox states across trace forms (or remove from the trace form altogether) and simplify this like above
+                        // TODO: This will set it to true if *any* of them are true, definitely not ideal
                         if (document.getElementById(`trace-tree-default-${id}`).checked) {
-                            t_global_defaults |= GlobalDefaultFlags['tree'];
+                            this.global_defaults_flags['tree'] = true;
                         }
                         if (document.getElementById(`trace-shot-default-${id}`).checked) {
-                            t_global_defaults |= GlobalDefaultFlags['shot'];
+                            this.global_defaults_flags['shot'] = true;
                         }
                         if (document.getElementById(`trace-default_node-default-${id}`).checked) {
-                            t_global_defaults |= GlobalDefaultFlags['default_node'];
+                            this.global_defaults_flags['default_node'] = true;
                         }
                         if (document.getElementById('panel-title_expr-default').checked) {
-                            t_global_defaults |= GlobalDefaultFlags['title_expr'];
+                            this.global_defaults_flags['title_expr'] = true;
                         }
                         if (document.getElementById(`trace-y_expr-default-${id}`).checked) {
-                            t_global_defaults |= GlobalDefaultFlags['y_expr'];
+                            this.global_defaults_flags['y_expr'] = true;
                         }
                         if (document.getElementById(`trace-x_expr-default-${id}`).checked) {
-                            t_global_defaults |= GlobalDefaultFlags['x_expr'];
+                            this.global_defaults_flags['x_expr'] = true;
                         }
-
-                        this.global_defaults = t_global_defaults;
                         
                         this.tree[i] = valueOrNull(document.getElementById(`trace-tree-${id}`).value);
                         this.shot[i] = valueOrNull(document.getElementById(`trace-shot-${id}`).value);
@@ -609,20 +606,10 @@ export default class Panel
         for (var i = 0; i < this.tree.length; ++i) {
             let request = [];
 
-            if (this.useDefault('tree')) {
-                tree = globalDefaults.tree;
-            }
-            else if (this.tree[i] !== null) {
-                tree = this.tree[i];
-            }
+            tree = this.getValueOrDefault('tree', i);
+            shot = this.getValueOrDefault('shot', i);
 
-            if (this.useDefault('shot')) {
-                shot = globalDefaults.shot;
-            }
-            else if (this.shot[i] !== null) {
-                shot = this.shot[i];
-            }
-
+            // TODO: Figure out why !== doesn't work
             if (tree != null) {
                 if (shot != null) {
                     request.push(['open', `TreeOpen("${tree}",${shot})`])
@@ -632,40 +619,24 @@ export default class Panel
                 }
             }
 
-            default_node = 'TreeSetDefault("\\\\TOP")';
-            if(this.useDefault('default_node')) {
-                if (globalDefaults.default_node) {
-                    default_node = `TreeSetDefault("${globalDefaults.default_node.replace('\\', '\\\\')}")`;
-                }
+            default_node = this.getValueOrDefault('default_node', i);
+            if (default_node == null) {
+                default_node = 'TreeSetDefault("\\\\TOP")';
             }
-            else if (this.default_node[i] !== null) {
-                default_node = `TreeSetDefault("${this.default_node[i].replace('\\', '\\\\')}")`;
+            else {
+                default_node = `TreeSetDefault("${default_node.replace('\\', '\\\\')}")`;
             }
 
             // TODO: Only call if needed?
             request.push([ 'default_node', default_node ]);
 
-            let y_expr = null;
-            let x_expr = null;
-
-            if(this.useDefault('y_expr')) {
-                y_expr = globalDefaults.y_expr;
-            }
-            else if (this.y_expr[i] !== null) {
-                y_expr = this.y_expr[i];
-            }
+            let y_expr = this.getValueOrDefault('y_expr', i);
+            let x_expr = this.getValueOrDefault('x_expr', i);
 
             if (request.y_expr == null) {
                 // Freak out
             }
 
-            if(this.useDefault('x_expr')) {
-                x_expr = globalDefaults.x_expr;
-            }
-            else if (this.x_expr[i] !== null) {
-                x_expr = this.x_expr[i];
-            }
-            
             // TODO: Improve
             // Fallback default
             if (x_expr == null || x_expr == '') {
@@ -761,8 +732,7 @@ export default class Panel
             return;
         }
 
-        let useCanvas = document.getElementById('use-canvas').checked;
-        if (useCanvas || this.useCanvas) {
+        if (this.getValueOrDefault('useCanvas')) {
             $plot.innerHTML = '';
 
             let canvas = document.createElement('canvas');
@@ -774,7 +744,8 @@ export default class Panel
 
             /** @{CanvasRenderingContext2D} */
             let ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'black';
+            // ctx.fillStyle = 'black';
+            ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             let viewportWidth = (this.viewport.xMax - this.viewport.xMin);
@@ -789,7 +760,8 @@ export default class Panel
 
             for (var i = 0; i < this.data.length; ++i) {
                 if (this.trace_color[i] == null) {
-                    ctx.strokeStyle = 'white';
+                    // ctx.strokeStyle = 'white';
+                    ctx.strokeStyle = 'black';
                 }
                 else {
                     ctx.strokeStyle = this.trace_color[i];
@@ -814,7 +786,8 @@ export default class Panel
                 }
             }
 
-            ctx.strokeStyle = 'white';
+            // ctx.strokeStyle = 'white';
+            ctx.strokeStyle = 'black';
             ctx.beginPath();
             ctx.moveTo(margin.left, margin.top - 1);
             ctx.lineTo(margin.left, canvas.height - margin.bottom + 1);
@@ -823,7 +796,8 @@ export default class Panel
 
             ctx.font = 'normal 10px sans-serif';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'white';
+            // ctx.fillStyle = 'white';
+            ctx.fillStyle = 'black';
 
             // TODO: Determine "good" number of grid lines
             let gridLinesX = Math.floor(dataWidth / 120);
@@ -1031,7 +1005,7 @@ export default class Panel
         this.widget.style.opacity = 1;
 
         let request = [];
-        if (this.useDefault("title")){
+        if (this.global_defaults_flags['title']){
             request.push([ 'title_expr', globalDefaults.title_expr ]);
         }
         else if (this.title_expr) {
@@ -1074,7 +1048,7 @@ export default class Panel
 
 
         try {
-            $checkbox.checked = this.useDefault(property);
+            $checkbox.checked = this.global_defaults_flags[property];
         } catch(e) {
             console.error(e);
             $checkbox.checked = true;
@@ -1087,12 +1061,16 @@ export default class Panel
         }
     }
 
-    useDefault(property) {
-        // HACK: Need to sort out Panels and Global Defaults
-        try {
-            return useDefault(property, this.global_defaults);
-        } catch(e) {
-            console.error("Could not resolve", e);
+    getValueOrDefault(property, trace = null) {
+        if (this.global_defaults_flags[property] && !! window.globalDefaults[property]) {
+            return window.globalDefaults[property];
+        }
+
+        if (trace !== null) {
+            return this[property][trace];
+        }
+        else {
+            return this[property];
         }
     }
 };
