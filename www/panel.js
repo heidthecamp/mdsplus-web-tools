@@ -345,55 +345,53 @@ export default class Panel
 
     // TODO: Improve
     addTraceForm(id) {
-        let traceFormTemplate = document.getElementById('trace-form-template');
+        let traceFormTemplate = document.querySelector('#trace-form-template');
 
         // Create a form for the trace
-        let $traceForm = document.createElement('div');
+        let $traceForm = document.createElement('li');
         $traceForm.id = `trace-form-${id}`;
         $traceForm.dataset.id = id;
         $traceForm.classList.add('trace-form');
         $traceForm.appendChild(traceFormTemplate.content.cloneNode(true));
 
-        // You can't call .forEach() on the result of .getElements***()
-        
         // Append the trace ID to the input IDs
-        let $inputs = [...$traceForm.getElementsByTagName('input')];
-        $inputs.forEach(node => {
+        $traceForm.querySelectorAll('input').forEach(node => {
             node.id += `-${id}`;
         });
         // Update the labels to match the new input IDs
-        let $labels = [...$traceForm.getElementsByTagName('label')];
-        $labels.forEach(node => {
+        $traceForm.querySelectorAll('label').forEach(node => {
             node.htmlFor += `-${id}`;
         });
 
-        let $traceForms = document.getElementById('trace-forms');
-        $traceForms.appendChild($traceForm);
+        document.querySelector('#trace-forms').appendChild($traceForm);
 
         // Add a tab for the trace
-        let $traceTab = document.createElement('button');
+        let $traceTab = document.createElement('li');
         $traceTab.id = `trace-tab-${id}`;
         $traceTab.classList.add('trace-tab');
-        $traceTab.innerText = `Trace #${id}`;
+        $traceTab.classList.add('nav-item');
+        
+        let $traceLink = document.createElement('a');
+        $traceLink.innerText = `Trace #${id}`;
+        $traceLink.classList.add('nav-link', 'active');
+        $traceLink.role = 'button';
 
-        let $traceFormTabs = document.getElementById('trace-form-tabs');
-        $traceFormTabs.appendChild($traceTab);
+        $traceTab.appendChild($traceLink);
 
-        document.getElementById(`trace-tab-${id}`)
+        document.querySelector('#trace-form-tabs').appendChild($traceTab);
+
+        document.querySelector(`#trace-tab-${id}`)
             .addEventListener('click', (e) => {
 
-                var $traceTabs = [...document.getElementsByClassName('trace-tab')];
-                $traceTabs.forEach(node => {
-                    node.disabled = false;
+                document.querySelectorAll('.trace-tab a').forEach(node => {
+                    node.classList.remove('active');
                 });
+                $traceLink.classList.add('active');
 
-                var $traceForms = [...document.getElementsByClassName('trace-form')];
-                $traceForms.forEach(node => {
+                document.querySelectorAll('.trace-form').forEach(node => {
                     node.classList.remove('shown');
                 });
-
-                document.getElementById(`trace-tab-${id}`).disabled = true;
-                document.getElementById(`trace-form-${id}`).classList.add('shown');
+                $traceForm.classList.add('shown');
             });
 
 
@@ -410,25 +408,25 @@ export default class Panel
             return value
         }
 
-        document.getElementById('panel-title_expr').value = valueOrEmpty(this.title_expr);
-        document.getElementById('panel-y-min').value = valueOrEmpty(this.y_min);
-        document.getElementById('panel-y-max').value = valueOrEmpty(this.y_max);
-        document.getElementById('panel-x-min').value = valueOrEmpty(this.x_min);
-        document.getElementById('panel-x-max').value = valueOrEmpty(this.x_max);
-        document.getElementById('panel-use-canvas').checked = this.useCanvas;
+        document.querySelector('#panel-title_expr').value = valueOrEmpty(this.title_expr);
+        document.querySelector('#panel-y-min').value = valueOrEmpty(this.y_min);
+        document.querySelector('#panel-y-max').value = valueOrEmpty(this.y_max);
+        document.querySelector('#panel-x-min').value = valueOrEmpty(this.x_min);
+        document.querySelector('#panel-x-max').value = valueOrEmpty(this.x_max);
+        document.querySelector('#panel-use-canvas').checked = this.useCanvas;
 
         // Update the form values
         // TODO: Improve
-        document.getElementById(`trace-y_expr-${id}`).value = valueOrEmpty(this.y_expr[id - 1]);
-        document.getElementById(`trace-x_expr-${id}`).value = valueOrEmpty(this.x_expr[id - 1]);
-        document.getElementById(`trace-tree-${id}`).value = valueOrEmpty(this.tree[id - 1]);
-        document.getElementById(`trace-shot-${id}`).value = valueOrEmpty(this.shot[id - 1]);
-        document.getElementById(`trace-default_node-${id}`).value = valueOrEmpty(this.default_node[id - 1]);
+        document.querySelector(`#trace-y_expr-${id}`).value = valueOrEmpty(this.y_expr[id - 1]);
+        document.querySelector(`#trace-x_expr-${id}`).value = valueOrEmpty(this.x_expr[id - 1]);
+        document.querySelector(`#trace-tree-${id}`).value = valueOrEmpty(this.tree[id - 1]);
+        document.querySelector(`#trace-shot-${id}`).value = valueOrEmpty(this.shot[id - 1]);
+        document.querySelector(`#trace-default_node-${id}`).value = valueOrEmpty(this.default_node[id - 1]);
         let color = valueOrEmpty(this.trace_color[id - 1]);
         if (color == ""){
             color = "steelblue"
         }
-        document.getElementById(`trace-color-${id}`).value = color;
+        document.querySelector(`#trace-color-${id}`).value = color;
         
     }
 
@@ -514,24 +512,22 @@ export default class Panel
                     for (var i = 0; i < $traceForms.length; ++i) {
                         let id = parseInt($traceForms[i].dataset.id);
 
-                        // TODO: Sync checkbox states across trace forms (or remove from the trace form altogether) and simplify this like above
-                        // TODO: This will set it to true if *any* of them are true, definitely not ideal
-                        if (document.getElementById(`trace-tree-default-${id}`).checked) {
+                        if (document.getElementById(`trace-tree-default`).checked) {
                             this.global_defaults_flags['tree'] = true;
                         }
-                        if (document.getElementById(`trace-shot-default-${id}`).checked) {
+                        if (document.getElementById(`trace-shot-default`).checked) {
                             this.global_defaults_flags['shot'] = true;
                         }
-                        if (document.getElementById(`trace-default_node-default-${id}`).checked) {
+                        if (document.getElementById(`trace-default_node-default`).checked) {
                             this.global_defaults_flags['default_node'] = true;
                         }
                         if (document.getElementById('panel-title_expr-default').checked) {
                             this.global_defaults_flags['title_expr'] = true;
                         }
-                        if (document.getElementById(`trace-y_expr-default-${id}`).checked) {
+                        if (document.getElementById(`trace-y_expr-default`).checked) {
                             this.global_defaults_flags['y_expr'] = true;
                         }
-                        if (document.getElementById(`trace-x_expr-default-${id}`).checked) {
+                        if (document.getElementById(`trace-x_expr-default`).checked) {
                             this.global_defaults_flags['x_expr'] = true;
                         }
                         
@@ -640,12 +636,13 @@ export default class Panel
             // TODO: Improve
             // Fallback default
             if (x_expr == null || x_expr == '') {
-                y_expr = `_wssig=${y_expr}`;
+                y_expr = `_wssig=(${y_expr})`;
                 x_expr = 'dim_of(_wssig)';
             }
 
             request.push([ 'y_expr', y_expr ]);
             request.push([ 'x_expr', x_expr ]);
+            // TODO: Include xmin/ymin/xmax/ymax in this request rather than in calculate bounds? maybe?
 
             await this.connection.getMany(request)
             .then((response) => {
@@ -713,6 +710,8 @@ export default class Panel
 
     async render() {
         let $plot = this.widget.querySelector('.plot');
+        $plot.innerHTML = '';
+        
         let plotRect = $plot.getBoundingClientRect();
 
         let margin = {
@@ -869,7 +868,7 @@ export default class Panel
                 .call(d3.axisLeft(yScale));
                 
             let clip = svg.append('defs').append('SVG:clipPath')
-                .attr('id', 'clip')
+                .attr('id', `clip-${this.id}`) // Turns out that ID's within SVGs can be referenced by other SVGs
                 .append('svg:rect')
                 .attr('width', dataWidth)
                 .attr('height', dataHeight)
@@ -915,7 +914,7 @@ export default class Panel
                 // .on('end', zoomChart);
             
             var zoom_brush = svg.append('g')
-                .attr('clip-path', 'url(#clip)')
+                .attr('clip-path', `url(#clip-${this.id})`)
                 .append('g')
                 .attr('class', 'brush')
                 .call(brush);

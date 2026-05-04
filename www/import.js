@@ -148,16 +148,16 @@ export async function importFile(file) {
                         data['global']['shot'] = value;
                         break;
                     case 'global_1_1.xmin':
-                        data['global']['xmin'] = parseFloat(value);
+                        data['global']['xmin'] = value;
                         break;
                     case 'global_1_1.xmax':
-                        data['global']['xmax'] = parseFloat(value);
+                        data['global']['xmax'] = value;
                         break;
                     case 'global_1_1.ymin':
-                        data['global']['ymin'] = parseFloat(value);
+                        data['global']['ymin'] = value;
                         break;
                     case 'global_1_1.ymax':
-                        data['global']['ymax'] = parseFloat(value);
+                        data['global']['ymax'] = value;
                         break;
                     case 'global_1_1.global_defaults':
                         data['global']['global_defaults'] = parseInt(value);
