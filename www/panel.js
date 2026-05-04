@@ -788,57 +788,101 @@ export default class Panel
             // ctx.strokeStyle = 'white';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
-            ctx.moveTo(margin.left, margin.top - 1);
-            ctx.lineTo(margin.left, canvas.height - margin.bottom + 1);
+            ctx.moveTo(margin.left - 10, margin.top - 1);
+            ctx.lineTo(margin.left, margin.top - 1);
+            ctx.lineTo(margin.left, canvas.height - margin.bottom + 1 + 10);
+            ctx.moveTo(margin.left - 10, canvas.height - margin.bottom + 1);
             ctx.lineTo(canvas.width - margin.right - 1, canvas.height - margin.bottom + 1);
+            ctx.lineTo(canvas.width - margin.right - 1, canvas.height - margin.bottom + 1 + 10);
             ctx.stroke();
 
-            ctx.font = 'normal 10px sans-serif';
+            ctx.font = 'normal 9px sans-serif';
             ctx.textBaseline = 'middle';
             // ctx.fillStyle = 'white';
             ctx.fillStyle = 'black';
 
-            // TODO: Determine "good" number of grid lines
-            let gridLinesX = Math.floor(dataWidth / 120);
-            let gridLinesY = Math.floor(dataHeight / 20);
+            // TODO: Prefer more natural steps such as 0.5 or 10's or 0.1
 
-            let gridValue = this.viewport.yMax;
-            let gridValueStep = (viewportHeight / gridLinesY);
-            let gridLineStep = (dataHeight / (gridLinesY - 1));
-            for (let i = 0; i < gridLinesY; ++i) {
-                let text = gridValue.toFixed(3).toString();
+            let range = (this.viewport.yMax - this.viewport.yMin);
+            let midpoint = parseFloat((range / 2).toPrecision(2));
+            if (this.viewport.yMax > 0 && this.viewport.yMin < 0) {
+                midpoint = 0;
+            }
+            
+            // TODO: Improve
+            let gridLines = Math.floor(dataHeight / 20);
+            let step = parseFloat((range / (gridLines - 1)).toPrecision(2));
+            let linesAbove = Math.floor((gridLines - 1) * ((this.viewport.yMax - midpoint) / range));
+            let linesBelow = Math.floor((gridLines - 1) * ((midpoint - this.viewport.yMin) / range));
+
+            let markers = [midpoint];
+            for (let i = 1; i <= linesAbove; ++i) {
+                markers.push(midpoint + (i * step));
+            }
+            for (let i = 1; i <= linesBelow; ++i) {
+                markers.push(midpoint - (i * step));
+            }
+            markers.sort((a, b) => a - b); // By default this sorts them as text
+
+            for (let i = 0; i < markers.length; ++i) {
+                let value = parseFloat(markers[i].toPrecision(2));
+
+                let text = value.toString();
+                // let text = value.toFixed(3).toString();
                 
                 let size = ctx.measureText(text);
-                if (size.width > (margin.left - 20)) {
-                    text = gridValue.toExponential().toString();
-                    size = ctx.measureText(text);
-                }
+                // if (size.width > (margin.left - 20)) {
+                //     text = value.toExponential().toString();
+                //     size = ctx.measureText(text);
+                // }
                 
-                ctx.fillText(text, margin.left - size.width - 20, margin.top + (i * gridLineStep));
+                let offset = (1.0 - ((value - this.viewport.yMin) / range)) * dataHeight;
+                ctx.fillText(text, margin.left - size.width - 20, margin.top + offset);
 
-                ctx.moveTo(margin.left - 10, margin.top + (i * gridLineStep));
-                ctx.lineTo(margin.left, margin.top + (i * gridLineStep));
+                ctx.moveTo(margin.left - 10, margin.top + offset);
+                ctx.lineTo(margin.left, margin.top + offset);
                 ctx.stroke();
-                
-                gridValue -= gridValueStep;
             }
 
-            ctx.textBaseline = "top";
 
-            gridValue = this.viewport.xMin;
-            gridValueStep = (viewportWidth / gridLinesX);
-            gridLineStep = (dataWidth / (gridLinesX - 1));
-            for (let i = 0; i < gridLinesX; ++i) {
-                let text = gridValue.toFixed(3).toString();
+            range = (this.viewport.xMax - this.viewport.xMin);
+            midpoint = parseFloat((range / 2).toPrecision(2));
+            if (this.viewport.xMax > 0 && this.viewport.xMin < 0) {
+                midpoint = 0;
+            }
+            
+            gridLines = Math.floor(dataWidth / 120);
+            step = parseFloat((range / (gridLines - 1)).toPrecision(2));
+            linesAbove = Math.floor((gridLines - 1) * ((this.viewport.xMax - midpoint) / range));
+            linesBelow = Math.floor((gridLines - 1) * ((midpoint - this.viewport.xMin) / range));
+
+            markers = [midpoint];
+            for (let i = 1; i <= linesAbove; ++i) {
+                markers.push(midpoint + (i * step));
+            }
+            for (let i = 1; i <= linesBelow; ++i) {
+                markers.push(midpoint - (i * step));
+            }
+            markers.sort((a, b) => a - b); // By default this sorts them as text
+
+            for (let i = 0; i < markers.length; ++i) {
+                let value = parseFloat(markers[i].toPrecision(2));
+
+                let text = value.toString();
+                // let text = value.toFixed(3).toString();
+                
                 let size = ctx.measureText(text);
+                // if (size.width > (margin.left - 20)) {
+                //     text = value.toExponential().toString();
+                //     size = ctx.measureText(text);
+                // }
                 
-                ctx.fillText(text, margin.left - (size.width / 2) + (i * gridLineStep), margin.top + dataHeight + 20);
-                
-                ctx.moveTo(margin.left + (i * gridLineStep), margin.top + dataHeight);
-                ctx.lineTo(margin.left + (i * gridLineStep), margin.top + dataHeight + 10);
+                let offset = ((value - this.viewport.xMin) / range) * dataWidth;
+                ctx.fillText(text, margin.left - (size.width / 2) + offset, margin.top + dataHeight + 20);
+
+                ctx.moveTo(margin.left + offset, margin.top + dataHeight);
+                ctx.lineTo(margin.left + offset, margin.top + dataHeight + 10);
                 ctx.stroke();
-                
-                gridValue += gridValueStep;
             }
         }
         else {
