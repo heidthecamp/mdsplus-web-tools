@@ -1,57 +1,33 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 window.d3 = d3; // TODO: Investigate
 
-import Connection from "./connection.js";
+import { Connection } from "./connection.js";
 import * as Import from "./import.js";
 
-import Panel from "./panel.js";
-import { GlobalDefaults } from "./globalDefaults.js";
+import { Panel } from "./panel.js";
+import { Scope } from "./scope.js";
+import { GlobalDefaults } from "./defaults.js";
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
 
-// TODO: Improve
-window.globalDefaults = new GlobalDefaults();
-
-window.globalConnection = new Connection();
-
-window.title_expr = '';
-// function setParallel(parallel) {
-//     if (parallel) {
-//         for (var i = 0; i < Panel.panels.length; ++i) {
-//             Panel.panels[i].setConnection(null);
-//         }
-//     }
-//     else {
-//         window.globalConnection = new Connection();
-//         for (var i = 0; i < Panel.panels.length; ++i) {
-//             Panel.panels[i].setConnection(window.globalConnection);
-//         }
-//     }
-
-//     document.getElementById('parallel').checked = parallel;
-// }
-
 window.onload = () => {
+    window.scope = Scope;
+    
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
-            const newPanel = new Panel(null, {
-                width: 6,
-                height: 2,
-            });
-            Panel.panels.push(newPanel);
-            newPanel.edit();
+            Scope.addPanel().edit();
         });
 
     document.querySelector('*[data-action="refresh"]')
-        .addEventListener('click', (e) => {
-            for (var i = 0; i < Panel.panels.length; ++i) {
-                Panel.panels[i].update();
-            }
+        .addEventListener('click', async (e) => {
+            e.target.classList.remove('active');
+            await Scope.refresh();
+            e.target.classList.add('active');
         });
 
     document.querySelector('*[data-action="global-defaults"]')
         .addEventListener('click', (e) => {
-            globalDefaults.edit();
+            Scope.defaults.edit();
         });
 
     // document.querySelector('#parallel')
@@ -59,17 +35,17 @@ window.onload = () => {
 
     document.querySelector('#use-canvas')
         .addEventListener('change', (e) => {
-            window.globalDefaults.useCanvas = e.target.checked;
-            Panel.panels.forEach(panel => panel.render());
+            Scope.defaults.useCanvas = e.target.checked;
+            Scope.panels.forEach(panel => panel.render());
         });
 
-    Panel.initGrid();
+    Scope.initGrid();
 
-    let p = new Panel("'SIN()'", { x: 0, y: 0, width: 12, height: 2 });
+    let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 2 });
     p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
     p.update();
 
-    p = new Panel("$SHOT", { x: 0, y: 2, width: 6, height: 2 }, 62976);
+    p = Scope.addPanel("$SHOT", { x: 0, y: 2, width: 6, height: 2 });
     p.addTrace(
         "cmod", 1090909010,
         null,
@@ -85,7 +61,7 @@ window.onload = () => {
     );
     p.update();
 
-    p = new Panel("$SHOT", { x: 6, y: 2, width: 6, height: 2 }, 62976);
+    p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 2 });
     p.addTrace(
         "cmod", 0,
         null,
@@ -94,14 +70,14 @@ window.onload = () => {
         null, "steelblue",
     );
     p.update();
+
+    Scope.setTitle("$SHOT");
 }
 
 document.addEventListener('drop', async (e) => {
     e.preventDefault();
 
     const file = e.dataTransfer.items[0].getAsFile();
-
-    // setParallel(false);
 
     for (var i = 0; i < Panel.panels.length; ++i) {
         Panel.panels[i].removeElement();

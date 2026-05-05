@@ -1,48 +1,12 @@
-import Bounds from "./bounds.js";
-import Connection from "./connection.js";
-import { GlobalDefaults, GlobalDefaultFlags } from "./globalDefaults.js";
-import "./gridstack-all.js";
+import { Bounds } from "./bounds.js";
+import { Connection } from "./connection.js";
+import { Scope } from "./scope.js";
+import { GlobalDefaults, GlobalDefaultsFlags } from "./defaults.js";
 
 let NextId = 1;
 
-export default class Panel
+export class Panel
 {
-    static panels = [];
-
-    static getPanelById(id) {
-        id = parseInt(id);
-
-        for (let i = 0; i < this.panels.length; ++i) {
-            if (this.panels[i].id == id) {
-                return this.panels[i];
-            }
-        }
-
-        return null;
-    }
-
-    static grid = null;
-
-    static initGrid() {
-        // Otherwise it will render the HTML as text :(
-        GridStack.renderCB = function(el, w) {
-            el.innerHTML = w.content;
-        };
-        
-        Panel.grid = GridStack.init({
-            itemClass: 'panel',
-            column: 12,
-            handle: '.navbar',
-            animate: false,
-        });
-
-        Panel.grid.on("resizestop", (e) => {
-            let id = e.target.ddElement.el.getAttribute('gs-id');
-            let panel = Panel.getPanelById(id);
-            panel.render();
-        });
-    };
-
     constructor(
         title = null,
         position = {},
@@ -51,9 +15,9 @@ export default class Panel
         this.id = NextId++;
         this.title_expr = title;
 
-        this.setConnection(window.globalConnection);
+        this.setConnection(Connection.current);
 
-        this.global_defaults_flags = GlobalDefaultFlags.fromMask(global_defaults_mask);
+        this.global_defaults_flags = GlobalDefaultsFlags.fromMask(global_defaults_mask);
 
         this.tree = [];
         this.shot = [];
@@ -74,8 +38,6 @@ export default class Panel
         this.line = [];
 
         this.addElement(position);
-
-        Panel.panels.push(this);
     }
 
     setConnection(conn) {
@@ -143,7 +105,7 @@ export default class Panel
             position.height = 2;
         }
 
-        this.widget = Panel.grid.addWidget({
+        this.widget = Scope.grid.addWidget({
             w: position.width,
             h: position.height,
             x: position.x,
@@ -201,23 +163,23 @@ export default class Panel
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
                     let v = this.getViewport();
-                    for(let i = 0; i < Panel.panels.length; ++i) {
-                        Panel.panels[i].setViewport(Panel.panels[i].autoY(v));
-                        Panel.panels[i].render();
+                    for(let i = 0; i < Scope.panels.length; ++i) {
+                        Scope.panels[i].setViewport(Scope.panels[i].autoY(v));
+                        Scope.panels[i].render();
                     }
                 })
             });
     }
 
     removeElement() {
-        // TODO: call Panel.grid.removeWidget, and null out widget
+        // TODO: call Scope.grid.removeWidget, and null out widget
         // TODO: 
         // document.getElementById(`panel-${this.id}`).remove();
 
-        Panel.grid.removeWidget(this.widget, true, true)
+        Scope.grid.removeWidget(this.widget, true, true)
 
-        let index = Panel.panels.indexOf(this);
-        Panel.panels.splice(index, 1);
+        let index = Scope.panels.indexOf(this);
+        Scope.panels.splice(index, 1);
     }
 
     async calculateBounds(boundArray) {
@@ -590,6 +552,12 @@ export default class Panel
 
     // TODO: Replace this.tree.length with traceCount or something
 
+    showError(message) {
+        console.error(message);
+        this.widget.querySelector('.plot').innerHTML = `<div class="error">${message}</div>`;
+        this.widget.style.opacity = 1;
+    }
+
     async update() {
         let tree;
         let shot;
@@ -650,7 +618,7 @@ export default class Panel
                 let y_data = null;
                 if (response.hasOwnProperty('y_expr')) {
                     if (response.y_expr.hasOwnProperty('error')) {
-                        console.error('y_expr', response.y_expr.error);
+                        this.showError(response.y_expr.error);
                         return;
                     }
                     
@@ -660,7 +628,7 @@ export default class Panel
                 let x_data = null;
                 if (response.hasOwnProperty('x_expr')) {
                     if (response.x_expr.hasOwnProperty('error')) {
-                        console.error('x_expr', response.x_expr.error);
+                        this.showError(response.x_expr.error);
                         return;
                     }
                     
@@ -668,12 +636,12 @@ export default class Panel
                 }
 
                 if (y_data === null || x_data === null) {
-                    console.error(`Could not retrieve x or y data\ny_data: ${y_data}\nx_data: ${x_data}`);
+                    this.showError(`Could not retrieve x or y data\ny_data: ${y_data}\nx_data: ${x_data}`);
                     return
                 }
                 // y truncates to match x.
                 else if (y_data.length < x_data.length) {
-                    console.error('Length mismatch len(y) < len(x)');
+                    this.showError('Length mismatch len(y) < len(x)');
                     return;
                 }
 
@@ -698,6 +666,8 @@ export default class Panel
                 this.data.push(data);
                 boundsArray.push(bounds);
 
+                window.data = this.data;
+
             });
         
             this.viewStack = [];
@@ -709,6 +679,14 @@ export default class Panel
     }
 
     async render() {
+        if (this.widget.querySelector('.error') != null) {
+            return;
+        }
+
+        if (this.tree.length == 0) {
+            return;
+        }
+
         let $plot = this.widget.querySelector('.plot');
         $plot.innerHTML = '';
         
@@ -727,10 +705,6 @@ export default class Panel
         let dataWidth = plotRect.width - margin.left - margin.right;
         let dataHeight = plotRect.height - margin.top - margin.bottom;
 
-        if (this.tree.length == 0) {
-            return;
-        }
-
         if (this.getValueOrDefault('useCanvas')) {
             $plot.innerHTML = '';
 
@@ -746,6 +720,7 @@ export default class Panel
             // ctx.fillStyle = 'black';
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // ctx.fill();
 
             let viewportWidth = (this.viewport.xMax - this.viewport.xMin);
             let viewportHeight = (this.viewport.yMax - this.viewport.yMin);
@@ -756,6 +731,8 @@ export default class Panel
             let scaleY = (value) => {
                 return ((1 - ((value - this.viewport.yMin) / viewportHeight)) * dataHeight) + margin.top;
             };
+
+            ctx.lineWidth = 1.5;
 
             for (var i = 0; i < this.data.length; ++i) {
                 if (this.trace_color[i] == null) {
@@ -785,8 +762,16 @@ export default class Panel
                 }
             }
 
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, margin.top);
+            ctx.fillRect(0, dataHeight + margin.top, canvas.width, margin.bottom);
+            ctx.fillRect(0, 0, margin.left, canvas.height);
+            ctx.fillRect(canvas.width - margin.right, 0, margin.right, canvas.height);
+            // ctx.fill();
+
             // ctx.strokeStyle = 'white';
             ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(margin.left - 10, margin.top - 1);
             ctx.lineTo(margin.left, margin.top - 1);
@@ -796,7 +781,7 @@ export default class Panel
             ctx.lineTo(canvas.width - margin.right - 1, canvas.height - margin.bottom + 1 + 10);
             ctx.stroke();
 
-            ctx.font = 'normal 9px sans-serif';
+            ctx.font = 'normal 10px sans-serif';
             ctx.textBaseline = 'middle';
             // ctx.fillStyle = 'white';
             ctx.fillStyle = 'black';
@@ -804,14 +789,14 @@ export default class Panel
             // TODO: Prefer more natural steps such as 0.5 or 10's or 0.1
 
             let range = (this.viewport.yMax - this.viewport.yMin);
-            let midpoint = parseFloat((range / 2).toPrecision(2));
+            let midpoint = parseFloat((range / 2).toPrecision(3));
             if (this.viewport.yMax > 0 && this.viewport.yMin < 0) {
                 midpoint = 0;
             }
             
             // TODO: Improve
             let gridLines = Math.floor(dataHeight / 20);
-            let step = parseFloat((range / (gridLines - 1)).toPrecision(2));
+            let step = parseFloat((range / (gridLines - 1)).toPrecision(3));
             let linesAbove = Math.floor((gridLines - 1) * ((this.viewport.yMax - midpoint) / range));
             let linesBelow = Math.floor((gridLines - 1) * ((midpoint - this.viewport.yMin) / range));
 
@@ -825,9 +810,9 @@ export default class Panel
             markers.sort((a, b) => a - b); // By default this sorts them as text
 
             for (let i = 0; i < markers.length; ++i) {
-                let value = parseFloat(markers[i].toPrecision(2));
+                let value = parseFloat(markers[i].toPrecision(3));
 
-                let text = value.toString();
+                let text = value.toLocaleString();
                 // let text = value.toFixed(3).toString();
                 
                 let size = ctx.measureText(text);
@@ -837,7 +822,7 @@ export default class Panel
                 // }
                 
                 let offset = (1.0 - ((value - this.viewport.yMin) / range)) * dataHeight;
-                ctx.fillText(text, margin.left - size.width - 20, margin.top + offset);
+                ctx.fillText(text, margin.left - size.width - 12, margin.top + offset);
 
                 ctx.moveTo(margin.left - 10, margin.top + offset);
                 ctx.lineTo(margin.left, margin.top + offset);
@@ -846,13 +831,13 @@ export default class Panel
 
 
             range = (this.viewport.xMax - this.viewport.xMin);
-            midpoint = parseFloat((range / 2).toPrecision(2));
+            midpoint = parseFloat((range / 2).toPrecision(3));
             if (this.viewport.xMax > 0 && this.viewport.xMin < 0) {
                 midpoint = 0;
             }
             
             gridLines = Math.floor(dataWidth / 120);
-            step = parseFloat((range / (gridLines - 1)).toPrecision(2));
+            step = parseFloat((range / (gridLines - 1)).toPrecision(3));
             linesAbove = Math.floor((gridLines - 1) * ((this.viewport.xMax - midpoint) / range));
             linesBelow = Math.floor((gridLines - 1) * ((midpoint - this.viewport.xMin) / range));
 
@@ -866,9 +851,9 @@ export default class Panel
             markers.sort((a, b) => a - b); // By default this sorts them as text
 
             for (let i = 0; i < markers.length; ++i) {
-                let value = parseFloat(markers[i].toPrecision(2));
+                let value = parseFloat(markers[i].toPrecision(3));
 
-                let text = value.toString();
+                let text = value.toLocaleString();
                 // let text = value.toFixed(3).toString();
                 
                 let size = ctx.measureText(text);
@@ -937,7 +922,7 @@ export default class Panel
                             .attr("r", .75);
                     }
                     let line = svg.append('g')
-                        .attr('clip-path', 'url(#clip)')
+                        .attr('clip-path', `url(#clip-${this.id})`)
                         .append('path')
                             .datum(this.data[i][j])
                             .attr('class', 'line')
@@ -1049,7 +1034,7 @@ export default class Panel
 
         let request = [];
         if (this.global_defaults_flags['title']){
-            request.push([ 'title_expr', globalDefaults.title_expr ]);
+            request.push([ 'title_expr', Scope.defaults.title_expr ]);
         }
         else if (this.title_expr) {
             request.push([ 'title_expr', this.title_expr ]);
@@ -1081,7 +1066,7 @@ export default class Panel
         $checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
                 $input.disabled = true;
-                $input.placeholder = globalDefaults[property] ? globalDefaults[property] : '';
+                $input.placeholder = Scope.defaults[property] ? Scope.defaults[property] : '';
             }
             else {
                 $input.disabled = false;
@@ -1100,13 +1085,13 @@ export default class Panel
         // TODO: Remove, this should be automatic when onchange is called
         if ($checkbox.checked) {
             $input.disabled = true;
-            $input.placeholder = globalDefaults[property] ? globalDefaults[property] : '';
+            $input.placeholder = Scope.defaults[property] ? Scope.defaults[property] : '';
         }
     }
 
     getValueOrDefault(property, trace = null) {
-        if (this.global_defaults_flags[property] && !! window.globalDefaults[property]) {
-            return window.globalDefaults[property];
+        if (this.global_defaults_flags[property] && !! Scope.defaults[property]) {
+            return Scope.defaults[property];
         }
 
         if (trace !== null) {

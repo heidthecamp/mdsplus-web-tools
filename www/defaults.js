@@ -15,7 +15,7 @@ export var GlobalDefaultMask = {
     event: (1 << 17),
 };
 
-export class GlobalDefaultFlags
+export class GlobalDefaultsFlags
 {
     constructor() {
         // Legacy defaults
@@ -39,7 +39,7 @@ export class GlobalDefaultFlags
     }
 
     static fromMask(mask, useCanvas = true) {
-        let flags = new GlobalDefaultFlags();
+        let flags = new GlobalDefaultsFlags();
 
         // Legacy defaults
         flags.tree = ((mask & GlobalDefaultMask.tree) > 0);
@@ -82,8 +82,10 @@ export class GlobalDefaultFlags
 
 }
 
-export class GlobalDefaults {
+export class GlobalDefaults
+{
     constructor() {
+        // Backwards Compatible Defaults
         this.tree = null;
         this.shot = null;
         this.default_node = null;
@@ -99,6 +101,7 @@ export class GlobalDefaults {
         this.point_type = null;
         this.point_color = null;
 
+        // New Defaults
         this.useCanvas = document.querySelector('#use-canvas').checked;
     }
 

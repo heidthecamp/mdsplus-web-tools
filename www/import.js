@@ -1,5 +1,7 @@
 
-import Panel from "./panel.js";
+import { Panel } from "./panel.js";
+import { Scope } from "./scope.js";
+import { GlobalDefaults } from "./defaults.js";
 
 export async function importFile(file) {
     if (!file.name.endsWith("dat") && !file.name.endsWith("jscp")) {
@@ -127,7 +129,6 @@ export async function importFile(file) {
                         });
                         break;
                     case 'title':
-                        window.title = value;
                         data['title'] = value;
                         break;
                     // case 'icon_name': break;
@@ -168,16 +169,16 @@ export async function importFile(file) {
             }
         }
         
-        globalDefaults.tree = data['global'].experiment;
-        globalDefaults.shot = data['global'].shot;
-        globalDefaults.default_node = data['global'].default_node;
-        globalDefaults.title_expr = data['global'].title;
-        globalDefaults.y_expr = data['global'].y_expr;
-        globalDefaults.x_expr = data['global'].x_expr;
-        globalDefaults.x_min = data['global'].xmin;
-        globalDefaults.x_max = data['global'].xmax;
-        globalDefaults.y_min = data['global'].ymin;
-        globalDefaults.y_max = data['global'].ymax;
+        GlobalDefaults.defaults.tree = data['global'].experiment;
+        GlobalDefaults.defaults.shot = data['global'].shot;
+        GlobalDefaults.defaults.default_node = data['global'].default_node;
+        GlobalDefaults.defaults.title_expr = data['global'].title;
+        GlobalDefaults.defaults.y_expr = data['global'].y_expr;
+        GlobalDefaults.defaults.x_expr = data['global'].x_expr;
+        GlobalDefaults.defaults.x_min = data['global'].xmin;
+        GlobalDefaults.defaults.x_max = data['global'].xmax;
+        GlobalDefaults.defaults.y_min = data['global'].ymin;
+        GlobalDefaults.defaults.y_max = data['global'].ymax;
 
         let columnWidth = Math.max(1, 12 / data['columns']);
 
@@ -220,6 +221,8 @@ export async function importFile(file) {
                 ++column;
             }
         }
+
+        GlobalDefaults.setTitle(data['title']);
     };
 
     reader.onerror = () => {

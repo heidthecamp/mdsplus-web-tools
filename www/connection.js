@@ -1,6 +1,8 @@
 
-export default class Connection
+export class Connection
 {
+    static current = new Connection();
+
     constructor() {
         this.ws = null;
         this.open = false;

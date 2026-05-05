@@ -1,6 +1,6 @@
 
 // TODO: Replace 0 with null
-export default class Bounds {
+export class Bounds {
     constructor(
         xMin = Number.MAX_SAFE_INTEGER,
         xMax = Number.MIN_SAFE_INTEGER,
