@@ -66,7 +66,7 @@ export async function importFile(file) {
                         experiment: null,
                         shot: null,
                         default_node: null,
-                        title: null,
+                        title_expr: null,
                         y_expr: null,
                         x_expr: null,
                         row: null,
@@ -77,6 +77,12 @@ export async function importFile(file) {
                 data['plots'][index]['row'] = row;
                 data['plots'][index]['col'] = col;
 
+                let fixNewlines = (value) => {
+                    // TODO: Add support for textareas and uncomment this
+                    // return value.replaceAll('|||', '\n');
+                    return value.replaceAll('|||', '');
+                }
+
                 switch (plotKey) {
                     case 'height':
                         data['plots'][index]['height'] = parseInt(value);
@@ -85,10 +91,10 @@ export async function importFile(file) {
                         data['plots'][index]['experiment'] = value;
                         break;
                     case 'y':
-                        data['plots'][index]['y_expr'] = value.replaceAll('|||', '\n'); // TODO: Make a wrapper function?
+                        data['plots'][index]['y_expr'] = fixNewlines(value);
                         break;
                     case 'x':
-                        data['plots'][index]['x_expr'] = value.replaceAll('|||', '\n');
+                        data['plots'][index]['x_expr'] = fixNewlines(value);
                         break;
                     case 'ymin':
                         data['plots'][index]['ymin'] = parseFloat(value);
@@ -106,13 +112,13 @@ export async function importFile(file) {
                         data['plots'][index]['default_node'] = value;
                         break;
                     case 'event':
-                        data['plots'][index]['event'] = value.replaceAll('|||', '\n');
+                        data['plots'][index]['event'] = fixNewlines(value);
                         break;
                     case 'title':
-                        data['plots'][index]['title'] = value.replaceAll('|||', '\n');
+                        data['plots'][index]['title_expr'] = fixNewlines(value);
                         break;
                     case 'label':
-                        data['plots'][index]['label'] = value.replaceAll('|||', '\n');
+                        data['plots'][index]['label'] = fixNewlines(value);
                         break;
                     case 'global_defaults':
                         data['plots'][index]['global_defaults'] = parseInt(value);
@@ -129,7 +135,7 @@ export async function importFile(file) {
                         });
                         break;
                     case 'title':
-                        data['title'] = value;
+                        data['title_expr'] = value;
                         break;
                     // case 'icon_name': break;
                     // case 'title_event': break;
@@ -169,18 +175,18 @@ export async function importFile(file) {
             }
         }
         
-        GlobalDefaults.defaults.tree = data['global'].experiment;
-        GlobalDefaults.defaults.shot = data['global'].shot;
-        GlobalDefaults.defaults.default_node = data['global'].default_node;
-        GlobalDefaults.defaults.title_expr = data['global'].title;
-        GlobalDefaults.defaults.y_expr = data['global'].y_expr;
-        GlobalDefaults.defaults.x_expr = data['global'].x_expr;
-        GlobalDefaults.defaults.x_min = data['global'].xmin;
-        GlobalDefaults.defaults.x_max = data['global'].xmax;
-        GlobalDefaults.defaults.y_min = data['global'].ymin;
-        GlobalDefaults.defaults.y_max = data['global'].ymax;
+        Scope.defaults.tree = data['global'].experiment;
+        Scope.defaults.shot = data['global'].shot;
+        Scope.defaults.default_node = data['global'].default_node;
+        Scope.defaults.title_expr = data['global'].title_expr;
+        Scope.defaults.y_expr = data['global'].y_expr;
+        Scope.defaults.x_expr = data['global'].x_expr;
+        Scope.defaults.x_min = data['global'].xmin;
+        Scope.defaults.x_max = data['global'].xmax;
+        Scope.defaults.y_min = data['global'].ymin;
+        Scope.defaults.y_max = data['global'].ymax;
 
-        let columnWidth = Math.max(1, 12 / data['columns']);
+        let columnWidth = Math.floor(Math.max(1, 12 / data['columns']));
 
         let row = 0;
         let column = 0;
@@ -188,13 +194,12 @@ export async function importFile(file) {
         for (var i = 0; i < data['plots'].length; ++i) {
             let plot = data['plots'][i];
 
-            // TODO: The max rows in dwscope/jScope is 16, which we can't reasonably fit
-            let rowHeight = Math.max(1, 12 / rows_in_column[column]);
+            let rowHeight = Math.ceil(Math.max(1, 16 / rows_in_column[column]) * 2);
             
             // TODO: Take the title from the first trace that has one
-            let title = data['plots'][i].title;
+            let title = data['plots'][i].title_expr;
             // TODO: Use plot.row, plot.col to set _ROW and _COL
-            let panel = new Panel(
+            let panel = Scope.addPanel(
                 title,
                 {
                     x: column * columnWidth,
@@ -222,7 +227,7 @@ export async function importFile(file) {
             }
         }
 
-        GlobalDefaults.setTitle(data['title']);
+        Scope.setTitle(data['title_expr']);
     };
 
     reader.onerror = () => {

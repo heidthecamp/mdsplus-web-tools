@@ -1,4 +1,6 @@
 
+import { Scope } from "./scope.js";
+
 // TODO: Improve
 export var GlobalDefaultMask = {
     update: (1 << 0),
@@ -11,7 +13,7 @@ export var GlobalDefaultMask = {
     x_max: (1 << 13),
     y_min: (1 << 14),
     y_max: (1 << 15),
-    title: (1 << 16),
+    title_expr: (1 << 16),
     event: (1 << 17),
 };
 
@@ -20,7 +22,6 @@ export class GlobalDefaultsFlags
     constructor() {
         // Legacy defaults
         // TODO: Determine reasonable set of default defaults
-        this.tree = true;
         this.update = true;
         this.tree = true;
         this.shot = true;
@@ -31,7 +32,7 @@ export class GlobalDefaultsFlags
         this.x_max = true;
         this.y_min = true;
         this.y_max = true;
-        this.title = true;
+        this.title_expr = true;
         this.event = true;
 
         // Expanded defaults
@@ -42,7 +43,6 @@ export class GlobalDefaultsFlags
         let flags = new GlobalDefaultsFlags();
 
         // Legacy defaults
-        flags.tree = ((mask & GlobalDefaultMask.tree) > 0);
         flags.update = ((mask & GlobalDefaultMask.update) > 0);
         flags.tree = ((mask & GlobalDefaultMask.tree) > 0);
         flags.shot = ((mask & GlobalDefaultMask.shot) > 0);
@@ -53,7 +53,7 @@ export class GlobalDefaultsFlags
         flags.x_max = ((mask & GlobalDefaultMask.x_max) > 0);
         flags.y_min = ((mask & GlobalDefaultMask.y_min) > 0);
         flags.y_max = ((mask & GlobalDefaultMask.y_max) > 0);
-        flags.title = ((mask & GlobalDefaultMask.title) > 0);
+        flags.title_expr = ((mask & GlobalDefaultMask.title_expr) > 0);
         flags.event = ((mask & GlobalDefaultMask.event) > 0);
 
         // Expanded defaults
@@ -64,8 +64,7 @@ export class GlobalDefaultsFlags
 
     toMask() {
         return (
-            (this.tree ? GlobalDefaultMask.tree : 0)
-            | (this.update ? GlobalDefaultMask.update : 0)
+            (this.update ? GlobalDefaultMask.update : 0)
             | (this.tree ? GlobalDefaultMask.tree : 0)
             | (this.shot ? GlobalDefaultMask.shot : 0)
             | (this.default_node ? GlobalDefaultMask.default_node : 0)
@@ -75,7 +74,7 @@ export class GlobalDefaultsFlags
             | (this.x_max ? GlobalDefaultMask.x_max : 0)
             | (this.y_min ? GlobalDefaultMask.y_min : 0)
             | (this.y_max ? GlobalDefaultMask.y_max : 0)
-            | (this.title ? GlobalDefaultMask.title : 0)
+            | (this.title_expr ? GlobalDefaultMask.title_expr : 0)
             | (this.event ? GlobalDefaultMask.event : 0)
         );
     }
@@ -129,7 +128,7 @@ export class GlobalDefaults
         document.getElementById('global-defaults-shot').value = this.shot;
         document.getElementById('global-defaults-default_node').value = this.default_node;
 
-        document.querySelectorAll(`#panel-form *[data-action="save"]`)
+        document.querySelectorAll(`#global-defaults-form *[data-action="save"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
 
@@ -148,18 +147,18 @@ export class GlobalDefaults
                     $overlay.classList.remove('shown');
 
                     // HACK: Replace with function for refreshing
-                    document.getElementById('refresh').click();
+                    Scope.refresh();
                 });
             });
 
-        document.querySelectorAll(`#panel-form *[data-action="reset"]`)
+        document.querySelectorAll(`#global-defaults-form *[data-action="reset"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     debugger;
                 });
             });
 
-        document.querySelectorAll(`#panel-form *[data-action="cancel"]`)
+        document.querySelectorAll(`#global-defaults-form *[data-action="cancel"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     $overlay.innerHTML = '';
@@ -167,19 +166,5 @@ export class GlobalDefaults
                 });
             });
 
-        function outerClick(event){
-            if (!document.querySelector(`#panel-form`).contains(event.target)) {
-                $overlay.innerHTML = '';
-                $overlay.classList.remove('shown');
-            }
-        }
-        $overlay.addEventListener("click", outerClick, true);
-        function keyPress (event) {
-            if(event.key === "Escape") {
-                $overlay.innerHTML = '';
-                $overlay.classList.remove('shown');
-            }
-        }
-        $overlay.addEventListener("keypress", keyPress)
     }
 };

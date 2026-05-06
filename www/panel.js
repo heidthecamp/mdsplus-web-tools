@@ -176,8 +176,9 @@ export class Panel
         // TODO: 
         // document.getElementById(`panel-${this.id}`).remove();
 
-        Scope.grid.removeWidget(this.widget, true, true)
+        Scope.grid.removeWidget(this.widget, true, true);
 
+        // TODO: Move into Scope.removePanel or something
         let index = Scope.panels.indexOf(this);
         Scope.panels.splice(index, 1);
     }
@@ -455,56 +456,90 @@ export class Panel
                         return value
                     }
 
-                    let $traceForms = document.getElementsByClassName('trace-form');
+                    let needUpdate = false;
 
-                    this.global_defaults_flags['title'] = document.getElementById('panel-title_expr-default').checked;
-                    this.global_defaults_flags['y_min'] = document.getElementById('panel-y-min-default').checked;
-                    this.global_defaults_flags['y_max'] = document.getElementById('panel-y-max-default').checked;
-                    this.global_defaults_flags['x_min'] = document.getElementById('panel-x-min-default').checked;
-                    this.global_defaults_flags['x_max'] = document.getElementById('panel-x-max-default').checked;
-                    this.global_defaults_flags['useCanvas'] = document.getElementById('panel-use-canvas-default').checked;
+                    let updateValue = (property, id, index = null) => {
+                        let value = valueOrNull(document.getElementById(id).value);
+                        if (index != null) {
+                            if (this[property][index] != value) {
+                                console.log(property, index, 'changed');
+                                needUpdate = true;
+                                this[property][index] = value;
+                            }
+                        }
+                        else {
+                            if (this[property] != value) {
+                                console.log(property, 'changed');
+                                needUpdate = true;
+                                this[property] = value;
+                            }
+                        }
+                    };
 
-                    this.title_expr = valueOrNull(document.getElementById('panel-title_expr').value);
-                    this.y_min = valueOrNull(document.getElementById('panel-y-min').value);
-                    this.y_max = valueOrNull(document.getElementById('panel-y-max').value);
-                    this.x_min = valueOrNull(document.getElementById('panel-x-min').value);
-                    this.x_max = valueOrNull(document.getElementById('panel-x-max').value);
-                    this.useCanvas = document.getElementById('panel-use-canvas').checked;
+                    let updateDefault = (property, id) => {
+                        let checked = document.getElementById(id).checked;
+                        if (this.global_defaults_flags[property] != checked) {
+                            console.log(property, 'default changed');
+                            needUpdate = true;
+                            this.global_defaults_flags[property] = checked;
+                        }
+                    }
+
+                    let $traceForms = document.querySelectorAll('.trace-form');
+
+                    updateDefault('title_expr', 'panel-title_expr-default');
+                    updateDefault('y_min', 'panel-y-min-default');
+                    updateDefault('y_max', 'panel-y-max-default');
+                    updateDefault('x_min', 'panel-x-min-default');
+                    updateDefault('x_max', 'panel-x-max-default');
+
+                    updateDefault('tree', 'trace-tree-default');
+                    updateDefault('shot', 'trace-shot-default');
+                    updateDefault('default_node', 'trace-default_node-default');
+                    updateDefault('y_expr', 'trace-y_expr-default');
+                    updateDefault('x_expr', 'trace-x_expr-default');
+
+                    updateValue('title_expr', 'panel-title_expr');
+                    updateValue('y_min', 'panel-y-min');
+                    updateValue('y_max', 'panel-y-max');
+                    updateValue('x_min', 'panel-x-min');
+                    updateValue('x_max', 'panel-x-max');
 
                     for (var i = 0; i < $traceForms.length; ++i) {
                         let id = parseInt($traceForms[i].dataset.id);
-
-                        if (document.getElementById(`trace-tree-default`).checked) {
-                            this.global_defaults_flags['tree'] = true;
-                        }
-                        if (document.getElementById(`trace-shot-default`).checked) {
-                            this.global_defaults_flags['shot'] = true;
-                        }
-                        if (document.getElementById(`trace-default_node-default`).checked) {
-                            this.global_defaults_flags['default_node'] = true;
-                        }
-                        if (document.getElementById('panel-title_expr-default').checked) {
-                            this.global_defaults_flags['title_expr'] = true;
-                        }
-                        if (document.getElementById(`trace-y_expr-default`).checked) {
-                            this.global_defaults_flags['y_expr'] = true;
-                        }
-                        if (document.getElementById(`trace-x_expr-default`).checked) {
-                            this.global_defaults_flags['x_expr'] = true;
-                        }
                         
-                        this.tree[i] = valueOrNull(document.getElementById(`trace-tree-${id}`).value);
-                        this.shot[i] = valueOrNull(document.getElementById(`trace-shot-${id}`).value);
-                        this.default_node[i] = valueOrNull(document.getElementById(`trace-default_node-${id}`).value);
-                        this.y_expr[i] = valueOrNull(document.getElementById(`trace-y_expr-${id}`).value);
-                        this.x_expr[i] = valueOrNull(document.getElementById(`trace-x_expr-${id}`).value);
-                        this.trace_color[i] = valueOrNull(document.getElementById(`trace-color-${id}`).value);
+                        updateValue('tree', `trace-tree-${id}`, i);
+                        updateValue('shot', `trace-shot-${id}`, i);
+                        updateValue('default_node', `trace-default_node-${id}`, i);
+                        updateValue('y_expr', `trace-y_expr-${id}`, i);
+                        updateValue('x_expr', `trace-x_expr-${id}`, i);
+                        updateValue('trace_color', `trace-color-${id}`, i);
+                    }
+
+                    // Note: To avoid updating when only changing the value of useCanvas
+                    let needRender = false;
+
+                    let checked = document.getElementById('panel-use-canvas-default').checked;
+                    if (this.global_defaults_flags['useCanvas'] != checked) {
+                        needRender = true;
+                        this.global_defaults_flags['useCanvas'] = checked;
+                    }
+
+                    checked = document.getElementById('panel-use-canvas').checked;
+                    if (this.useCanvas != checked) {
+                        needRender = true;
+                        this.useCanvas = checked;
                     }
 
                     $overlay.innerHTML = '';
                     $overlay.classList.remove('shown');
 
-                    this.update();
+                    if (needUpdate) {
+                        this.update();
+                    }
+                    else if (needRender) {
+                        this.render();
+                    }
                 });
             });
 
@@ -522,32 +557,6 @@ export class Panel
                     $overlay.classList.remove('shown');
                 });
             });
-
-        let primed = false;
-
-        $overlay.addEventListener('mousedown', (event) => {
-            if (!document.querySelector(`#panel-form`).contains(event.target)) {
-                primed = true;
-            } else {
-                primed = false;
-            }
-        }, true);
-
-        function outerClick(event){
-            if (primed && !document.querySelector(`#panel-form`).contains(event.target)) {
-                    $overlay.innerHTML = '';
-                    $overlay.classList.remove('shown');
-            }
-            primed = false;
-        }
-        $overlay.addEventListener("mouseup", outerClick, true);
-
-        $overlay.addEventListener("keydown", (event) => {
-            if (event.key === 'Escape') {
-                $overlay.innerHTML = '';
-                $overlay.classList.remove('shown');
-            }
-        });
     }
 
     // TODO: Replace this.tree.length with traceCount or something
@@ -564,6 +573,10 @@ export class Panel
         let default_node;
 
         this.widget.style.opacity = 0.2;
+        let $error = this.widget.querySelector('.error');
+        if ($error != null) {
+            $error.remove();
+        }
 
         let boundsArray = [];
         this.data = [];
@@ -1034,21 +1047,21 @@ export class Panel
 
         let request = [];
         if (this.global_defaults_flags['title']){
-            request.push([ 'title_expr', Scope.defaults.title_expr ]);
+            request.push([ 'title', Scope.defaults.title_expr ]);
         }
         else if (this.title_expr) {
-            request.push([ 'title_expr', this.title_expr ]);
+            request.push([ 'title', this.title_expr ]);
         }
 
         let $title = this.widget.querySelector('.title');
         if (request.length > 0) {
             await this.connection.getMany(request)
             .then((response) => {
-                if (response.title_expr.hasOwnProperty('error')) {
-                    console.error('Title', response.title_expr.error);
+                if (response.title.hasOwnProperty('error')) {
+                    console.error('Title', response.title.error);
                     return;
                 }
-                this.title = response.title_expr.value;
+                this.title = response.title.value;
             });
     
             $title.innerText = this.title;

@@ -12,7 +12,7 @@ import { GlobalDefaults } from "./defaults.js";
 
 window.onload = () => {
     window.scope = Scope;
-    
+
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
             Scope.addPanel().edit();
@@ -25,7 +25,7 @@ window.onload = () => {
             e.target.classList.add('active');
         });
 
-    document.querySelector('*[data-action="global-defaults"]')
+    document.querySelector('*[data-action="settings"]')
         .addEventListener('click', (e) => {
             Scope.defaults.edit();
         });
@@ -39,13 +39,29 @@ window.onload = () => {
             Scope.panels.forEach(panel => panel.render());
         });
 
+    let $overlay = document.getElementById('overlay');
+
+    $overlay.addEventListener('mousedown', (e) => {
+        if (e.target == $overlay) {
+            $overlay.innerHTML = '';
+            $overlay.classList.remove('shown');
+        }
+    });
+
+    document.body.addEventListener('keyup', (e) => {
+        if (e.key === "Escape") {
+            $overlay.innerHTML = '';
+            $overlay.classList.remove('shown');
+        }
+    });
+
     Scope.initGrid();
 
-    let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 2 });
+    let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 6 });
     p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
     p.update();
 
-    p = Scope.addPanel("$SHOT", { x: 0, y: 2, width: 6, height: 2 });
+    p = Scope.addPanel("$SHOT", { x: 0, y: 2, width: 6, height: 6 });
     p.addTrace(
         "cmod", 1090909010,
         null,
@@ -61,7 +77,7 @@ window.onload = () => {
     );
     p.update();
 
-    p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 2 });
+    p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 6 });
     p.addTrace(
         "cmod", 0,
         null,
@@ -79,12 +95,12 @@ document.addEventListener('drop', async (e) => {
 
     const file = e.dataTransfer.items[0].getAsFile();
 
-    for (var i = 0; i < Panel.panels.length; ++i) {
-        Panel.panels[i].removeElement();
+    for (var i = 0; i < Scope.panels.length; ++i) {
+        Scope.panels[i].removeElement();
     }
     document.getElementById('panels').innerHTML = ''; // HACK:
 
-    Panel.panels = await Import.importFile(file);
+    await Import.importFile(file);
 });
 
 document.addEventListener("dragover", (e) => {
@@ -92,7 +108,7 @@ document.addEventListener("dragover", (e) => {
 });
 
 function finishResize() {
-    Panel.panels.forEach(panel => panel.render());
+    Scope.panels.forEach(panel => panel.render());
 }
 
 window.addEventListener('resize', (e) => {

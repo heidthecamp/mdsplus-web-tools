@@ -41,6 +41,12 @@
             flex: none;
             padding: 0;
         }
+        .handle {
+            flex: 1;
+            height: 40px; /* HACK: Improve */
+            cursor: pointer;
+            min-width: 10px;
+        }
         #overlay {
             display: none;
             position: fixed;
@@ -53,7 +59,7 @@
         #overlay.shown {
             display: block;
         }
-        #panel-form {
+        #panel-form, #global-defaults-form {
             width: 600px;
             margin: 100px auto 0 auto;
             padding: 20px;
@@ -101,6 +107,7 @@
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
                 <div class="navbar-brand title"></div>
+                <div class="handle"></div>
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link active" type="button" data-action="edit" role="button">
@@ -126,7 +133,6 @@
                 </ul>
             </div>
         </nav>
-        <!-- <b class="title"></b> -->
         <div class="plot">Loading...</div>
     </template>
 
@@ -268,15 +274,42 @@
     </template>
 
     <template id="global-defaults-form-template">
-        <div id="panel-form" class="container-fluid">
-            <legend for="global-default-form">Global Defaults</legend>
-            <fieldset id="grobal-default-form" class="col-sm-11">
+        <div id="global-defaults-form" class="container-fluid">
+            <legend for="panel-default-form">Global Panel Defaults</legend>
+            <fieldset id="panel-default-form" class="col-sm-11">
                 <div class="row mb-3">
                     <label for="global-defaults-title_expr" class="col-sm-3 col-form-label">Title:</label>
                     <div class="col-sm-9">
                         <input id="global-defaults-title_expr" class="form-control" type="text" />
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-y-min"  class="col-sm-3 col-form-label">Y Min:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-y-min" class="form-control" type="number" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-y-max"  class="col-sm-3 col-form-label">Y Max:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-y-max" class="form-control" type="number" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-x-min"  class="col-sm-3 col-form-label">X Min:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-x-min" class="form-control" type="number" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-x-max"  class="col-sm-3 col-form-label">X Max:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-x-max" class="form-control" type="number" />
+                    </div>
+                </div>
+            </fieldset>
+            <legend for="trace-default-form">Global Trace Defaults</legend>
+            <fieldset id="trace-default-form" class="col-sm-11">
                 <div class="row mb-3">
                     <label for="global-defaults-y_expr"  class="col-sm-3 col-form-label">Y Axis:</label>
 
@@ -285,33 +318,9 @@
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-y-min"  class="col-sm-3 col-form-label">y-min:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-y-min" class="form-control" type="number" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-y-max"  class="col-sm-3 col-form-label">y-max:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-y-max" class="form-control" type="number" />
-                    </div>
-                </div>
-                <div class="row mb-3">
                     <label for="global-defaults-x_expr"  class="col-sm-3 col-form-label">X Axis:</label>
                     <div class="col-sm-9">
                         <input id="global-defaults-x_expr" class="form-control" type="text" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-x-min"  class="col-sm-3 col-form-label">x-min:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-x-min" class="form-control" type="number" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-x-max"  class="col-sm-3 col-form-label">x-max:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-x-max" class="form-control" type="number" />
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -326,13 +335,11 @@
                         <input id="global-defaults-shot" class="form-control" type="text" />
                     </div>
                 </div>
-
                 <div class="row mb-3">
                     <label for="global-defaults-default_node"  class="col-sm-3 col-form-label">Default Node:</label>
                     <div class="col-sm-9">
                         <input id="global-defaults-default_node"  class="form-control" type="text" />
                     </div>
-                </div>
             </fieldset>
             <div class="row">
                 <div class="container-fluid">
@@ -370,7 +377,7 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                     
                     
-                        <li><a class="dropdown-item" data-action="global-defaults">Global Defaults</a></li>
+                        <li><a class="dropdown-item" data-action="settings">Settings</a></li>
                         <li>
                             <span class="dropdown-item">
                                 <label for="use-canvas">Canvas</label> <input type="checkbox" id="use-canvas" />

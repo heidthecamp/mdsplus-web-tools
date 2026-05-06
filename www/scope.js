@@ -20,12 +20,14 @@ export class Scope
             el.innerHTML = w.content;
         };
         
+        // TODO: Figure out how/why this keeps adding padding at the bottom
         this.grid = GridStack.init({
             itemClass: 'panel',
             column: 12,
-            handle: '.navbar',
+            handle: '.handle',
             animate: false,
             margin: 1,
+            cellHeight: 50,
         });
 
         this.grid.on("resizestop", (e) => {
@@ -55,14 +57,14 @@ export class Scope
         return null;
     }
 
-    static addPanel(title = null, size = null) {
-        if (size == null) {
-            size = {
+    static addPanel(title = null, position = null, global_defaults_mask = 0xFFFF) {
+        if (position == null) {
+            position = {
                 width: 6,
                 height: 2,
             };
         }
-        const newPanel = new Panel(title, size);
+        const newPanel = new Panel(title, position, global_defaults_mask);
         this.panels.push(newPanel);
         return newPanel;
     }
