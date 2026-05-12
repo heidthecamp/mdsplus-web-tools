@@ -235,7 +235,7 @@ export class Panel
             });
         }
         
-        return bounds;
+        return this.autoY(bounds);
     }
 
     getViewport() {
@@ -1103,7 +1103,7 @@ export class Panel
     }
 
     getValueOrDefault(property, trace = null) {
-        if (this.global_defaults_flags[property] && !! Scope.defaults[property]) {
+        if (this.global_defaults_flags[property] && Scope.defaults[property] !== null) {
             return Scope.defaults[property];
         }
 
