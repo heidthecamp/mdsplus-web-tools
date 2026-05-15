@@ -1,4 +1,4 @@
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import "./d3.v7.min.js";
 window.d3 = d3; // TODO: Investigate
 
 import { Connection } from "./connection.js";
