@@ -43,6 +43,11 @@ window.onload = () => {
                 felement.setAttribute('type', 'file');
                 felement.setAttribute('accept', '.dat,.jscp'); // only accept scope files
                 felement.addEventListener("change", () => {
+                    for (var i = 0; i < Scope.panels.length; ++i) {
+                        Scope.panels[i].removeElement();
+                    }
+                    document.getElementById('panels').innerHTML = ''; // HACK:
+                    
                     let file = felement.files[0];
                     Import.importFile(file);
                     felement.remove();
