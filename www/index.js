@@ -18,6 +18,39 @@ window.onload = () => {
             Scope.addPanel().edit();
         });
 
+    document.querySelector('*[data-action="upload"]')
+        .addEventListener('click', async(e) => {
+            try {
+                const pickerOpts = {
+                    types: [
+                        {
+                            description: "Legacy Scopes",
+                            accept: {
+                                "*": [".dat", ".jscp"],
+                            },
+                        },
+                    ],
+                    excludeAcceptAllOption: true,
+                    multiple: false,
+                }
+
+                let fileHandle;
+
+                [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+            } 
+            catch {
+                let felement = document.createElement('input');
+                felement.setAttribute('type', 'file');
+                felement.setAttribute('accept', '.dat,.jscp'); // only accept scope files
+                felement.addEventListener("change", () => {
+                    let file = felement.files[0];
+                    Import.importFile(file);
+                    felement.remove();
+                });
+                felement.click();
+            }
+        })
+
     document.querySelector('*[data-action="refresh"]')
         .addEventListener('click', async (e) => {
             e.target.classList.remove('active');
