@@ -234,8 +234,11 @@ export class Panel
 
             });
         }
-        
-        return this.autoY(bounds);
+
+        if (! (!!yMin || !!yMax)){
+            return this.autoY(bounds);
+        }
+        return bounds;
     }
 
     getViewport() {
