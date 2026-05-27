@@ -385,8 +385,8 @@
                     
                         <li><a class="dropdown-item" data-action="settings">Settings</a></li>
                         <li>
-                            <span class="dropdown-item">
-                                <label for="use-canvas">Canvas</label> <input type="checkbox" id="use-canvas" />
+                            <span class="dropdown-item" onclick="this.querySelector('input[type=checkbox]').click()">
+                                <label for="use-canvas" style="pointer-events:none">Canvas</label> <input type="checkbox" id="use-canvas" style="pointer-events:none"/>
                             </span>
                         </li>
                     </ul>
