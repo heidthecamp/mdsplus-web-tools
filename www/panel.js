@@ -10,7 +10,12 @@ export class Panel
     constructor(
         title = null,
         position = {},
-        global_defaults_mask = 0xFFFF
+        y_min = null,
+        y_max = null,
+        x_min = null,
+        x_max = null,
+        use_canvas = null,
+        global_defaults_mask = 0xFFFF,
     ) {
         this.id = NextId++;
         this.title_expr = title;
@@ -19,17 +24,37 @@ export class Panel
 
         this.global_defaults_flags = GlobalDefaultsFlags.fromMask(global_defaults_mask);
 
+        if (y_min !== null) {
+            this.global_defaults_flags.y_min = false;
+        }
+        if (y_max !== null) {
+            this.global_defaults_flags.y_max = false;
+        }
+        if (x_min !== null) {
+            this.global_defaults_flags.x_min = false;
+        }
+        if (x_max !== null) {
+            this.global_defaults_flags.x_max = false;
+        }
+        if (use_canvas !== null) {
+            this.global_defaults_flags.useCanvas = false;
+        }
+
         this.tree = [];
         this.shot = [];
         this.default_node = [];
         this.y_expr = [];
+        this.y_min = y_min;
+        this.y_max = y_max;
         this.x_expr = [];
+        this.x_min = x_min;
+        this.x_max = x_max;
         this.trace_type = [];
         this.trace_color = [];
         this.point_type = [];
         this.point_color = [];
 
-        this.useCanvas = false;
+        this.useCanvas = !!use_canvas;
         this.title = null;
         this.data = [];
         this.viewStack = [];
@@ -85,7 +110,6 @@ export class Panel
         if (x_expr !== null) {
             this.global_defaults_flags.x_expr = false;
         }
-        // TODO: x_min / x_max / y_min / y_max / title
     }
 
     addElement(position = {}) {
@@ -210,7 +234,7 @@ export class Panel
         if (!!yMax) {
             request.push([ 'y_max', yMax ]);
         }
-        
+
         // TODO: Move to Panel.update()
         if (request.length > 0) {
             await this.connection.getMany(request)

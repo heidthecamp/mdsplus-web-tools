@@ -57,14 +57,18 @@ export class Scope
         return null;
     }
 
-    static addPanel(title = null, position = null, global_defaults_mask = 0xFFFF) {
+    static addPanel(title = null, position = null,
+        y_min = null, y_max = null, x_min = null, x_max = null,
+        use_canvas = null, global_defaults_mask = 0xFFFF,) {
         if (position == null) {
             position = {
                 width: 6,
                 height: 2,
             };
         }
-        const newPanel = new Panel(title, position, global_defaults_mask);
+        const newPanel = new Panel(title, position,
+            y_min, y_max, x_min, x_max,
+            use_canvas, global_defaults_mask,);
         this.panels.push(newPanel);
         return newPanel;
     }

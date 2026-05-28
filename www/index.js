@@ -95,7 +95,9 @@ window.onload = () => {
 
     Scope.initGrid();
 
-    let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 6 });
+    let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 6 },
+        null, null, null, null,
+        null, 0x0381);
     p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
     p.update();
 
@@ -115,7 +117,8 @@ window.onload = () => {
     );
     p.update();
 
-    p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 6 });
+    p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 6 },
+        "200000", "1500000", "0.0", "1.5", false);
     p.addTrace(
         "cmod", 0,
         null,
