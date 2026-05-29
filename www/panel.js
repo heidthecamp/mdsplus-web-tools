@@ -217,22 +217,22 @@ export class Panel
 
         let xMin = this.getValueOrDefault('x_min');
         if (!!xMin) {
-            request.push([ 'x_min', xMin ]);
+            request.push([ 'x_min', `${xMin}` ]);
         }
         
         let xMax = this.getValueOrDefault('x_max');
         if (!!xMax) {
-            request.push([ 'x_max', xMax ]);
+            request.push([ 'x_max', `${xMax}` ]);
         }
 
         let yMin = this.getValueOrDefault('y_min');
         if (!!yMin) {
-            request.push([ 'y_min', yMin ]);
+            request.push([ 'y_min', `${yMin}` ]);
         }
         
         let yMax = this.getValueOrDefault('y_max');
         if (!!yMax) {
-            request.push([ 'y_max', yMax ]);
+            request.push([ 'y_max', `${yMax}` ]);
         }
 
         // TODO: Move to Panel.update()
@@ -258,9 +258,12 @@ export class Panel
 
             });
         }
-
-        if (! (!!yMin || !!yMax)){
-            return this.autoY(bounds);
+        let b = this.autoY(bounds);
+        if (yMin == null) {
+            bounds.yMin = b.yMin;
+        }
+        if (yMax == null) {
+            bounds.yMax = b.yMax;
         }
         return bounds;
     }

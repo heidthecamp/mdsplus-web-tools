@@ -207,6 +207,11 @@ export async function importFile(file) {
                     width: columnWidth,
                     height: rowHeight,
                 },
+                plot.y_min,
+                plot.y_max,
+                plot.x_min,
+                plot.x_max,
+                false,
                 plot.global_defaults
             );
 
