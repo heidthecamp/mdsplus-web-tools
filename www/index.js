@@ -8,6 +8,8 @@ import { Panel } from "./panel.js";
 import { Scope } from "./scope.js";
 import { GlobalDefaults } from "./defaults.js";
 
+import { Renderer } from "./renderer.js";
+
 // TODO: Have better handling (helper functions?) for null and '' from input values
 
 window.onload = () => {
@@ -71,9 +73,9 @@ window.onload = () => {
     // document.querySelector('#parallel')
     //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
-    document.querySelector('#use-canvas')
+    document.querySelector('#use_canvas')
         .addEventListener('change', (e) => {
-            Scope.defaults.useCanvas = e.target.checked;
+            Scope.defaults.use_canvas = e.target.checked;
             Scope.panels.forEach(panel => panel.render());
         });
 
@@ -99,7 +101,6 @@ window.onload = () => {
         null, null, null, null,
         null, 0x0381);
     p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
-    p.update();
 
     p = Scope.addPanel("$SHOT", { x: 0, y: 2, width: 6, height: 6 });
     p.addTrace(
@@ -115,7 +116,6 @@ window.onload = () => {
         null, "red",
         null, "red",
     );
-    p.update();
 
     p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 6 },
         "200000", "1500000", "0.0", "1.5", false);
@@ -126,9 +126,10 @@ window.onload = () => {
         null, "steelblue",
         null, "steelblue",
     );
-    p.update();
 
     Scope.setTitle("$SHOT");
+    Scope.refresh();
+
 }
 
 document.addEventListener('drop', async (e) => {
@@ -149,7 +150,7 @@ document.addEventListener("dragover", (e) => {
 });
 
 function finishResize() {
-    Scope.panels.forEach(panel => panel.render());
+    Renderer.renderers.forEach(ren => ren.render());
 }
 
 window.addEventListener('resize', (e) => {

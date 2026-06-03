@@ -64,7 +64,7 @@
             display: block;
         }
         #panel-form, #global-defaults-form {
-            width: 600px;
+            width: 80%;
             margin: 100px auto 0 auto;
             padding: 20px;
             padding-right: 40px;
@@ -74,6 +74,9 @@
         }
         #panel-form input[type="checkbox"] {
             margin-top: 13px;
+        }
+        #panel-preview {
+            float: right;
         }
         .panel-defaults input[type="checkbox"] {
             margin-top: 25px !important; /* HACK: Align properly */
@@ -142,97 +145,105 @@
 
     <template id="panel-form-template">
         <div id="panel-form" class="container-fluid">
-            <div class="row mb-3">
-                <div class="col-sm-1">
-                    <input tabindex="0" id="panel-title_expr-default" type="checkbox">
-                </div>
-                <label for="panel-title_expr" class="col-sm-2 col-form-label">Title</label>
-                <div class="col-sm-9">
-                    <input tabindex="1" class="form-control" id="panel-title_expr" type="text" />
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-sm-1">
-                    <input tabindex="2" id="panel-y-min-default" type="checkbox" />
-                </div>
-                <label for="panel-y-min" class="col-sm-2 col-form-label">Y Min</label>
-                <div class="col-sm-9">
-                    <input tabindex="3" class="form-control" id="panel-y-min" type="text" />
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-sm-1">
-                    <input tabindex="4" id="panel-y-max-default" type="checkbox" />
-                </div>
-                <label for="panel-y-min" class="col-sm-2 col-form-label">Y Max</label>
-                <div class="col-sm-9">
-                    <input tabindex="5" class="form-control" id="panel-y-max" type="text" />
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-sm-1">
-                    <input tabindex="6" id="panel-x-min-default" type="checkbox" />
-                </div>
-                <label for="panel-y-min" class="col-sm-2 col-form-label">X Min</label>
-                <div class="col-sm-9">
-                    <input tabindex="7" class="form-control" id="panel-x-min" type="text" />
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-sm-1">
-                    <input tabindex="8" id="panel-x-max-default" type="checkbox" />
-                </div>
-                <label for="panel-y-min" class="col-sm-2 col-form-label">X Max</label>
-                <div class="col-sm-9">
-                    <input tabindex="9" class="form-control" id="panel-x-max" type="text" />
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-sm-1">
-                    <input tabindex="10" id="panel-use-canvas-default" type="checkbox" />
-                </div>
-                <label for="panel-y-min" class="col-sm-2 col-form-label">Canvas</label>
-                <div class="col-sm-9">
-                    <input tabindex="11" id="panel-use-canvas" type="checkbox" />
-                </div>
-            </div>
-            
-            <div class="row mb-3">
-                <ul class="nav nav-tabs" id="trace-form-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" data-action="add-trace" ><img src="octicons/diff-added.svg"  /></a>
-                    </li>
-                    <li class="nav-item">
-
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-sm-1 panel-defaults">
-                    <div class="row mb-3">
-                        <input tabindex="12" id="trace-y_expr-default" type="checkbox" /> <br />
-                    </div>
-                    <div class="row mb-3">
-                        <input tabindex="14" id="trace-x_expr-default" type="checkbox" /> <br />
-                    </div>
-                    <div class="row mb-3">
-                        <input tabindex="16" id="trace-tree-default" type="checkbox" /> <br />
-                    </div>
-                    <div class="row mb-3">
-                        <input tabindex="18" id="trace-shot-default" type="checkbox" /> <br />
-                    </div>
-                    <div class="row mb-3">
-                        <input tabindex="20" id="trace-default_node-default" type="checkbox" /> <br />
-                    </div>
-                </div>
-                <div id="trace-forms" class="col-sm-11"></div>
-            </div>
             <div class="row">
-                <div class="container-fluid">
-                    <button type="button" data-action="save" class="btn btn-primary">Save</button>
-                    <button type="button" data-action="reset" class="btn btn btn-secondary">Reset</button>
-                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                <div class="col-4">
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input tabindex="0" id="panel-title_expr-default" type="checkbox">
+                        </div>
+                        <label for="panel-title_expr" class="col-sm-2 col-form-label">Title</label>
+                        <div class="col-sm-9">
+                            <input tabindex="1" class="form-control" id="panel-title_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input tabindex="2" id="panel-y_min_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-y_min_expr" class="col-sm-2 col-form-label">Y Min</label>
+                        <div class="col-sm-9">
+                            <input tabindex="3" class="form-control" id="panel-y_min_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input tabindex="4" id="panel-y_max_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-y_max_expr" class="col-sm-2 col-form-label">Y Max</label>
+                        <div class="col-sm-9">
+                            <input tabindex="5" class="form-control" id="panel-y_max_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input tabindex="6" id="panel-x_min_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-x_min_expr" class="col-sm-2 col-form-label">X Min</label>
+                        <div class="col-sm-9">
+                            <input tabindex="7" class="form-control" id="panel-x_min_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input tabindex="8" id="panel-x_max_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-x_max_expr" class="col-sm-2 col-form-label">X Max</label>
+                        <div class="col-sm-9">
+                            <input tabindex="9" class="form-control" id="panel-x_max_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input tabindex="10" id="panel-use_canvas-default" type="checkbox" />
+                        </div>
+                        <label for="panel-use_canvas" class="col-sm-2 col-form-label">Canvas</label>
+                        <div class="col-sm-9">
+                            <input tabindex="11" id="panel-use_canvas" type="checkbox" />
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <ul class="nav nav-tabs" id="trace-form-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link" data-action="add-trace" ><img src="octicons/diff-added.svg"  /></a>
+                            </li>
+                            <li class="nav-item">
+
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-1 panel-defaults">
+                            <div class="row mb-3">
+                                <input tabindex="12" id="trace-y_expr-default" type="checkbox" /> <br />
+                            </div>
+                            <div class="row mb-3">
+                                <input tabindex="14" id="trace-x_expr-default" type="checkbox" /> <br />
+                            </div>
+                            <div class="row mb-3">
+                                <input tabindex="16" id="trace-tree-default" type="checkbox" /> <br />
+                            </div>
+                            <div class="row mb-3">
+                                <input tabindex="18" id="trace-shot_expr-default" type="checkbox" /> <br />
+                            </div>
+                            <div class="row mb-3">
+                                <input tabindex="20" id="trace-default_node_expr-default" type="checkbox" /> <br />
+                            </div>
+                        </div>
+                        <div id="trace-forms" class="col-sm-11"></div>
+                    </div>
+                    <div class="row">
+                        <div class="container-fluid">
+                            <button type="button" data-action="save" class="btn btn-primary">Save</button>
+                            <button type="button" data-action="apply" class="btn btn btn-secondary">Apply</button>
+                            <button type="button" data-action="reset" class="btn btn btn-secondary">Reset</button>
+                            <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="panel-preview" class="col-8">
+                    Loading...
                 </div>
             </div>
         </div>
@@ -258,15 +269,15 @@
             </div>
         </div>
         <div class="row mb-3">
-            <label for="trace-shot" class="col-sm-3 col-form-label">Shot</label>
+            <label for="trace-shot_expr" class="col-sm-3 col-form-label">Shot</label>
             <div class="col-sm-9">
-                <input tabindex="19" class="form-control" id="trace-shot" type="text" />
+                <input tabindex="19" class="form-control" id="trace-shot_expr" type="text" />
             </div>
         </div>
         <div class="row mb-3">
-            <label for="trace-default_node" class="col-sm-3 col-form-label">Default Node</label>
+            <label for="trace-default_node_expr" class="col-sm-3 col-form-label">Default Node</label>
             <div class="col-sm-9">
-                <input tabindex="21" class="form-control" id="trace-default_node" type="text" />
+                <input tabindex="21" class="form-control" id="trace-default_node_expr" type="text" />
             </div>
         </div>
         <div class="row mb-3">
@@ -334,15 +345,15 @@
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-shot"  class="col-sm-3 col-form-label">Shot:</label>
+                    <label for="global-defaults-shot_expr"  class="col-sm-3 col-form-label">Shot:</label>
                     <div class="col-sm-9">
-                        <input id="global-defaults-shot" class="form-control" type="text" />
+                        <input id="global-defaults-shot_expr" class="form-control" type="text" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-default_node"  class="col-sm-3 col-form-label">Default Node:</label>
+                    <label for="global-defaults-default_node_expr"  class="col-sm-3 col-form-label">Default Node:</label>
                     <div class="col-sm-9">
-                        <input id="global-defaults-default_node"  class="form-control" type="text" />
+                        <input id="global-defaults-default_node_expr"  class="form-control" type="text" />
                     </div>
             </fieldset>
             <div class="row">
@@ -376,7 +387,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-action="add-panel" role="button">
-                         <img src="./octicons/diff-added.svg" />
+                        <img src="./octicons/diff-added.svg" />
                     </a>
                 </li>
                 <li class="nav-item dropdown">
@@ -389,7 +400,7 @@
                         <li><a class="dropdown-item" data-action="settings">Settings</a></li>
                         <li>
                             <span class="dropdown-item" onclick="this.querySelector('input[type=checkbox]').click()">
-                                <label for="use-canvas" style="pointer-events:none">Canvas</label> <input type="checkbox" id="use-canvas" style="pointer-events:none"/>
+                                <label for="use_canvas" style="pointer-events:none">Canvas</label> <input type="checkbox" id="use_canvas" style="pointer-events:none"/>
                             </span>
                         </li>
                     </ul>
@@ -397,6 +408,7 @@
             </ul>
         </div>
     </nav>
+
 
     <div id="panels" class="grid-stack">
     </div>

@@ -176,15 +176,15 @@ export async function importFile(file) {
         }
         
         Scope.defaults.tree = data['global'].experiment;
-        Scope.defaults.shot = data['global'].shot;
-        Scope.defaults.default_node = data['global'].default_node;
+        Scope.defaults.shot_expr = data['global'].shot;
+        Scope.defaults.default_node_expr = data['global'].default_node;
         Scope.defaults.title_expr = data['global'].title_expr;
         Scope.defaults.y_expr = data['global'].y_expr;
         Scope.defaults.x_expr = data['global'].x_expr;
-        Scope.defaults.x_min = data['global'].xmin;
-        Scope.defaults.x_max = data['global'].xmax;
-        Scope.defaults.y_min = data['global'].ymin;
-        Scope.defaults.y_max = data['global'].ymax;
+        Scope.defaults.x_min_expr = data['global'].xmin;
+        Scope.defaults.x_max_expr = data['global'].xmax;
+        Scope.defaults.y_min_expr = data['global'].ymin;
+        Scope.defaults.y_max_expr = data['global'].ymax;
 
         let columnWidth = Math.floor(Math.max(1, 12 / data['columns']));
 
