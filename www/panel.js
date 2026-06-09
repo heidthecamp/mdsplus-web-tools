@@ -47,7 +47,7 @@ export class Panel
 
             this.renderer = new rendererClass(
                 this.widget.querySelector('.plot'),
-                this.initial_viewport,
+                this.view,
                 this.traces
             );
 
@@ -56,6 +56,8 @@ export class Panel
                 // this.renderer.viewStack = old_renderer.viewStack;
                 old_renderer.remove();
             }
+
+            this.render();
 
             return false;
         }
@@ -87,7 +89,7 @@ export class Panel
         let b = new Bounds()
         b.xMin = view.xMin;
         b.xMax = view.xMax;
-        
+
         // For every trace...
         for (let i = 0; i < this.traces.length; i++){
             // For every line...
@@ -132,7 +134,7 @@ export class Panel
 
     viewport() {
         if (this.renderer != null) {
-            return this.renderer.viewport;
+            return this.renderer.viewport();
         }
         return new Bounds();
     }
@@ -332,11 +334,9 @@ export class MDSplusPanel extends Panel
         ));
     }
 
-    async calculateBounds(boundArray) {
-        let bounds = boundArray[0];
-        for (var i = 1; i < boundArray.length; ++i) {
-            bounds.join(boundArray[i]);
-        }
+    async calculateBounds(boundArray)
+    {
+        let bounds = new Bounds();
 
         let request = [];
 
@@ -615,7 +615,7 @@ export class MDSplusPanel extends Panel
         let rendererClass = (this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
         let previewRenderer = new rendererClass(
             document.querySelector('#panel-preview'),
-            this.initial_viewport,
+            this.view,
             this.traces
         );
         previewRenderer.render();
@@ -663,13 +663,12 @@ export class MDSplusPanel extends Panel
                     }
 
                     let rendererClass = (this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
-                    debugger;
                     if (!(previewRenderer instanceof rendererClass)) {
                         let old_renderer = previewRenderer;
 
                         previewRenderer = new rendererClass(
                             document.querySelector('#panel-preview'),
-                            this.initial_viewport,
+                            this.view,
                             this.traces
                         );
 
@@ -680,7 +679,7 @@ export class MDSplusPanel extends Panel
                         }
                     }
                     else {
-                        previewRenderer.update(this.initial_viewport, this.traces);
+                        previewRenderer.update(this.view, this.traces);
                     }
 
                     previewRenderer.render();
@@ -714,30 +713,31 @@ export class MDSplusPanel extends Panel
 
     async update() {
         // TODO: Fix conflit with preview
-        // this.widget.style.opacity = 0.2;
-        // let $error = this.widget.querySelector('.error');
-        // if ($error != null) {
-        //     $error.remove();
-        // }
+        this.widget.style.opacity = 0.2;
+        let $error = this.widget.querySelector('.error');
+        if ($error != null) {
+            $error.remove();
+        }
 
-        let boundsArray = [];
+        this.bounds = await this.calculateBounds();
+        this.view = new Bounds();
         for (var i = 0; i < this.traces.length; ++i) {
             try {
-                await this.traces[i].update(this.connection, this.global_defaults_flags);
+                await this.traces[i].update(this.connection, this.bounds, this.global_defaults_flags);
             }
             catch (e) {
                 this.showError(e);
             }
             
-            boundsArray.push(this.traces[i].bounds);
+            this.view.join(this.traces[i].bounds);
         }
-
-        this.initial_viewport = await this.calculateBounds(boundsArray);
 
         let rendererClass = this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer;
         if (this.setRendererClass(rendererClass)) {
-            this.renderer.update(this.initial_viewport, this.traces);
+            this.renderer.update(this.view, this.traces);
         }
+
+        this.widget.style.opacity = 1;
 
         // // TODO: Reuse?
         // if (this.renderer != null) {
@@ -745,10 +745,10 @@ export class MDSplusPanel extends Panel
         // }
 
         // if (this.getValueOrDefault('use_canvas')) {
-        //     this.renderer = new CanvasRenderer($plot, this.initial_viewport, this.traces);
+        //     this.renderer = new CanvasRenderer($plot, this.bounds, this.traces);
         // }
         // else {
-        //     this.renderer = new D3Renderer($plot, this.initial_viewport, this.traces);
+        //     this.renderer = new D3Renderer($plot, this.bounds, this.traces);
         // }
     }
 
@@ -764,21 +764,6 @@ export class MDSplusPanel extends Panel
         let $plot = this.widget.querySelector('.plot');
         $plot.innerHTML = '';
         
-        let plotRect = $plot.getBoundingClientRect();
-
-        let margin = {
-            left: 60,
-            right: 10,
-            top: 10,
-            bottom: 30,
-        };
-
-        let svgWidth = plotRect.width;
-        let svgHeight = plotRect.height;
-
-        let dataWidth = plotRect.width - margin.left - margin.right;
-        let dataHeight = plotRect.height - margin.top - margin.bottom;
-
         this.renderer.render();
 
         this.widget.style.opacity = 1;

@@ -211,7 +211,7 @@ export async function importFile(file) {
                 plot.y_max,
                 plot.x_min,
                 plot.x_max,
-                false,
+                null,
                 plot.global_defaults
             );
 
@@ -223,7 +223,6 @@ export async function importFile(file) {
                 plot.x_expr,
             );
             panels.push(panel);
-            panel.update();
 
             ++row;
             if (row >= rows_in_column[column]) {
@@ -233,6 +232,7 @@ export async function importFile(file) {
         }
 
         Scope.setTitle(data['title_expr']);
+        Scope.refresh();
     };
 
     reader.onerror = () => {

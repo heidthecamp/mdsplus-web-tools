@@ -2,10 +2,10 @@
 // TODO: Replace 0 with null
 export class Bounds {
     constructor(
-        xMin = Number.MAX_SAFE_INTEGER,
-        xMax = Number.MIN_SAFE_INTEGER,
-        yMin = Number.MAX_SAFE_INTEGER,
-        yMax = Number.MIN_SAFE_INTEGER,
+        xMin = -Infinity,
+        xMax = Infinity,
+        yMin = -Infinity,
+        yMax = Infinity,
     ) {
         this.xMin = xMin;
         this.xMax = xMax;
@@ -14,37 +14,24 @@ export class Bounds {
     };
 
     join(bounds) {
-        if (bounds.xMin < this.xMin) {
-            this.xMin = bounds.xMin;
-        }
-        
-        if (bounds.xMax > this.xMax) {
-            this.xMax = bounds.xMax;
-        }
-
-        if (bounds.yMin < this.yMin) {
-            this.yMin = bounds.yMin;
-        }
-        
-        if (bounds.yMax > this.yMax) {
-            this.yMax = bounds.yMax;
-        }
+        this.extend(bounds.xMin, bounds.yMin);
+        this.extend(bounds.xMax, bounds.yMax);
     }
 
     extend(x, y) {
-        if (x < this.xMin || !isFinite(this.xMin)) {
+        if (!isFinite(this.xMin) || (isFinite(x) && x < this.xMin)) {
             this.xMin = x;
         }
         
-        if (x > this.xMax || !isFinite(this.xMax)) {
+        if (!isFinite(this.xMax) || (isFinite(x) && x > this.xMax)) {
             this.xMax = x;
         }
 
-        if (y < this.yMin || !isFinite(this.yMin)) {
+        if (!isFinite(this.yMin) || (isFinite(y) && y < this.yMin)) {
             this.yMin = y;
         }
         
-        if (y > this.yMax || !isFinite(this.yMax)) {
+        if (!isFinite(this.yMax) || (isFinite(y) && y > this.yMax)) {
             this.yMax = y;
         }
     }

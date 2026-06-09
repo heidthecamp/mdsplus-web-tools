@@ -23,6 +23,48 @@ export class Trace
     }
 };
 
+// HACK: Replace with modifications to MDSplusTrace
+export class PreviewTrace extends Trace
+{
+    constructor(y_data, x_data) {
+        super();
+
+        if (y_data.length != x_data.length) {
+            console.error('array length mismatch');
+        }
+
+        // TODO: Dedup
+        this.data = [[]];
+        this.bounds = new Bounds();
+        for (var i = 0; i < x_data.length; ++i) {
+            let x = x_data[i];
+            let y = y_data[i];
+
+            // Check for NaN and Infinity
+            if (!isFinite(x) || !isFinite(y)) {
+                if (this.data.at(-1).length > 0) {
+                    this.data.push([]);
+                }
+                continue;
+            }
+
+            this.data.at(-1).push([x, y]);
+            this.bounds.extend(x, y);
+        }
+
+        if (this.data.at(-1).length == 0) {
+            this.data.pop();
+        }
+
+        // let points = [];
+        // for (let i = 0; i < y.length; ++i) {
+        //     points.push([x[i], y[i]]);
+        // }
+        // this.data = [points];
+        // console.log(this.data);
+    }
+}
+
 export class MDSplusTrace extends Trace
 {
     constructor(
@@ -46,7 +88,7 @@ export class MDSplusTrace extends Trace
         this.data = [];
     }
 
-    async update(conn, global_defaults_flags)
+    async update(conn, bounds, global_defaults_flags)
     {
         let getValueOrDefault = (property) => {
             if (global_defaults_flags[property] && Scope.defaults[property] !== null) {
@@ -134,21 +176,35 @@ export class MDSplusTrace extends Trace
             }
 
             this.data = [[]];
-            this.bounds = new Bounds(x_data[0], x_data[0], y_data[0], y_data[0]);
+            this.bounds = new Bounds(bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax);
             for (var i = 0; i < x_data.length; ++i) {
                 let x = x_data[i];
                 let y = y_data[i];
 
                 // Check for NaN and Infinity
                 if (!isFinite(x) || !isFinite(y)) {
-                    if (data.at(-1).length > 0) {
-                        data.push([]);
+                    if (this.data.at(-1).length > 0) {
+                        this.data.push([]);
                     }
                     continue;
                 }
 
                 this.data.at(-1).push([x, y]);
-                this.bounds.extend(x, y);
+
+                let outOfView = (
+                    (isFinite(bounds.xMin) && x < bounds.xMin) ||
+                    (isFinite(bounds.xMax) && x > bounds.xMax) ||
+                    (isFinite(bounds.yMin) && y < bounds.yMin) ||
+                    (isFinite(bounds.yMax) && y > bounds.yMax)
+                );
+
+                if (!outOfView) {
+                    this.bounds.extend(x, y);
+                }
+            }
+
+            if (this.data.at(-1).length == 0) {
+                this.data.pop();
             }
         });
 

@@ -50,12 +50,20 @@ export class D3Renderer extends Renderer
     render()
     {
         let plotRect = this.element.getBoundingClientRect();
+        this.element.innerHTML = ''; // Before?
+
+        if ((plotRect.width + plotRect.height) == 0) {
+            console.warn(this.element, '.plot was not ready yet');
+            return;
+        }
+
+        let viewport = this.viewport();
         
         let dataWidth = plotRect.width - this.margin.left - this.margin.right;
         let dataHeight = plotRect.height - this.margin.top - this.margin.bottom;
 
-        let viewportWidth = (this.viewport().xMax - this.viewport().xMin);
-        let viewportHeight = (this.viewport().yMax - this.viewport().yMin);
+        let viewportWidth = (viewport.xMax - viewport.xMin);
+        let viewportHeight = (viewport.yMax - viewport.yMin);
 
         // TODO: Improve
         let id = NextId++;
@@ -71,7 +79,7 @@ export class D3Renderer extends Renderer
                 );
 
         const xScale = d3.scaleLinear()
-            .domain([ this.viewport().xMin, this.viewport().xMax ])
+            .domain([ viewport.xMin, viewport.xMax ])
             .range([ 0, dataWidth ]);
 
         let xAxis = svg.append('g')
@@ -79,12 +87,12 @@ export class D3Renderer extends Renderer
             .call(d3.axisBottom(xScale));
 
         const yScale = d3.scaleLinear()
-            .domain([ this.viewport().yMin, this.viewport().yMax ])
+            .domain([ viewport.yMin, viewport.yMax ])
             .range([ dataHeight, 0 ]);
         
         let yAxis = svg.append('g')
             .call(d3.axisLeft(yScale));
-            
+        
         let clip = svg.append('defs').append('SVG:clipPath')
             .attr('id', `clip-${id}`) // Turns out that ID's within SVGs can be referenced by other SVGs
             .append('svg:rect')
@@ -166,8 +174,10 @@ export class D3Renderer extends Renderer
                 // TODO: Prevent pushing duplicate vieports
                 this.viewStack.push(bounds);
 
-                xScale.domain([this.viewport().xMin, this.viewport().xMax]);
-                yScale.domain([this.viewport().yMin, this.viewport().yMax]);
+                let viewport = this.viewport();
+
+                xScale.domain([viewport.xMin, viewport.xMax]);
+                yScale.domain([viewport.yMin, viewport.yMax]);
                 
                 zoom_brush.call(brush.move, null);
             }
@@ -198,17 +208,17 @@ export class D3Renderer extends Renderer
             // this.viewStack = [this.viewStack[0]];
             this.viewStack.pop();
 
-            xScale.domain([ this.viewport().xMin, this.viewport().xMax ])
-            yScale.domain([ this.viewport().yMin, this.viewport().yMax ])
+            let viewport = this.viewport();
+
+            xScale.domain([ viewport.xMin, viewport.xMax ])
+            yScale.domain([ viewport.yMin, viewport.yMax ])
             xAxis.transition().call(d3.axisBottom(xScale));
             yAxis.transition().call(d3.axisLeft(yScale));
 
-            let points = svg.selectAll('circle');
-
-            points
-            .attr('cx', function(d) { return xScale(d[0])})
-            .attr('cy', function(d) { return yScale(d[1])})
-            .transition();
+            svg.selectAll('circle')
+                .attr('cx', function(d) { return xScale(d[0])})
+                .attr('cy', function(d) { return yScale(d[1])})
+                .transition();
 
             for (var i = 0; i < this.traces.length; ++i) {
                 for (var j = 0; j < this.traces[i].data.length; ++j) {
@@ -232,7 +242,7 @@ export class D3Renderer extends Renderer
 
 export class CanvasRenderer extends Renderer
 {
-    render(element, viewport, traces)
+    render()
     {
         this.element.innerHTML = '';
 

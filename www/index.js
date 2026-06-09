@@ -6,9 +6,10 @@ import * as Import from "./import.js";
 
 import { Panel } from "./panel.js";
 import { Scope } from "./scope.js";
+import { Traverser } from "./traverser.js";
 import { GlobalDefaults } from "./defaults.js";
 
-import { Renderer } from "./renderer.js";
+import { D3Renderer, CanvasRenderer, Renderer } from "./renderer.js";
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
 
@@ -76,7 +77,23 @@ window.onload = () => {
     document.querySelector('#use_canvas')
         .addEventListener('change', (e) => {
             Scope.defaults.use_canvas = e.target.checked;
-            Scope.panels.forEach(panel => panel.render());
+            Scope.panels.forEach(panel => {
+                // TODO: Improve
+                let rendererClass = (panel.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
+                panel.setRendererClass(rendererClass);
+            });
+        });
+
+    document.querySelector('#traverser-select')
+        .addEventListener('change', (e) => {
+            let id = parseInt(e.target.value);
+            for (let i = 0; i < Traverser.traversers.length; ++i) {
+                let traverser = Traverser.traversers[i];
+                if (traverser.id == id) {
+                    traverser.show();
+                    break;
+                }
+            }
         });
 
     let $overlay = document.getElementById('overlay');
@@ -130,6 +147,8 @@ window.onload = () => {
     Scope.setTitle("$SHOT");
     Scope.refresh();
 
+    let traverser = new Traverser('cmod', 0);
+    new Traverser('analysis', 1090909010);
 }
 
 document.addEventListener('drop', async (e) => {
