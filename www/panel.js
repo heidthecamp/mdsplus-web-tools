@@ -534,6 +534,9 @@ export class MDSplusPanel extends Panel
         let updateValue = (property, id, index = null) => {
             let value = valueOrNull(document.getElementById(id).value);
             if (index != null) {
+                if (this.traces[index] === undefined) {
+                    this.addTrace();
+                }
                 if (this.traces[index][property] != value) {
                     console.log(property, index, 'changed');
                     console.log(this.traces[index][property], value);
