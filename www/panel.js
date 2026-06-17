@@ -14,15 +14,12 @@ export class Panel
     constructor(
         title = null,
         position = new Position(),
-        use_canvas = null,
     ) {
         this.id = NextId++;
 
         this.title = title;
-        this.use_canvas = use_canvas;
 
         this.traces = [];
-        this.renderer = null;
 
         this.viewStack = [];
 
@@ -230,6 +227,8 @@ export class Panel
                     }
                 })
             });
+            
+        this.renderer = new D3Renderer(this.widget.querySelector('.plot'), this);
     }
 
     removeElement() {
@@ -255,8 +254,9 @@ export class PreviewPanel extends Panel
 {
     constructor(element) {
         super();
-        this.widget = element; // TODO: Improve?
-        this.setRendererClass(D3Renderer);
+        // TODO: Cleanup
+        this.widget = element;
+        this.renderer = new D3Renderer(this.widget.querySelector('.plot'), this);
     }
 
     addElement() {
@@ -282,10 +282,9 @@ export class MDSplusPanel extends Panel
         y_max_expr = null,
         x_min_expr = null,
         x_max_expr = null,
-        use_canvas = null,
         global_defaults_mask = 0xFFFF,
     ) {
-        super(title_expr, position, use_canvas);
+        super(title_expr, position);
 
         this.setConnection(Connection.current);
 
@@ -308,9 +307,6 @@ export class MDSplusPanel extends Panel
         }
         if (x_max_expr !== null) {
             this.global_defaults_flags.x_max_expr = false;
-        }
-        if (use_canvas !== null) {
-            this.global_defaults_flags.use_canvas = false;
         }
     }
 
@@ -503,7 +499,6 @@ export class MDSplusPanel extends Panel
         document.querySelector('#panel-y_max_expr').value = valueOrEmpty(this.y_max_expr);
         document.querySelector('#panel-x_min_expr').value = valueOrEmpty(this.x_min_expr);
         document.querySelector('#panel-x_max_expr').value = valueOrEmpty(this.x_max_expr);
-        document.querySelector('#panel-use_canvas').checked = this.use_canvas;
 
         // Update the form values
         // TODO: Improve
@@ -593,18 +588,6 @@ export class MDSplusPanel extends Panel
             updateValue('trace_color', `trace-color-${id}`, i);
         }
 
-        let checked = document.getElementById('panel-use_canvas-default').checked;
-        if (this.global_defaults_flags['use_canvas'] != checked) {
-            needUpdate = true;
-            this.global_defaults_flags['use_canvas'] = checked;
-        }
-
-        checked = document.getElementById('panel-use_canvas').checked;
-        if (this.use_canvas != checked) {
-            needUpdate = true;
-            this.use_canvas = checked;
-        }
-
         return needUpdate;
     }
 
@@ -645,12 +628,8 @@ export class MDSplusPanel extends Panel
         this.setupGlobalDefaults('y_max_expr', 'panel-y_max_expr', 'panel-y_max_expr-default');
         this.setupGlobalDefaults('x_min_expr', 'panel-x_min_expr', 'panel-x_min_expr-default');
         this.setupGlobalDefaults('x_max_expr', 'panel-x_max_expr', 'panel-x_max_expr-default');
-        this.setupGlobalDefaults('use_canvas', 'panel-use_canvas', 'panel-use_canvas-default');
 
-        // .update(); // TODO: Call as changed
-        // calculateBounds?
-        let rendererClass = (this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
-        let previewRenderer = new rendererClass(document.querySelector('#panel-preview'), this);
+        let previewRenderer = new D3Renderer(document.querySelector('#panel-preview'), this);
         previewRenderer.render();
 
         // TODO: Improve
@@ -695,23 +674,6 @@ export class MDSplusPanel extends Panel
                         this.render();
                     }
 
-                    let rendererClass = (this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
-                    if (!(previewRenderer instanceof rendererClass)) {
-                        let old_renderer = previewRenderer;
-
-                        previewRenderer = new rendererClass(
-                            document.querySelector('#panel-preview'),
-                            this.view,
-                            this.traces
-                        );
-
-                        if (old_renderer != null) {
-                            // TODO: Think about
-                            // this.renderer.viewStack = old_renderer.viewStack;
-                            old_renderer.remove();
-                        }
-                    }
-
                     previewRenderer.render();
                 });
             });
@@ -749,6 +711,7 @@ export class MDSplusPanel extends Panel
 
         // TODO: Improve?
         let count = this.widget.querySelector('.plot').getBoundingClientRect().width * 2;
+        console.log(count);
 
         let bounds = this.viewport();
         let initialZoom = (bounds == null);
@@ -779,22 +742,11 @@ export class MDSplusPanel extends Panel
             this.pushZoom(view);
         }
 
-        // TODO: Remove? Move?
-        let rendererClass = this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer;
-        this.setRendererClass(rendererClass);
-
         this.widget.style.opacity = 1;
 
         // // TODO: Reuse?
         // if (this.renderer != null) {
         //     this.renderer.remove();
-        // }
-
-        // if (this.getValueOrDefault('use_canvas')) {
-        //     this.renderer = new CanvasRenderer($plot, this.bounds, this.traces);
-        // }
-        // else {
-        //     this.renderer = new D3Renderer($plot, this.bounds, this.traces);
         // }
     }
 

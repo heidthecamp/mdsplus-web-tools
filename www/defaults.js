@@ -34,12 +34,9 @@ export class GlobalDefaultsFlags
         this.y_max_expr = true;
         this.title_expr = true;
         this.event = true;
-
-        // Expanded defaults
-        this.use_canvas = true;
     }
 
-    static fromMask(mask, use_canvas = true) {
+    static fromMask(mask) {
         let flags = new GlobalDefaultsFlags();
 
         // Legacy defaults
@@ -55,9 +52,6 @@ export class GlobalDefaultsFlags
         flags.y_max_expr = ((mask & GlobalDefaultMask.y_max_expr) > 0);
         flags.title_expr = ((mask & GlobalDefaultMask.title_expr) > 0);
         flags.event = ((mask & GlobalDefaultMask.event) > 0);
-
-        // Expanded defaults
-        flags.use_canvas = use_canvas;
 
         return flags;
     }
@@ -99,9 +93,6 @@ export class GlobalDefaults
         this.trace_color = 'steelblue';
         this.point_type = null;
         this.point_color = null;
-
-        // New Defaults
-        this.use_canvas = document.querySelector('#use_canvas').checked;
     }
 
     edit() {

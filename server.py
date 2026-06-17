@@ -93,6 +93,8 @@ def handle_connection(ws: ServerConnection):
             '_dim = pack(_dim,_mask);' +
             '_data = pack(_data,_mask);' +
             '_sig = make_signal(_data, *, _dim);' +
+        '} else {' +
+            '_sig = make_signal(data(_sig), *, _dim);' + # HACK: To prevent resample giving us the dim?
         '}' +
         'if (size(_sig) > _count) {' +
             '_delta = (float(_end) - float(_start)) / float(_count);' +

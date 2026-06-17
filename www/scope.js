@@ -77,7 +77,6 @@ export class Scope
         y_max_expr = null,
         x_min_expr = null,
         x_max_expr = null,
-        use_canvas = null,
         global_defaults_mask = 0xFFFF,
     ) {
         if (position == null) {
@@ -93,7 +92,6 @@ export class Scope
             y_max_expr,
             x_min_expr,
             x_max_expr,
-            use_canvas,
             global_defaults_mask
         );
         Scope.panels.push(newPanel);

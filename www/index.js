@@ -74,16 +74,6 @@ window.onload = () => {
     // document.querySelector('#parallel')
     //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
-    document.querySelector('#use_canvas')
-        .addEventListener('change', (e) => {
-            Scope.defaults.use_canvas = e.target.checked;
-            Scope.panels.forEach(panel => {
-                // TODO: Improve
-                let rendererClass = (panel.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
-                panel.setRendererClass(rendererClass);
-            });
-        });
-
     document.querySelector('#traverser-select')
         .addEventListener('change', (e) => {
             let id = parseInt(e.target.value);
@@ -116,7 +106,7 @@ window.onload = () => {
 
     let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 6 },
         null, null, null, null,
-        null, 0x0381);
+        0x0381);
     p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
 
     p = Scope.addPanel("$SHOT", { x: 0, y: 2, width: 6, height: 6 });
@@ -135,7 +125,7 @@ window.onload = () => {
     );
 
     p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 6 },
-        "200000", "1500000", "0.0", "1.5", false);
+        "200000", "1500000", "0.0", "1.5");
     p.addTrace(
         "cmod", 0,
         null,

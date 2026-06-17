@@ -211,7 +211,6 @@ export async function importFile(file) {
                 plot.y_max,
                 plot.x_min,
                 plot.x_max,
-                null,
                 plot.global_defaults
             );
 
