@@ -9,8 +9,7 @@ export class Renderer
 
     constructor(
         element,
-        viewport,
-        traces,
+        panel,
         margin = {
             left: 60,
             right: 10,
@@ -19,8 +18,7 @@ export class Renderer
         }
     ) {
         this.element = element;
-        this.viewStack = [viewport];
-        this.traces = traces;
+        this.panel = panel;
         this.margin = margin;
 
         Renderer.renderers.push(this);
@@ -31,18 +29,10 @@ export class Renderer
         Renderer.renderers.splice(index, 1);
     }
 
-    viewport() {
-        return this.viewStack.at(-1);
-    }
-
     render() {
         // virtual
     }
 
-    update(viewport, traces) {
-        this.viewStack = [viewport];
-        this.traces = traces;
-    }
 }
 
 export class D3Renderer extends Renderer
@@ -53,11 +43,10 @@ export class D3Renderer extends Renderer
         this.element.innerHTML = ''; // Before?
 
         if ((plotRect.width + plotRect.height) == 0) {
-            console.warn(this.element, '.plot was not ready yet');
             return;
         }
 
-        let viewport = this.viewport();
+        let viewport = this.panel.viewport();
         
         let dataWidth = plotRect.width - this.margin.left - this.margin.right;
         let dataHeight = plotRect.height - this.margin.top - this.margin.bottom;
@@ -108,8 +97,8 @@ export class D3Renderer extends Renderer
         // Isn't this done?
 
         // For every trace...
-        for (var i = 0; i < this.traces.length; ++i) {
-            let trace = this.traces[i];
+        for (var i = 0; i < this.panel.traces.length; ++i) {
+            let trace = this.panel.traces[i];
 
             let lines = [];
 
@@ -155,7 +144,7 @@ export class D3Renderer extends Renderer
             .attr('class', 'brush')
             .call(brush);
 
-        let zoomChart = (e) => {
+        let zoomChart = async (e) => {
             // the selected boundries
             let extent = e.selection;
             
@@ -164,6 +153,8 @@ export class D3Renderer extends Renderer
                 // brush.end seems to be called on `call(brush.move, null)`
                 // Setting the domains here will clear zooming.
             } else {
+                zoom_brush.call(brush.move, null);
+
                 let bounds = new Bounds(
                     xScale.invert(extent[0][0]),
                     xScale.invert(extent[1][0]),
@@ -172,68 +163,71 @@ export class D3Renderer extends Renderer
                 );
 
                 // TODO: Prevent pushing duplicate vieports
-                this.viewStack.push(bounds);
+                this.panel.pushZoom(bounds);
+                await this.panel.update();
+                this.panel.render();
 
-                let viewport = this.viewport();
+                // let viewport = this.panel.viewport();
 
-                xScale.domain([viewport.xMin, viewport.xMax]);
-                yScale.domain([viewport.yMin, viewport.yMax]);
+                // xScale.domain([viewport.xMin, viewport.xMax]);
+                // yScale.domain([viewport.yMin, viewport.yMax]);
                 
-                zoom_brush.call(brush.move, null);
             }
 
-            xAxis.transition().call(d3.axisBottom(xScale));
-            yAxis.transition().call(d3.axisLeft(yScale));
+            // xAxis.transition().call(d3.axisBottom(xScale));
+            // yAxis.transition().call(d3.axisLeft(yScale));
 
-            svg.selectAll('circle')
-                .attr('cx', function(d) { return xScale(d[0])})
-                .attr('cy', function(d) { return yScale(d[1])})
-                .transition();
+            // svg.selectAll('circle')
+            //     .attr('cx', function(d) { return xScale(d[0])})
+            //     .attr('cy', function(d) { return yScale(d[1])})
+            //     .transition();
 
-            for (var i = 0; i < this.traces.length; ++i) {
-                for (var j = 0; j < this.traces[i].data.length; ++j) {
-                    if (this.traces[i].data[j].length != 1) {
-                        this.line[i][j]
-                            .transition()
-                            .attr('d', d3.line()
-                                .x(function (d) { return xScale(d[0])} )
-                                .y(function (d) { return yScale(d[1])} )
-                            );
-                    }
-                }
-            }
+            // for (var i = 0; i < this.panel.traces.length; ++i) {
+            //     for (var j = 0; j < this.panel.traces[i].data.length; ++j) {
+            //         if (this.panel.traces[i].data[j].length != 1) {
+            //             this.line[i][j]
+            //                 .transition()
+            //                 .attr('d', d3.line()
+            //                     .x(function (d) { return xScale(d[0])} )
+            //                     .y(function (d) { return yScale(d[1])} )
+            //                 );
+            //         }
+            //     }
+            // }
         }
 
-        svg.on("dblclick", async() => {
-            // this.viewStack = [this.viewStack[0]];
-            this.viewStack.pop();
-
-            let viewport = this.viewport();
-
-            xScale.domain([ viewport.xMin, viewport.xMax ])
-            yScale.domain([ viewport.yMin, viewport.yMax ])
-            xAxis.transition().call(d3.axisBottom(xScale));
-            yAxis.transition().call(d3.axisLeft(yScale));
-
-            svg.selectAll('circle')
-                .attr('cx', function(d) { return xScale(d[0])})
-                .attr('cy', function(d) { return yScale(d[1])})
-                .transition();
-
-            for (var i = 0; i < this.traces.length; ++i) {
-                for (var j = 0; j < this.traces[i].data.length; ++j) {
-                    if (this.traces[i].data[j].length != 1) {
-                        this.line[i][j]
-                            .transition()
-                            .attr('d', d3.line()
-                                .x(function (d) { return xScale(d[0])} )
-                                .y(function (d) { return yScale(d[1])} )
-                            );
-                    }
-                }
-            }
-
+        svg.on("dblclick", async () => {
             zoom_brush.call(brush.move, null);
+
+            this.panel.popZoom();
+            await this.panel.update();
+            this.panel.render();
+
+            // let viewport = this.panel.viewport();
+
+            // xScale.domain([ viewport.xMin, viewport.xMax ])
+            // yScale.domain([ viewport.yMin, viewport.yMax ])
+            // xAxis.transition().call(d3.axisBottom(xScale));
+            // yAxis.transition().call(d3.axisLeft(yScale));
+
+            // svg.selectAll('circle')
+            //     .attr('cx', function(d) { return xScale(d[0])})
+            //     .attr('cy', function(d) { return yScale(d[1])})
+            //     .transition();
+
+            // for (var i = 0; i < this.panel.traces.length; ++i) {
+            //     for (var j = 0; j < this.panel.traces[i].data.length; ++j) {
+            //         if (this.panel.traces[i].data[j].length != 1) {
+            //             this.line[i][j]
+            //                 .transition()
+            //                 .attr('d', d3.line()
+            //                     .x(function (d) { return xScale(d[0])} )
+            //                     .y(function (d) { return yScale(d[1])} )
+            //                 );
+            //         }
+            //     }
+            // }
+
         });
 
         brush.on('end', zoomChart);
@@ -251,8 +245,13 @@ export class CanvasRenderer extends Renderer
         let dataWidth = plotRect.width - this.margin.left - this.margin.right;
         let dataHeight = plotRect.height - this.margin.top - this.margin.bottom;
 
-        let viewportWidth = (this.viewport().xMax - this.viewport().xMin);
-        let viewportHeight = (this.viewport().yMax - this.viewport().yMin);
+        let viewport = this.panel.viewport();
+        if (viewport == null) {
+            return;
+        }
+
+        let viewportWidth = (viewport.xMax - viewport.xMin);
+        let viewportHeight = (viewport.yMax - viewport.yMin);
 
         let canvas = document.createElement('canvas');
         canvas.width = plotRect.width;
@@ -268,17 +267,17 @@ export class CanvasRenderer extends Renderer
         // ctx.fill();
 
         let scaleX = (value) => {
-            return (((value - this.viewport().xMin) / viewportWidth) * dataWidth) + this.margin.left;
+            return (((value - viewport.xMin) / viewportWidth) * dataWidth) + this.margin.left;
         };
         let scaleY = (value) => {
-            return ((1 - ((value - this.viewport().yMin) / viewportHeight)) * dataHeight) + this.margin.top;
+            return ((1 - ((value - viewport.yMin) / viewportHeight)) * dataHeight) + this.margin.top;
         };
 
         ctx.lineWidth = 1.5;
 
         // For every trace...
-        for (var i = 0; i < this.traces.length; ++i) {
-            let trace = this.traces[i];
+        for (var i = 0; i < this.panel.traces.length; ++i) {
+            let trace = this.panel.traces[i];
 
             if (trace.trace_color == null) {
                 // ctx.strokeStyle = 'white';
@@ -341,17 +340,17 @@ export class CanvasRenderer extends Renderer
 
         // TODO: Prefer more natural steps such as 0.5 or 10's or 0.1
 
-        let range = (this.viewport().yMax - this.viewport().yMin);
+        let range = (viewport.yMax - viewport.yMin);
         let midpoint = parseFloat((range / 2).toPrecision(3));
-        if (this.viewport().yMax > 0 && this.viewport().yMin < 0) {
+        if (viewport.yMax > 0 && viewport.yMin < 0) {
             midpoint = 0;
         }
         
         // TODO: Improve
         let gridLines = Math.floor(dataHeight / 20);
         let step = parseFloat((range / (gridLines - 1)).toPrecision(3));
-        let linesAbove = Math.floor((gridLines - 1) * ((this.viewport().yMax - midpoint) / range));
-        let linesBelow = Math.floor((gridLines - 1) * ((midpoint - this.viewport().yMin) / range));
+        let linesAbove = Math.floor((gridLines - 1) * ((viewport.yMax - midpoint) / range));
+        let linesBelow = Math.floor((gridLines - 1) * ((midpoint - viewport.yMin) / range));
 
         let markers = [midpoint];
         for (let i = 1; i <= linesAbove; ++i) {
@@ -374,7 +373,7 @@ export class CanvasRenderer extends Renderer
             //     size = ctx.measureText(text);
             // }
             
-            let offset = (1.0 - ((value - this.viewport().yMin) / range)) * dataHeight;
+            let offset = (1.0 - ((value - viewport.yMin) / range)) * dataHeight;
             ctx.fillText(text, this.margin.left - size.width - 12, this.margin.top + offset);
 
             ctx.moveTo(this.margin.left - 10, this.margin.top + offset);
@@ -383,16 +382,16 @@ export class CanvasRenderer extends Renderer
         }
 
 
-        range = (this.viewport().xMax - this.viewport().xMin);
+        range = (viewport.xMax - viewport.xMin);
         midpoint = parseFloat((range / 2).toPrecision(3));
-        if (this.viewport().xMax > 0 && this.viewport().xMin < 0) {
+        if (viewport.xMax > 0 && viewport.xMin < 0) {
             midpoint = 0;
         }
         
         gridLines = Math.floor(dataWidth / 120);
         step = parseFloat((range / (gridLines - 1)).toPrecision(3));
-        linesAbove = Math.floor((gridLines - 1) * ((this.viewport().xMax - midpoint) / range));
-        linesBelow = Math.floor((gridLines - 1) * ((midpoint - this.viewport().xMin) / range));
+        linesAbove = Math.floor((gridLines - 1) * ((viewport.xMax - midpoint) / range));
+        linesBelow = Math.floor((gridLines - 1) * ((midpoint - viewport.xMin) / range));
 
         markers = [midpoint];
         for (let i = 1; i <= linesAbove; ++i) {
@@ -415,7 +414,7 @@ export class CanvasRenderer extends Renderer
             //     size = ctx.measureText(text);
             // }
             
-            let offset = ((value - this.viewport().xMin) / range) * dataWidth;
+            let offset = ((value - viewport.xMin) / range) * dataWidth;
             ctx.fillText(text, this.margin.left - (size.width / 2) + offset, this.margin.top + dataHeight + 20);
 
             ctx.moveTo(this.margin.left + offset, this.margin.top + dataHeight);

@@ -15,6 +15,8 @@ export class Trace
         this.point_type = point_type;
         this.point_color = point_color;
 
+        this.bounds = new Bounds();
+        this.initial_data = null; // for auto**
         this.data = []; // an array of arrays of [x,y] points :(
     }
 
@@ -61,7 +63,6 @@ export class PreviewTrace extends Trace
         //     points.push([x[i], y[i]]);
         // }
         // this.data = [points];
-        // console.log(this.data);
     }
 }
 
@@ -88,7 +89,7 @@ export class MDSplusTrace extends Trace
         this.data = [];
     }
 
-    async update(conn, bounds, global_defaults_flags)
+    async update(conn, bounds, count, global_defaults_flags)
     {
         let getValueOrDefault = (property) => {
             if (global_defaults_flags[property] && Scope.defaults[property] !== null) {
@@ -131,10 +132,40 @@ export class MDSplusTrace extends Trace
             // Freak out
         }
 
+        let res_start = '*';
+        if (isFinite(bounds.xMin)) {
+            res_start = bounds.xMin;
+        }
+
+        let res_stop = '*';
+        if (isFinite(bounds.xMax)) {
+            res_stop = bounds.xMax;
+        }
+
+        count = Math.ceil(count); // TODO: Improve?
+
+        // let res_delta = '*';
+        // if (res_start != '*' && res_stop != '*') {
+        //     // Fernando's edge case
+        //     if (res_stop < res_start) {
+        //         let temp = res_start;
+        //         res_start = res_stop;
+        //         res_stop = temp;
+        //     }
+        //     res_delta = (res_stop - res_start) / count;
+        // }
+
+        // // TODO: Investigate what exactly this does
+        // request.push([ 'stc', `SetTimeContext(${res_start}, ${res_stop}, ${res_delta}, "MinMax")` ]);
+
         // TODO: Improve
         // Fallback default
         if (x_expr == null || x_expr == '') {
-            y_expr = `_wssig=(${y_expr})`;
+            y_expr = `_wssig=(${y_expr};), _wssig=CropAndResample(_wssig,${res_start},${res_stop},${count})`;
+            x_expr = 'dim_of(_wssig)';
+        }
+        else {
+            y_expr = `_wssig=(${y_expr};), _wssig=make_signal(data(_wssig), *, (${x_expr};)), _wssig=CropAndResample(_wssig,${res_start},${res_stop},${count})`;
             x_expr = 'dim_of(_wssig)';
         }
 
@@ -208,7 +239,9 @@ export class MDSplusTrace extends Trace
             }
         });
 
-
+        if (this.initial_data == null) {
+            this.initial_data = this.data;
+        }
     }
 
 }

@@ -80,6 +80,27 @@ def handle_connection(ws: ServerConnection):
     print('MDSplus Connection to', args.server, 'with arguments:', ', '.join([ f'{k}={v}' for k,v in connection_kwargs.items() ]))
     conn = MDSplus.Connection(args.server, **connection_kwargs)
 
+    # TODO: Add this to the TDI standard library
+    conn.get(
+    'public fun CropAndResample(in _sig, optional in _start, optional in _end, in _count) {' +
+        '_crop = (present(_start) || present(_end));' +
+        '_dim = data(dim_of(_sig));' +
+        'if (not present(_start)) _start = _dim[0];' +
+        'if (not present(_end)) _end = _dim[size(_dim) - 1];' +
+        'if (_crop) {' +
+            '_data = data(_sig);' +
+            '_mask = (_dim >= _start && _dim <= _end);' +
+            '_dim = pack(_dim,_mask);' +
+            '_data = pack(_data,_mask);' +
+            '_sig = make_signal(_data, *, _dim);' +
+        '}' +
+        'if (size(_sig) > _count) {' +
+            '_delta = (float(_end) - float(_start)) / float(_count);' +
+            '_sig = resample(_sig, _start, _end, _delta);' +
+        '}' +
+        'return(_sig);' +
+    '}; 42') # if we return the function itself it gets called, so we return some dummy data
+
     for message in ws:
         request = json.loads(message)
         response = {}
@@ -107,8 +128,11 @@ def handle_connection(ws: ServerConnection):
                 if isinstance(value, numpy.number):
                     value = value.item()
                 elif isinstance(value, numpy.ndarray):
-                    if isinstance(value.dtype, (numpy.dtypes.StrDType, numpy.dtypes.BytesDType)):
-                        value = value.tolist()
+                    print(value.dtype)
+                    if isinstance(value.dtype, numpy.dtypes.StrDType):
+                        value = [ item.strip() for item in value.tolist() ]
+                    elif isinstance(value.dtype, numpy.dtypes.BytesDType):
+                        value = [ item.decode().strip() for item in value.tolist() ]
                     else:
                         print(value.dtype)
 

@@ -116,8 +116,10 @@ export class GlobalDefaults
         let globalDefaultsFormTemplate = document.getElementById('global-defaults-form-template');
         $overlay.appendChild(globalDefaultsFormTemplate.content.cloneNode(true));
 
+        document.getElementById('scope-title_expr').value = Scope.title_expr; // TODO: Move to Panel
+
         // Update the form values
-        document.getElementById('global-defaults-title_expr').value = this.title_expr; // TODO: Move to Panel
+        document.getElementById('global-defaults-title_expr').value = this.title_expr;
         document.getElementById('global-defaults-y_expr').value = this.y_expr;
         document.getElementById('global-defaults-y-min').value = this.y_min_expr;
         document.getElementById('global-defaults-y-max').value = this.y_max_expr;
@@ -131,6 +133,8 @@ export class GlobalDefaults
         document.querySelectorAll(`#global-defaults-form *[data-action="save"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
+                    
+                    Scope.title_expr = document.getElementById('scope-title_expr').value;
 
                     this.title_expr = document.getElementById('global-defaults-title_expr').value;
                     this.y_expr = document.getElementById('global-defaults-y_expr').value;
@@ -146,7 +150,6 @@ export class GlobalDefaults
                     $overlay.innerHTML = '';
                     $overlay.classList.remove('shown');
 
-                    // HACK: Replace with function for refreshing
                     Scope.refresh();
                 });
             });
@@ -154,7 +157,7 @@ export class GlobalDefaults
         document.querySelectorAll(`#global-defaults-form *[data-action="reset"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
-                    debugger;
+                    this.edit(); // HACK
                 });
             });
 

@@ -66,7 +66,7 @@ export class Connection
         if (this.requests.length > 0) {
             if (this.response == null) {
                 // TODO: Possibly remove?
-                data = data.replaceAll('NaN', '0');
+                // data = data.replaceAll('NaN', '0');
                 this.response = JSON.parse(data);
 
                 // TODO: Improve

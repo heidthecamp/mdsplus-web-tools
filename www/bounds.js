@@ -35,4 +35,13 @@ export class Bounds {
             this.yMax = y;
         }
     }
+
+    equals(other) {
+        return (
+            this.xMin == other.xMin &&
+            this.xMax == other.xMax &&
+            this.yMin == other.yMin &&
+            this.yMax == other.yMax
+        );
+    }
 };

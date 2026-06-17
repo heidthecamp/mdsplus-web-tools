@@ -33,7 +33,7 @@
         }
         /* .panel {
         } */
-        .plot {
+        .panel .plot {
             flex: 1;
             height: 100%;
         }
@@ -157,7 +157,7 @@
         #traverser-preview.shown {
             display: block;
         }
-        #traverser-preview .preview-plot {
+        #traverser-preview .plot {
             width: 100%;
             height: 100%;
         }
@@ -349,6 +349,15 @@
 
     <template id="global-defaults-form-template">
         <div id="global-defaults-form" class="container-fluid">
+            <legend for="settings-form-form">Settings</legend>
+            <fieldset id="settings-form" class="col-sm-11">
+                <div class="row mb-3">
+                    <label for="scope-title_expr" class="col-sm-3 col-form-label">Title:</label>
+                    <div class="col-sm-9">
+                        <input id="scope-title_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+            </fieldset>
             <legend for="panel-default-form">Global Panel Defaults</legend>
             <fieldset id="panel-default-form" class="col-sm-11">
                 <div class="row mb-3">
@@ -496,7 +505,7 @@
     </div>
 
     <div id="traverser-preview">
-        <div class="preview-plot"></div>
+        <div class="plot"></div>
     </div>
 
     <div id="overlay"></div>

@@ -5,6 +5,7 @@ import { Scope } from "./scope.js";
 import { CanvasRenderer } from "./renderer.js";
 import { PreviewTrace } from "./trace.js";
 import { Bounds } from "./bounds.js";
+import { PreviewPanel } from "./panel.js";
 
 let NextId = 1;
 
@@ -18,11 +19,7 @@ export class Traverser
 
         this.timeout = null;
 
-        this.previewRenderer = new CanvasRenderer(
-            document.querySelector('#traverser-preview .preview-plot'),
-            null,
-            null
-        );
+        this.previewPanel = new PreviewPanel(document.querySelector('#traverser-preview'), new Bounds(), []);
 
         this.setConnection(Connection.current);
 
@@ -154,7 +151,6 @@ export class Traverser
 
             $name.addEventListener('mouseenter', (e) => {
                 this.timeout = setTimeout(async (e) => {
-                    console.log(e);
                     let $traverserPreview = document.querySelector('#traverser-preview');
                     $traverserPreview.classList.add('shown');
                     $traverserPreview.style.top = e.clientY - 200;
@@ -168,11 +164,11 @@ export class Traverser
                     ];
                     await this.connection.getMany(request)
                     .then((response) => {
-                        let traces = [
-                            new PreviewTrace(response.y.value, response.x.value),
-                        ];
-                        this.previewRenderer.update(traces[0].bounds, traces);
-                        this.previewRenderer.render();
+                        // TODO: Don't reach into preview panel
+                        let trace = new PreviewTrace(response.y.value, response.x.value);
+                        this.previewPanel.setViewport(trace.bounds);
+                        this.previewPanel.setTraces([trace]);
+                        this.previewPanel.render();
                     });
                 }, 500, e);
             });

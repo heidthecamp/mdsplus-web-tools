@@ -169,10 +169,21 @@ document.addEventListener("dragover", (e) => {
 });
 
 function finishResize() {
-    Renderer.renderers.forEach(ren => ren.render());
+    // Renderer.renderers.forEach(ren => ren.render());
+    Scope.panels.forEach(panel => {
+        panel.render();
+    });
 }
+
+let previousWindowWidth = window.innerWidth;
 
 window.addEventListener('resize', (e) => {
     clearTimeout(window.resizeTimeout);
     window.resizeTimeout = setTimeout(finishResize, 100);
+
+    if (window.innerWidth > previousWindowWidth) {
+        clearTimeout(window.updateTimeout);
+        window.updateTimeout = setTimeout(Scope.refresh, 1000);
+    }
+    previousWindowWidth = window.innerWidth;
 })

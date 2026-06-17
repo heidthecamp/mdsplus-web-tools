@@ -21,7 +21,7 @@ export class Scope
         };
         
         // TODO: Figure out how/why this keeps adding padding at the bottom
-        this.grid = GridStack.init({
+        Scope.grid = GridStack.init({
             itemClass: 'panel',
             column: 12,
             handle: '.handle',
@@ -30,28 +30,40 @@ export class Scope
             cellHeight: 50,
         });
 
-        this.grid.on("resizestop", (e) => {
+        Scope.grid.on("resizestop", async (e) => {
             let id = e.target.ddElement.el.getAttribute('gs-id');
-            let panel = this.getPanelById(id);
-            panel.render();
+            let panel = Scope.getPanelById(id);
+            await panel.update();
+            await panel.render();
         });
     };
 
+    static updating = false;
+
     static async refresh() {
-        for (var i = 0; i < this.panels.length; ++i) {
-            await this.panels[i].update();
-            await this.panels[i].render();
+        if (Scope.updating) {
+            return;
         }
 
-        await this.updateTitle();
+        Scope.updating = true;
+
+        for (var i = 0; i < Scope.panels.length; ++i) {
+            Scope.panels[i].resetViewport();
+            await Scope.panels[i].update(true);
+            await Scope.panels[i].render();
+        }
+
+        await Scope.updateTitle();
+
+        Scope.updating = false;
     }
 
     static getPanelById(id) {
         id = parseInt(id);
 
-        for (let i = 0; i < this.panels.length; ++i) {
-            if (this.panels[i].id == id) {
-                return this.panels[i];
+        for (let i = 0; i < Scope.panels.length; ++i) {
+            if (Scope.panels[i].id == id) {
+                return Scope.panels[i];
             }
         }
 
@@ -84,26 +96,26 @@ export class Scope
             use_canvas,
             global_defaults_mask
         );
-        this.panels.push(newPanel);
+        Scope.panels.push(newPanel);
         return newPanel;
     }
 
     static async setTitle(title_expr) {
-        this.title_expr = title_expr;
-        await this.updateTitle();
+        Scope.title_expr = title_expr;
+        await Scope.updateTitle();
     }
 
     static async updateTitle() {
-        if (this.title_expr != '' && this.title_expr != null) {
-            await Connection.current.getMany([ ['title', this.title_expr] ])
+        if (Scope.title_expr != '' && Scope.title_expr != null) {
+            await Connection.current.getMany([ ['title', Scope.title_expr] ])
             .then((response) => {
                 if (response.title.hasOwnProperty('value')) {
-                    this.title = response.title.value;
+                    Scope.title = response.title.value;
 
-                    document.title = this.title;
+                    document.title = Scope.title;
                     document.querySelectorAll('.window-title')
                         .forEach((e) => {
-                            e.innerText = this.title;
+                            e.innerText = Scope.title;
                         });
                 }
             });

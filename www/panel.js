@@ -14,17 +14,17 @@ export class Panel
     constructor(
         title = null,
         position = new Position(),
-        bounds = new Bounds(),
         use_canvas = null,
     ) {
         this.id = NextId++;
 
         this.title = title;
-        this.bounds = bounds;
         this.use_canvas = use_canvas;
 
         this.traces = [];
         this.renderer = null;
+
+        this.viewStack = [];
 
         this.addElement(position);
     }
@@ -33,8 +33,8 @@ export class Panel
         // virtual
     }
 
-    render() {
-        // virtual
+    async render() {
+        this.renderer.render();
     }
 
     edit() {
@@ -45,11 +45,7 @@ export class Panel
         if (!(this.renderer instanceof rendererClass)) {
             let old_renderer = this.renderer;
 
-            this.renderer = new rendererClass(
-                this.widget.querySelector('.plot'),
-                this.view,
-                this.traces
-            );
+            this.renderer = new rendererClass(this.widget.querySelector('.plot'), this);
 
             if (old_renderer != null) {
                 // TODO: Think about
@@ -73,10 +69,10 @@ export class Panel
         // For every trace...
         for (let i = 0; i < this.traces.length; i++){
             // For every line...
-            for (let j = 0; j < this.traces[i].data.length; ++j) {
+            for (let j = 0; j < this.traces[i].initial_data.length; ++j) {
                 // For every point...
-                for (let k = 0; k < this.traces[i].data[j].length; ++k){
-                    let val = this.traces[i].data[j][k];
+                for (let k = 0; k < this.traces[i].initial_data[j].length; ++k){
+                    let val = this.traces[i].initial_data[j][k];
                     b.extend(val[0], NaN);
                 }
             }
@@ -120,10 +116,10 @@ export class Panel
         // For every trace...
         for (let i = 0; i < this.traces.length; i++){
             // For every line...
-            for (let j = 0; j < this.traces[i].data.length; ++j) {
+            for (let j = 0; j < this.traces[i].initial_data.length; ++j) {
                 // For every point...
-                for (let k = 0; k < this.traces[i].data[j].length; ++k){
-                    let val = this.traces[i].data[j][k];
+                for (let k = 0; k < this.traces[i].initial_data[j].length; ++k){
+                    let val = this.traces[i].initial_data[j][k];
                     b.extend(val[0], val[1]);
                 }
             }
@@ -132,18 +128,29 @@ export class Panel
         return b;
     }
 
-    viewport() {
-        if (this.renderer != null) {
-            return this.renderer.viewport();
-        }
-        return new Bounds();
+    resetViewport() {
+        this.viewStack = [];
     }
 
     setViewport(view) {
-        if (this.renderer != null) {
-            // TODO: Prevent pushing duplicate vieports
-            this.renderer.viewStack.push(view);
+        this.viewStack = [view];
+    }
+
+    viewport() {
+        if (this.viewStack.length > 0) {
+            return this.viewStack.at(-1);
         }
+        return null;
+    }
+
+    pushZoom(view) {
+        if (!this.viewport().equals(view)) {
+            this.viewStack.push(view);
+        }
+    }
+
+    popZoom() {
+        this.viewStack.pop();
     }
 
     addElement(position = new Position()) {
@@ -186,6 +193,7 @@ export class Panel
                 node.addEventListener('click', async (e) => {
                     e.preventDefault();
                     this.setViewport(this.autoXY(this.viewport()));
+                    await this.update();
                     this.render();
                 })
             });
@@ -195,26 +203,29 @@ export class Panel
                 node.addEventListener('click', async (e) => {
                     e.preventDefault();
                     this.setViewport(this.autoX(this.viewport()));
+                    await this.update();
                     this.render();
                 })
             });
 
         this.widget.querySelectorAll('*[data-action="auto-y"]')
             .forEach((node) => {
-                node.addEventListener('click', (e) => {
+                node.addEventListener('click', async (e) => {
                     e.preventDefault();
                     this.setViewport(this.autoY(this.viewport()));
+                    // await this.update(); // TODO: Is this needed?
                     this.render();
                 })
             });
 
         this.widget.querySelectorAll('*[data-action="all-x-auto-y"]')
             .forEach((node) => {
-                node.addEventListener('click', (e) => {
+                node.addEventListener('click', async (e) => {
                     e.preventDefault();
                     let v = this.viewport();
                     for(let i = 0; i < Scope.panels.length; ++i) {
                         Scope.panels[i].setViewport(Scope.panels[i].autoY(v));
+                        await Scope.panels[i].update();
                         Scope.panels[i].render();
                     }
                 })
@@ -239,6 +250,29 @@ export class Panel
 
 }
 
+// HACK:
+export class PreviewPanel extends Panel
+{
+    constructor(element) {
+        super();
+        this.widget = element; // TODO: Improve?
+        this.setRendererClass(D3Renderer);
+    }
+
+    addElement() {
+        // override
+    }
+
+    removeElement() {
+        // override
+        this.renderer.remove();
+    }
+
+    setTraces(traces) {
+        this.traces = traces;
+    }
+}
+
 export class MDSplusPanel extends Panel
 {
     constructor(
@@ -251,7 +285,7 @@ export class MDSplusPanel extends Panel
         use_canvas = null,
         global_defaults_mask = 0xFFFF,
     ) {
-        super(title_expr, position, new Bounds(), use_canvas);
+        super(title_expr, position, use_canvas);
 
         this.setConnection(Connection.current);
 
@@ -334,7 +368,7 @@ export class MDSplusPanel extends Panel
         ));
     }
 
-    async calculateBounds(boundArray)
+    async calculateBounds()
     {
         let bounds = new Bounds();
 
@@ -613,11 +647,7 @@ export class MDSplusPanel extends Panel
         // .update(); // TODO: Call as changed
         // calculateBounds?
         let rendererClass = (this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer);
-        let previewRenderer = new rendererClass(
-            document.querySelector('#panel-preview'),
-            this.view,
-            this.traces
-        );
+        let previewRenderer = new rendererClass(document.querySelector('#panel-preview'), this);
         previewRenderer.render();
 
         // TODO: Improve
@@ -678,9 +708,6 @@ export class MDSplusPanel extends Panel
                             old_renderer.remove();
                         }
                     }
-                    else {
-                        previewRenderer.update(this.view, this.traces);
-                    }
 
                     previewRenderer.render();
                 });
@@ -689,7 +716,7 @@ export class MDSplusPanel extends Panel
         document.querySelectorAll(`#panel-form *[data-action="reset"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
-                    debugger;
+                    this.edit(); // HACK
                 });
             });
 
@@ -702,8 +729,6 @@ export class MDSplusPanel extends Panel
                 });
             });
     }
-
-    // TODO: Replace this.tree.length with traceCount or something
 
     showError(message) {
         console.error(message);
@@ -719,23 +744,41 @@ export class MDSplusPanel extends Panel
             $error.remove();
         }
 
-        this.bounds = await this.calculateBounds();
-        this.view = new Bounds();
+        // TODO: Improve?
+        let count = this.widget.querySelector('.plot').getBoundingClientRect().width * 2;
+
+        let bounds = this.viewport();
+        let initialZoom = (bounds == null);
+
+        if (initialZoom) {
+            bounds = await this.calculateBounds();
+        }
+
+        let view = new Bounds();
         for (var i = 0; i < this.traces.length; ++i) {
             try {
-                await this.traces[i].update(this.connection, this.bounds, this.global_defaults_flags);
+                if (initialZoom) {
+                    this.traces[i].initial_data = null; // HACK:
+                }
+                await this.traces[i].update(this.connection, bounds, count, this.global_defaults_flags);
             }
             catch (e) {
                 this.showError(e);
             }
             
-            this.view.join(this.traces[i].bounds);
+            view.join(this.traces[i].bounds);
         }
 
-        let rendererClass = this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer;
-        if (this.setRendererClass(rendererClass)) {
-            this.renderer.update(this.view, this.traces);
+        if (initialZoom) {
+            this.setViewport(view);
         }
+        else {
+            this.pushZoom(view);
+        }
+
+        // TODO: Remove? Move?
+        let rendererClass = this.getValueOrDefault('use_canvas') ? CanvasRenderer : D3Renderer;
+        this.setRendererClass(rendererClass);
 
         this.widget.style.opacity = 1;
 
