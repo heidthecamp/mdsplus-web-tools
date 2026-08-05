@@ -85,7 +85,7 @@ def handle_connection(ws: ServerConnection):
     'public fun CropAndResample(in _sig, optional in _start, optional in _end, in _count) {' +
         '_crop = (present(_start) || present(_end));' +
         '_dim = data(dim_of(_sig));' +
-        'if (not present(_start)) _start = _dim[0];' +
+        'if (not present(_start)) _start = set_range(1,_dim)[0];' +
         'if (not present(_end)) _end = _dim[size(_dim) - 1];' +
         'if (_crop) {' +
             '_data = data(_sig);' +
