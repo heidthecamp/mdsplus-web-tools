@@ -29,6 +29,9 @@ export class Traverser
     }
 
     async open(tree, shot_expr) {
+        if (shot_expr == "model") {
+            shot_expr = "\"model\"";
+        }
         let request = [
             ['open', `TreeOpen("${tree}",${shot_expr})`],
             ['tree', '$EXPT'],
@@ -36,14 +39,28 @@ export class Traverser
         ];
         await this.connection.getMany(request)
         .then((response) => {
+            if (response.open.hasOwnProperty('error')) {
+                // TODO: Present error to user
+                console.error(response.open.error);
+                return;
+            }
+
             // TODO: Error handling
             this.tree = response.tree.value;
             this.shot = response.shot.value;
-        });
 
-        this.addElement();
-        this.addNode(this.element, 0, `\\${this.tree.toUpperCase()}::TOP`, 'SPECIAL');
-        this.dir(0);
+            this.addElement();
+            this.addNode(this.element, 0, `\\${this.tree.toUpperCase()}::TOP`, 'SPECIAL', 1); // TODO: Calculate correct number of descendants
+            this.dir(0);
+        });
+    }
+
+    async close() {
+        await this.connection.getMany([
+            ['close', `TreeClose("${this.tree}", ${this.shot})`]
+        ]);
+
+        this.removeElement();
     }
 
     setConnection(conn) {
@@ -117,7 +134,7 @@ export class Traverser
         document.querySelector('#traverser-select').value = this.id;
     }
 
-    addNode(parent, nid, path, usage) {
+    addNode(parent, nid, path, usage, num_descendants) {
         usage = usage.split('TreeUSAGE_').at(-1);
 
         let name = path.split(/[:\.]/).at(-1);
@@ -126,6 +143,10 @@ export class Traverser
         
         $node.dataset.nid = nid;
         $node.title = usage;
+
+        if (num_descendants > 0) {
+            $node.classList.add('expandable');
+        }
         
         let $name = $node.querySelector('.name');
         $name.innerText = name;
@@ -191,12 +212,14 @@ export class Traverser
         let request = [
             ['open', `TreeOpen("${this.tree}",${this.shot})`],
             ['nid', `getnci(${node}, "NID_NUMBER")`],
-            ['child_nids', `getnci(getnci(${node},"CHILDREN_NIDS"),"NID_NUMBER")`],
-            ['member_nids', `getnci(getnci(${node},"MEMBER_NIDS"),"NID_NUMBER")`],
-            ['child_names', `getnci(getnci(${node},"CHILDREN_NIDS"),"FULLPATH")`],
-            ['member_names', `getnci(getnci(${node},"MEMBER_NIDS"),"FULLPATH")`],
-            ['child_usages', `getnci(getnci(${node},"CHILDREN_NIDS"),"USAGE_STR")`],
-            ['member_usages', `getnci(getnci(${node},"MEMBER_NIDS"),"USAGE_STR")`],
+            ['child_nids', `_wscnids=getnci(getnci(${node},"CHILDREN_NIDS"),"NID_NUMBER")`],
+            ['member_nids', `_wsmnids=getnci(getnci(${node},"MEMBER_NIDS"),"NID_NUMBER")`],
+            ['child_names', `getnci(_wscnids,"FULLPATH")`],
+            ['member_names', `getnci(_wsmnids,"FULLPATH")`],
+            ['child_usages', `getnci(_wscnids,"USAGE_STR")`],
+            ['member_usages', `getnci(_wsmnids,"USAGE_STR")`],
+            ['child_num_descendants', `getnci(_wscnids,"NUMBER_OF_CHILDREN")+getnci(_wscnids,"NUMBER_OF_MEMBERS")`],
+            ['member_num_descendants', `getnci(_wsmnids,"NUMBER_OF_CHILDREN")+getnci(_wsmnids,"NUMBER_OF_MEMBERS")`],
         ];
 
         await Connection.current.getMany(request)
@@ -213,13 +236,22 @@ export class Traverser
             $members.innerHTML = '';
             $children.innerHTML = '';
 
+            // TODO: More error handling
+            if (response.member_nids.hasOwnProperty('error')) {
+                console.error(response.member_nids.error);
+            }
+            if (response.child_nids.hasOwnProperty('error')) {
+                console.error(response.child_nids.error);
+            }
+
             if (response.member_nids.hasOwnProperty('value')) {
                 for (let i = 0; i < response.member_nids.value.length; ++i) {
                     let member_nid = response.member_nids.value[i];
                     let member_path = response.member_names.value[i];
                     let member_usage = response.member_usages.value[i];
+                    let member_num_descendants = response.member_num_descendants.value[i];
 
-                    this.addNode($members, member_nid, member_path, member_usage);
+                    this.addNode($members, member_nid, member_path, member_usage, member_num_descendants);
                 }
             }
 
@@ -228,8 +260,9 @@ export class Traverser
                     let child_nid = response.child_nids.value[i];
                     let child_path = response.child_names.value[i];
                     let child_usage = response.child_usages.value[i];
+                    let child_num_descendants = response.child_num_descendants.value[i];
 
-                    this.addNode($children, child_nid, child_path, child_usage);
+                    this.addNode($children, child_nid, child_path, child_usage, child_num_descendants);
                 }
             }
         })

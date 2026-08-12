@@ -22,7 +22,7 @@ window.onload = () => {
         });
 
     document.querySelector('*[data-action="upload"]')
-        .addEventListener('click', async(e) => {
+        .addEventListener('click', async (e) => {
             try {
                 const pickerOpts = {
                     types: [
@@ -40,7 +40,7 @@ window.onload = () => {
                 let fileHandle;
 
                 [fileHandle] = await window.showOpenFilePicker(pickerOpts);
-            } 
+            }
             catch {
                 let felement = document.createElement('input');
                 felement.setAttribute('type', 'file');
@@ -50,7 +50,7 @@ window.onload = () => {
                         Scope.panels[i].removeElement();
                     }
                     document.getElementById('panels').innerHTML = ''; // HACK:
-                    
+
                     let file = felement.files[0];
                     Import.importFile(file);
                     felement.remove();
@@ -73,6 +73,54 @@ window.onload = () => {
 
     // document.querySelector('#parallel')
     //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
+
+    document.querySelector('*[data-action="traverser-open"]')
+        .addEventListener('click', (e) => {
+            let $overlay = document.getElementById('overlay');
+            $overlay.innerHTML = '';
+            $overlay.classList.add('shown');
+
+            let $traverserOpenTemplate = document.querySelector('#traverser-open-form-template');
+            $overlay.appendChild($traverserOpenTemplate.content.cloneNode(true));
+
+            document.querySelectorAll(`#traverser-open-form *[data-action="open"]`)
+                .forEach((node) => {
+                    node.addEventListener('click', (e) => {
+                        let tree = document.querySelector('#traverser-tree').value;
+                        let shot = document.querySelector('#traverser-shot').value;
+
+                        // TODO: Improve
+                        new Traverser(tree, shot); // TODO: Mode
+
+                        $overlay.innerHTML = '';
+                        $overlay.classList.remove('shown');
+                    });
+                });
+
+            document.querySelectorAll(`#traverser-open-form *[data-action="cancel"]`)
+                .forEach((node) => {
+                    node.addEventListener('click', (e) => {
+                        $overlay.innerHTML = '';
+                        $overlay.classList.remove('shown');
+                    });
+                });
+        });
+
+    document.querySelector('*[data-action="traverser-close"]')
+        .addEventListener('click', (e) => {
+            let id = parseInt(document.querySelector('#traverser-select').value);
+            for (let i = 0; i < Traverser.traversers.length; ++i) {
+                let traverser = Traverser.traversers[i];
+                if (traverser.id == id) {
+                    traverser.close();
+                    break;
+                }
+            }
+
+            if (Traverser.traversers.length > 0) {
+                Traverser.traversers.at(-1).show();
+            }
+        });
 
     document.querySelector('#traverser-select')
         .addEventListener('change', (e) => {

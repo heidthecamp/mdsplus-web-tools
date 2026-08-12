@@ -56,7 +56,7 @@ if args.ssh_port is not None:
 if args.sshp_host is not None:
     connection_kwargs['sshp_host'] = args.sshp_host
 
-if args.server is None or args.server == 'local' or args.server == 'localhost':
+if args.server is None or args.server in ['local', 'local://0', 'thread://0']:
     import MDSplus
     args.server = 'local://0'
 else:
@@ -136,14 +136,9 @@ def handle_connection(ws: ServerConnection):
                     elif isinstance(value.dtype, numpy.dtypes.BytesDType):
                         value = [ item.decode().strip() for item in value.tolist() ]
                     else:
-                        print(value.dtype)
-
                         if value.dtype in ['int64', 'uint64']:
                             warnings.warn('int64 and uint64 are not supported, casting to float64')
                             value = value.astype('float64')
-
-                        # while len(value) > (300240 / 16): #(500 * 10): # TODO: Don't hardcode
-                        #     value = value[ :: 2]
 
                         data_packets.append(value)
                         value = { 'type': str(value.dtype), 'size': len(value) }
@@ -152,7 +147,7 @@ def handle_connection(ws: ServerConnection):
 
                 response[name] = { 'value': value }
             
-            except MDSplus.mdsExceptions.MdsException as e:
+            except Exception as e:
                 response[name] = { 'error': str(e) }
         
         try:
