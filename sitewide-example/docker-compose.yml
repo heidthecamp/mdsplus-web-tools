@@ -1,0 +1,20 @@
+services:
+    mdsplus-web-tools:
+        container_name: mdsplus-web-tools
+        build:
+            context: .
+        restart: always
+        ports:
+        - 80:80
+        - 443:443
+        #- 8888:8888 # python3 webserver
+        #- 8123:8123 # python3 websocket server
+        environment:
+            MDS_HOST: mdsplus.example.com # Replace with address of MDSplus data server
+        networks:
+        - default
+        volumes:
+        - ../:/mdsplus-web-tools:ro
+        - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+        - ./mdsplus.example.com.crt:/etc/ssl/certificate.crt:ro
+        - ./mdsplus.example.com.key:/etc/ssl/certificate.key:ro
