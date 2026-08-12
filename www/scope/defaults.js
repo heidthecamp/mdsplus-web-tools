@@ -1,5 +1,5 @@
 
-import { Scope } from "./scope.js";
+import { Scope } from "../common/scope.js";
 
 // TODO: Improve
 export var GlobalDefaultMask = {

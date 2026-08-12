@@ -2,10 +2,11 @@ import { Bounds } from "./bounds.js";
 import { Position } from "./position.js";
 import { Connection } from "./connection.js";
 import { Scope } from "./scope.js";
-import { GlobalDefaults, GlobalDefaultsFlags } from "./defaults.js";
+import { GlobalDefaults, GlobalDefaultsFlags } from "../scope/defaults.js";
 
 import { D3Renderer, CanvasRenderer, Renderer } from "./renderer.js";
 import { MDSplusTrace } from "./trace.js";
+import { Traverser } from "./traverser.js";
 
 let NextId = 1;
 
@@ -439,6 +440,18 @@ export class MDSplusPanel extends Panel
         $traceForm.dataset.id = id;
         $traceForm.classList.add('trace-form');
         $traceForm.appendChild(traceFormTemplate.content.cloneNode(true));
+
+        $traceForm.querySelectorAll('#remove-button').forEach(element => {
+            element.addEventListener('click', () => {
+                this.traces.splice((id - 1), 1); // Remove current ID from list of traces
+                this.update();  // Update the viewport
+                let b = this.autoXY(this.viewport)
+                this.bounds = b;
+                this.setViewport(b);   // Refresh x and y axis
+                this.render();  // Redraw the panel
+                this.edit();    // Reopen edit to remove previous panel list.
+            });
+        });
 
         // Append the trace ID to the input IDs
         $traceForm.querySelectorAll('input').forEach(node => {

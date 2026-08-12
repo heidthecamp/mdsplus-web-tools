@@ -1,7 +1,7 @@
 
 import { Panel, MDSplusPanel } from "./panel.js";
-import { GlobalDefaults } from "./defaults.js";
-import "./gridstack-all.js";
+import { GlobalDefaults } from "../scope/defaults.js";
+import "../resources/gridstack-all.js";
 import { Connection } from "./connection.js";
 
 export class Scope

@@ -1,15 +1,15 @@
-import "./d3.v7.min.js";
+import "../resources/d3.v7.min.js";
 window.d3 = d3; // TODO: Investigate
 
-import { Connection } from "./connection.js";
+import { Connection } from "../common/connection.js";
 import * as Import from "./import.js";
 
-import { Panel } from "./panel.js";
-import { Scope } from "./scope.js";
-import { Traverser } from "./traverser.js";
+import { Panel } from "../common/panel.js";
+import { Scope } from "../common/scope.js";
+import { Traverser } from "../common/traverser.js";
 import { GlobalDefaults } from "./defaults.js";
 
-import { D3Renderer, CanvasRenderer, Renderer } from "./renderer.js";
+import { D3Renderer, CanvasRenderer, Renderer } from "../common/renderer.js";
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
 

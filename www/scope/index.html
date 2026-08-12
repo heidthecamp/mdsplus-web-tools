@@ -3,8 +3,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" /> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script src="./gridstack-all.js"></script>
-    <link href="./gridstack.min.css" rel="stylesheet"></link>
+    <script src="../resources/gridstack-all.js"></script>
+    <link href="../resources/gridstack.min.css" rel="stylesheet"></link>
     <style>
         body, html {
             margin: 0;
@@ -177,17 +177,17 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link active" type="button" data-action="edit" role="button">
-                            <img src="octicons/pencil.svg" />
+                            <img src="../octicons/pencil.svg" />
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" type="button" data-action="remove" role="button">
-                            <img src="octicons/trash.svg" />
+                            <img src="../octicons/trash.svg" />
                         </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                             <img src="octicons/graph.svg" />
+                             <img src="../octicons/graph.svg" />
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" data-action="auto-x-y">Auto X & Y</a></li>
@@ -255,7 +255,7 @@
                     <div class="row mb-3">
                         <ul class="nav nav-tabs" id="trace-form-tabs">
                             <li class="nav-item">
-                                <a class="nav-link" data-action="add-trace" ><img src="octicons/diff-added.svg"  /></a>
+                                <a class="nav-link" data-action="add-trace" ><img src="../octicons/diff-added.svg"  /></a>
                             </li>
                             <li class="nav-item">
 
@@ -265,6 +265,7 @@
                     
                     <div class="row mb-3">
                         <div class="col-sm-1 panel-defaults">
+                            <div style="height: 60px;"></div>
                             <div class="row mb-3">
                                 <input tabindex="12" id="trace-y_expr-default" type="checkbox" /> <br />
                             </div>
@@ -300,6 +301,12 @@
     </template>
 
     <template id="trace-form-template">
+        <div class="row mb-3">
+            <div class="container-fluid">
+                <button type="button", class="btn btn-secondary" id="open-traverser">Open in Traverser</button>
+                <button type="button", data-action="remove-trace" class="btn btn-danger" id="remove-button">Remove</button>
+            </div>
+        </div>
         <div class="row mb-3">
             <label for="trace-y_expr" class="col-sm-3 col-form-label">Y Axis</label>
             <div class="col-sm-9">
@@ -436,12 +443,12 @@
                     <!-- <ul id="traverser-tabs" class="nav nav-tabs">
                         <li class="nav-item">
                             <a class="nav-link">
-                                <img src="./octicons/diff-added.svg" style="filter: invert(100%);" />
+                                <img src="../octicons/diff-added.svg" style="filter: invert(100%);" />
                             </a>
                         </li>
                     </ul> -->
                     <div class="traverser-tabs">
-                        <img src="./octicons/diff-added.svg" style="filter: invert(100%);" />
+                        <img src="../octicons/diff-added.svg" style="filter: invert(100%);" />
                         <select id="traverser-select">
 
                         </select>
@@ -459,22 +466,22 @@
                         <ul class="navbar-nav">
                             <li class="nav-item">
                                 <a class="nav-link" data-action="upload" role="button">
-                                    <img src="./octicons/upload.svg" />
+                                    <img src="../octicons/upload.svg" />
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-action="refresh" role="button">
-                                    <img src="./octicons/sync.svg" />
+                                    <img src="../octicons/sync.svg" />
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-action="add-panel" role="button">
-                                    <img src="./octicons/diff-added.svg" />
+                                    <img src="../octicons/diff-added.svg" />
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="./octicons/gear.svg" />
+                                    <img src="../octicons/gear.svg" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                 

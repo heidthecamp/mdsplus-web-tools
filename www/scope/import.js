@@ -1,6 +1,6 @@
 
-import { Panel } from "./panel.js";
-import { Scope } from "./scope.js";
+import { Panel } from "../common/panel.js";
+import { Scope } from "../common/scope.js";
 import { GlobalDefaults } from "./defaults.js";
 
 export async function importFile(file) {
