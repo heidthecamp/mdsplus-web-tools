@@ -165,29 +165,29 @@ window.onload = () => {
     Scope.initGrid();
 
     let sin = Scope.addPanel(
-        "'SIN(), COS()'",
+        "'Sample Data with ' // size(_data1) + size(_data2) + size(_data3) // ' points'",
         { x: 0, y: 0, width: 12, height: 6 },
         -1, 1, null, null,
         0x0381
     );
     sin.addTrace(
         null, null, null,
-        "sin(0 : 50 : 0.05) * 0.8",
-        "0 : 1000",
+        "_data1 = sin(0 : 50 : 0.05) * 0.9",
+        null,
         null,
         "red"
     );
     sin.addTrace(
         null, null, null,
-        "cos(0 : 50 : 0.05) * 0.8",
-        "0 : 1000",
+        "_data2 = cos(0 : 50 : 0.05) * 0.8",
+        null,
         null,
         "blue"
     );
     sin.addTrace(
         null, null, null,
-        "sin((0 : 50 : 0.05) - $PI) * 0.8",
-        "0 : 1000",
+        "_data3 = sin((0 : 50 : 0.05) - $PI) * 0.7",
+        null,
         null,
         "green"
     );
