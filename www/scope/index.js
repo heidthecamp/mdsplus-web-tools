@@ -77,11 +77,13 @@ window.onload = () => {
     document.querySelector('*[data-action="traverser-collapse"]')
         .addEventListener('click', (e) => {
             document.querySelector('#traverser-panel').classList.add('hidden');
+            Scope.refresh(); // TODO: Remove
         });
 
     document.querySelector('*[data-action="traverser-expand"]')
         .addEventListener('click', (e) => {
             document.querySelector('#traverser-panel').classList.remove('hidden');
+            Scope.refresh(); // TODO: Remove
         });
 
     document.querySelector('*[data-action="traverser-open"]')
@@ -162,41 +164,36 @@ window.onload = () => {
 
     Scope.initGrid();
 
-    let p = Scope.addPanel("'SIN()'", { x: 0, y: 0, width: 12, height: 6 },
-        null, null, null, null,
-        0x0381);
-    p.addTrace(null, null, null, "sin(0 : 100 : 0.1)", "0 : 1000");
-
-    p = Scope.addPanel("$SHOT", { x: 0, y: 2, width: 6, height: 6 });
-    p.addTrace(
-        "cmod", 1090909010,
-        null,
-        "\\IP", null,
-        null, "steelblue",
-        null, "steelblue",
+    let sin = Scope.addPanel(
+        "'SIN(), COS()'",
+        { x: 0, y: 0, width: 12, height: 6 },
+        -1, 1, null, null,
+        0x0381
     );
-    p.addTrace("cmod", 1090909010,
+    sin.addTrace(
+        null, null, null,
+        "sin(0 : 50 : 0.05) * 0.8",
+        "0 : 1000",
         null,
-        "abs(\\IP)", null,
-        null, "red",
-        null, "red",
+        "red"
     );
-
-    p = Scope.addPanel("$SHOT", { x: 6, y: 2, width: 6, height: 6 },
-        "200000", "1500000", "0.0", "1.5");
-    p.addTrace(
-        "cmod", 0,
+    sin.addTrace(
+        null, null, null,
+        "cos(0 : 50 : 0.05) * 0.8",
+        "0 : 1000",
         null,
-        "abs(\\IP)", null,
-        null, "steelblue",
-        null, "steelblue",
+        "blue"
+    );
+    sin.addTrace(
+        null, null, null,
+        "sin((0 : 50 : 0.05) - $PI) * 0.8",
+        "0 : 1000",
+        null,
+        "green"
     );
 
-    Scope.setTitle("$SHOT");
+    Scope.setTitle("if_error($SHOT,'No Shot Open') // ' - Running as ' // whoami()");
     Scope.refresh();
-
-    let traverser = new Traverser('cmod', 0);
-    new Traverser('analysis', 1090909010);
 }
 
 document.addEventListener('drop', async (e) => {

@@ -171,13 +171,14 @@ class HTTPRequestHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, **kwargs, directory='www')
 
 def websocket_main():
-    print(f'Serving websocket on http://{address}:{websocket_port}')
+    # print(f'Serving websocket on http://{address}:{websocket_port}')
 
     server = serve(handle_connection, address, websocket_port)
     server.serve_forever()
 
 def webserver_main():
     print(f'Serving on http://{address}:{webserver_port}')
+    print(f'Serving scope on http://{address}:{webserver_port}/scope')
 
     server = HTTPServer((address, webserver_port), HTTPRequestHandler)
     server.serve_forever()

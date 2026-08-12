@@ -24,6 +24,11 @@
             margin-bottom: 5px;
             font-size: 20px;
         }
+        #scope {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            overflow-x: hidden;
+        }
         /* .grid-stack-item {
         } */
         .grid-stack-item-content {
@@ -524,10 +529,8 @@
         <div class="row flex-nowrap">
             <div id="traverser-panel" class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark hidden">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                    <div id="traverser-minimized">
-                        <a id="traverser-expand" data-action="traverser-expand" role="button">
-                            <img src="../octicons/move-to-end.svg" style="filter: invert(1);" />
-                        </a>
+                    <div id="traverser-minimized" data-action="traverser-expand" role="button">
+                        <img id="traverser-expand" src="../octicons/move-to-end.svg" style="filter: invert(1);" />
                         <div class="traverser-title">Traverser</div>
                     </div>
                     <div id="traverser-content">
@@ -550,7 +553,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col py-3">
+            <div id="scope" class="col">
                 <nav class="navbar navbar-expand-lg bg-body-tertiary">
                     <div class="container-fluid">
                         <div style="width: 56px;"></div>
