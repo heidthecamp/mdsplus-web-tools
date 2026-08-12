@@ -74,6 +74,16 @@ window.onload = () => {
     // document.querySelector('#parallel')
     //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
 
+    document.querySelector('*[data-action="traverser-collapse"]')
+        .addEventListener('click', (e) => {
+            document.querySelector('#traverser-panel').classList.add('hidden');
+        });
+
+    document.querySelector('*[data-action="traverser-expand"]')
+        .addEventListener('click', (e) => {
+            document.querySelector('#traverser-panel').classList.remove('hidden');
+        });
+
     document.querySelector('*[data-action="traverser-open"]')
         .addEventListener('click', (e) => {
             let $overlay = document.getElementById('overlay');

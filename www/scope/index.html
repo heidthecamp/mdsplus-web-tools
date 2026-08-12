@@ -111,6 +111,40 @@
             margin-top: 20px;
         }
 
+        .traverser-title {
+            font-size: 30px;
+        }
+        #traverser-panel.hidden {
+            width: 50px;
+        }
+        #traverser-panel.hidden #traverser-content {
+            display: none;
+        }
+        #traverser-minimized {
+            display: none;
+            position: absolute;
+            top: 15px;
+            left: 0px;
+            width: 50px;
+        }
+        #traverser-expand {
+            display: block;
+            margin-left: 15px;
+            margin-bottom: 10px;
+        }
+        #traverser-panel.hidden #traverser-minimized {
+            display: block;
+        }
+        #traverser-minimized .traverser-title {
+            rotate: 90deg;
+        }
+        #traverser-collapse {
+            float: right;
+            margin-top: 10px;
+        }
+        #traverser-content {
+            width: 100%;
+        }
         #traverser-open {
             cursor: pointer;
         }
@@ -149,6 +183,8 @@
         }
         #traverser-tabs {
             width: 100%;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
         #traverser-tabs .nav-link {
             color: white;
@@ -172,6 +208,9 @@
         #traverser-preview .plot {
             width: 100%;
             height: 100%;
+        }
+        #traverser-select {
+            width: calc(100% - 60px);
         }
     </style>
 
@@ -483,28 +522,31 @@
 
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+            <div id="traverser-panel" class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark hidden">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                    <!-- <ul id="traverser-tabs" class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link">
-                                <img src="../octicons/diff-added.svg" style="filter: invert(100%);" />
-                            </a>
-                        </li>
-                    </ul> -->
-                    <div class="traverser-tabs">
-                        <a data-action="traverser-open" role="button">
-                            <img src="../octicons/diff-added.svg" />
+                    <div id="traverser-minimized">
+                        <a id="traverser-expand" data-action="traverser-expand" role="button">
+                            <img src="../octicons/move-to-end.svg" style="filter: invert(1);" />
                         </a>
-                        <a data-action="traverser-close" role="button">
-                            <img src="../octicons/trash.svg" />
-                        </a>
-                        <select id="traverser-select">
-
-                        </select>
+                        <div class="traverser-title">Traverser</div>
                     </div>
-                    <div id="traversers">
-                        
+                    <div id="traverser-content">
+                        <a id="traverser-collapse" data-action="traverser-collapse" role="button">
+                            <img src="../octicons/move-to-start.svg" style="filter: invert(1);" />
+                        </a>
+                        <div class="traverser-title">Traverser</div>
+                        <div id="traverser-tabs">
+                            <a data-action="traverser-open" role="button" title="Open a Traverser">
+                                <img src="../octicons/diff-added.svg" style="filter: invert(1);" />
+                            </a>
+                            <a data-action="traverser-close" role="button" title="Close current Traverser">
+                                <img src="../octicons/trash.svg" style="filter: invert(1);" />
+                            </a>
+                            <select id="traverser-select"></select>
+                        </div>
+                        <div id="traversers">
+                            
+                        </div>
                     </div>
                 </div>
             </div>
