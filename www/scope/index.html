@@ -30,12 +30,11 @@
             padding-right: 0 !important;
             overflow-x: hidden;
         }
-        /* .grid-stack-item {
-        } */
         .grid-stack-item-content {
             display: flex;
             flex-direction: column;
             border: 1px solid #CCC;
+            overflow: visible !important;
         }
         /* .panel {
         } */
@@ -46,6 +45,9 @@
         .panel .navbar {
             flex: none;
             padding: 0;
+        }
+        .panel .title {
+            overflow-x: hidden;
         }
         .navbar-nav {
             flex-direction: row;
@@ -219,6 +221,15 @@
         #traverser-select {
             width: calc(100% - 60px);
         }
+        .warn {
+            color: #A22 !important;
+        }
+        .warn:hover {
+            color: red !important;
+        }
+        .dropdown-item:hover {
+            font-weight: bold;
+        }
     </style>
 
     <template id="traverser-node-template">
@@ -263,31 +274,19 @@
     <template id="panel-template">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
-                <div class="navbar-brand title"></div>
-                <div class="handle"></div>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" type="button" data-action="edit" role="button">
-                            <img src="../octicons/pencil.svg" />
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" type="button" data-action="remove" role="button">
-                            <img src="../octicons/trash.svg" />
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                             <img src="../octicons/graph.svg" />
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" data-action="auto-x-y">Auto X & Y</a></li>
-                            <li><a class="dropdown-item" data-action="auto-x">Auto X</a></li>
-                            <li><a class="dropdown-item" data-action="auto-y">Auto Y</a></li>
-                            <li><a class="dropdown-item" data-action="all-x-auto-y">All X Auto Y</a></li>
-                        </ul>
-                    </li>
-                </ul>
+                <div class="navbar-nav">
+                    <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="../octicons/gear.svg" />
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" data-action="edit">Edit</a></li>
+                        <li><a class="dropdown-item" data-action="auto-x-y">Auto X & Y</a></li>
+                        <li><a class="dropdown-item" data-action="auto-x">Auto X</a></li>
+                        <li><a class="dropdown-item" data-action="auto-y">Auto Y</a></li>
+                        <li><a class="dropdown-item" data-action="all-x-auto-y">All X Auto Y</a></li>
+                        <li><a class="dropdown-item warn" data-action="remove">Delete</a></li>
+                    </ul></div>
+                <div class="navbar-brand title handle"></div>
             </div>
         </nav>
         <div class="plot">Loading...</div>
@@ -562,38 +561,24 @@
                         <div class="navbar-brand window-title">Window Title</div>
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a class="nav-link" data-action="reset" role="button">
-                                    Reset
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-action="export" role="button">
-                                    Export
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-action="import" role="button">
-                                    <img src="../octicons/upload.svg" />
-                                </a>
+                                <button class="btn btn-primary" type="button" data-action="add-panel">
+                                    Add Panel
+                                </button>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-action="refresh" role="button">
                                     <img src="../octicons/sync.svg" />
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-action="add-panel" role="button">
-                                    <img src="../octicons/diff-added.svg" />
-                                </a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="../octicons/gear.svg" />
+                                    <img src="../octicons/three-bars.svg" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                
-                                
+                                    <li><a class="dropdown-item" data-action="import">Import</a></li>
+                                    <li><a class="dropdown-item" data-action="export">Export</a></li>
                                     <li><a class="dropdown-item" data-action="settings">Settings</a></li>
+                                    <li><a class="dropdown-item" data-action="reset">Reset</a></li>
                                 </ul>
                             </li>
                         </ul>
