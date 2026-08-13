@@ -305,7 +305,7 @@ export class MDSplusPanel extends Panel
         this.x_max_expr = x_max_expr;
 
         // HACK: Move away from assuming a mask
-        if (typeof(global_defaults_mask) == GlobalDefaultsFlags) {
+        if (global_defaults_mask instanceof GlobalDefaultsFlags) {
             this.global_defaults_flags = global_defaults_mask;
         }
         else {
