@@ -38,6 +38,18 @@ export class Scope
         });
     };
 
+    static reset() {
+        Scope.setTitle("\"MDSplus Scope\"");
+        Scope.defaults = new GlobalDefaults();
+
+        for (var i = 0; i < Scope.panels.length; ++i) {
+            Scope.panels[i].removeElement();
+        }
+        Scope.panels = [];
+
+        Scope.initGrid();
+    }
+
     static updating = false;
 
     static async refresh() {

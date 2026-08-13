@@ -151,6 +151,15 @@ export class Panel
         this.viewStack.pop();
     }
 
+    position() {
+        return {
+            width: this.widget.gridstackNode.w,
+            height: this.widget.gridstackNode.h,
+            x: this.widget.gridstackNode.x,
+            y: this.widget.gridstackNode.y,
+        }
+    }
+
     addElement(position = new Position()) {
         if (position.width == null) {
             position.width = 6;
@@ -295,7 +304,13 @@ export class MDSplusPanel extends Panel
         this.x_min_expr = x_min_expr;
         this.x_max_expr = x_max_expr;
 
-        this.global_defaults_flags = GlobalDefaultsFlags.fromMask(global_defaults_mask);
+        // HACK: Move away from assuming a mask
+        if (typeof(global_defaults_mask) == GlobalDefaultsFlags) {
+            this.global_defaults_flags = global_defaults_mask;
+        }
+        else {
+            this.global_defaults_flags = GlobalDefaultsFlags.fromMask(global_defaults_mask);
+        }
 
         if (y_min_expr !== null) {
             this.global_defaults_flags.y_min_expr = false;

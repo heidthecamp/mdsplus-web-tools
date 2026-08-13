@@ -3,6 +3,7 @@ window.d3 = d3; // TODO: Investigate
 
 import { Connection } from "../common/connection.js";
 import * as Import from "./import.js";
+import * as Export from "./export.js";
 
 import { Panel } from "../common/panel.js";
 import { Scope } from "../common/scope.js";
@@ -21,7 +22,18 @@ window.onload = () => {
             Scope.addPanel().edit();
         });
 
-    document.querySelector('*[data-action="upload"]')
+    document.querySelector('*[data-action="reset"]')
+        .addEventListener('click', async (e) => {
+            Scope.reset();
+            Scope.refresh();
+        });
+
+    document.querySelector('*[data-action="export"]')
+        .addEventListener('click', async (e) => {
+            Export.exportFile();
+        });
+
+    document.querySelector('*[data-action="import"]')
         .addEventListener('click', async (e) => {
             try {
                 const pickerOpts = {
@@ -44,7 +56,7 @@ window.onload = () => {
             catch {
                 let felement = document.createElement('input');
                 felement.setAttribute('type', 'file');
-                felement.setAttribute('accept', '.dat,.jscp'); // only accept scope files
+                felement.setAttribute('accept', '.dat,.jscp,.json'); // only accept scope files
                 felement.addEventListener("change", () => {
                     for (var i = 0; i < Scope.panels.length; ++i) {
                         Scope.panels[i].removeElement();
