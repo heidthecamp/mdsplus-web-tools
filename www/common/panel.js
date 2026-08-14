@@ -620,7 +620,7 @@ export class MDSplusPanel extends Panel
         return needUpdate;
     }
 
-    async edit() {
+    async edit(initialEdit = false) {
         let $overlay = document.getElementById('overlay');
 
         // Clear out the overlay
@@ -755,6 +755,9 @@ export class MDSplusPanel extends Panel
         document.querySelectorAll(`#panel-form *[data-action="cancel"]`)
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
+                    if(initialEdit) {
+                        this.removeElement();
+                    }
                     previewRenderer.remove();
                     $overlay.innerHTML = '';
                     $overlay.classList.remove('shown');

@@ -19,7 +19,7 @@ window.onload = () => {
 
     document.querySelector('*[data-action="add-panel"]')
         .addEventListener('click', (e) => {
-            Scope.addPanel().edit();
+            Scope.addPanel().edit(true);
         });
 
     document.querySelector('*[data-action="prev-shot"]')
