@@ -455,6 +455,7 @@ export class MDSplusPanel extends Panel
         $traceForm.dataset.id = id;
         $traceForm.classList.add('trace-form');
         $traceForm.appendChild(traceFormTemplate.content.cloneNode(true));
+        $traceForm.querySelector('*[data-action="open-trace-traverser"]').dataset.id = id;
 
         $traceForm.querySelectorAll('#remove-button').forEach(element => {
             element.addEventListener('click', () => {
@@ -632,6 +633,10 @@ export class MDSplusPanel extends Panel
         let panelFormTemplate = document.getElementById('panel-form-template');
         $overlay.appendChild(panelFormTemplate.content.cloneNode(true));
 
+        if (this.traces.length == 0) {
+            this.traces.push(new MDSplusTrace());
+        }
+
         for (var i = 0; i < this.traces.length; ++i) {
             let id = i + 1;
 
@@ -639,14 +644,48 @@ export class MDSplusPanel extends Panel
             this.addTraceForm(id);
         }
 
-        if (this.traces.length == 0) {
-            this.addTraceForm(1);
-        }
+        // if (this.traces.length == 0) {
+        //     this.addTraceForm(1);
+        // }
         
-
         // TODO: Improve
         // Create classes / functions? setTraceFormActive() ?
         document.getElementById(`trace-tab-1`).click();
+
+        document.querySelectorAll('*[data-action="open-trace-traverser"]')
+            .forEach((button) => {
+                button.addEventListener('click', async (e) => {
+                    let id = parseInt(button.dataset.id) - 1;
+                    let traverser =  await Traverser.findOrOpen(
+                        this.getValueOrDefault('tree', id),
+                        this.getValueOrDefault('shot_expr', id),
+                    );
+
+                    let node = this.getValueOrDefault('y_expr', id);
+                    if (node !== null) {
+                        // Filter out functions
+                        node = node.replaceAll(/([a-zA-Z_]+\()/g, '');
+
+                        // Filter out variables
+                        node = node.replaceAll(/(_[a-zA-Z_]+)/g, '');
+
+                        // Filter out scientific notation
+                        node = node.replaceAll(/([0-9]e[0-9]+)/g, '');
+
+                        // Find first thing that looks like a node
+                        let matches = node.match(/(\\?\\?[a-zA-Z][a-zA-Z0-9_:\.]+)/);
+                        node = matches[0];
+
+                        let default_node_expr = this.getValueOrDefault('default_node_expr', id);
+                        traverser.reveal(node, default_node_expr);
+
+                        // HACK: Effectively "cancel"
+                        previewRenderer.remove();
+                        $overlay.innerHTML = '';
+                        $overlay.classList.remove('shown');
+                    }
+                });
+            });
 
         let $panelForm = document.getElementById('panel-form');
         $panelForm.dataset.nextDataId = this.traces.length + 1;
@@ -776,23 +815,6 @@ export class MDSplusPanel extends Panel
         // if (this.renderer != null) {
         //     this.renderer.remove();
         // }
-    }
-
-    async render() {
-        if (this.widget.querySelector('.error') != null) {
-            return;
-        }
-
-        if (this.traces.length == 0) {
-            return;
-        }
-
-        let $plot = this.widget.querySelector('.plot');
-        $plot.innerHTML = '';
-        
-        this.renderer.render();
-
-        this.widget.style.opacity = 1;
 
         let request = [];
         if (this.global_defaults_flags['title']){
@@ -819,6 +841,23 @@ export class MDSplusPanel extends Panel
             $title.innerText = '';
         }
 
+    }
+
+    async render() {
+        if (this.widget.querySelector('.error') != null) {
+            return;
+        }
+
+        if (this.traces.length == 0) {
+            return;
+        }
+
+        let $plot = this.widget.querySelector('.plot');
+        $plot.innerHTML = '';
+        
+        this.renderer.render();
+
+        this.widget.style.opacity = 1;
     }
 
     setupGlobalDefaults(property, inputId=null, checkboxId=null) {
@@ -858,7 +897,7 @@ export class MDSplusPanel extends Panel
         }
 
         if (trace !== null) {
-            return this[property][trace];
+            return this.traces[trace][property];
         }
         else {
             return this[property];

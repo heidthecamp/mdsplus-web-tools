@@ -110,16 +110,16 @@ export class GlobalDefaults
         document.getElementById('scope-title_expr').value = Scope.title_expr; // TODO: Move to Panel
 
         // Update the form values
-        document.getElementById('global-defaults-title_expr').value = this.title_expr;
-        document.getElementById('global-defaults-y_expr').value = this.y_expr;
-        document.getElementById('global-defaults-y-min').value = this.y_min_expr;
-        document.getElementById('global-defaults-y-max').value = this.y_max_expr;
-        document.getElementById('global-defaults-x_expr').value = this.x_expr;
-        document.getElementById('global-defaults-x-min').value = this.x_min_expr;
-        document.getElementById('global-defaults-x-max').value = this.x_max_expr;
-        document.getElementById('global-defaults-tree').value = this.tree;
-        document.getElementById('global-defaults-shot_expr').value = this.shot_expr;
-        document.getElementById('global-defaults-default_node_expr').value = this.default_node_expr;
+        document.getElementById('global-defaults-title_expr').value = this.title_expr ?? '';
+        document.getElementById('global-defaults-y_expr').value = this.y_expr ?? '';
+        document.getElementById('global-defaults-y-min').value = this.y_min_expr ?? '';
+        document.getElementById('global-defaults-y-max').value = this.y_max_expr ?? '';
+        document.getElementById('global-defaults-x_expr').value = this.x_expr ?? '';
+        document.getElementById('global-defaults-x-min').value = this.x_min_expr ?? '';
+        document.getElementById('global-defaults-x-max').value = this.x_max_expr ?? '';
+        document.getElementById('global-defaults-tree').value = this.tree ?? '';
+        document.getElementById('global-defaults-shot_expr').value = this.shot_expr ?? '';
+        document.getElementById('global-defaults-default_node_expr').value = this.default_node_expr ?? '';
 
         document.querySelectorAll(`#global-defaults-form *[data-action="save"]`)
             .forEach((node) => {

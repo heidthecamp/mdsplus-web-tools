@@ -47,6 +47,9 @@ export class D3Renderer extends Renderer
         }
 
         let viewport = this.panel.viewport();
+        if (viewport === null) {
+            return;
+        }
         
         let dataWidth = plotRect.width - this.margin.left - this.margin.right;
         let dataHeight = plotRect.height - this.margin.top - this.margin.bottom;

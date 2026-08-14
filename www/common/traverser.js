@@ -12,6 +12,86 @@ let NextId = 1;
 export class Traverser
 {
     static traversers = [];
+    static activeTraverser = null;
+
+    async reveal(node, default_node_expr = null)
+    {
+        if (default_node_expr == null) {
+            default_node_expr = 'TreeSetDefault("\\\\TOP")';
+        }
+        else {
+            default_node_expr = `TreeSetDefault("${default_node_expr.replace('\\', '\\\\')}")`;
+        }
+
+        let request = [
+            ['open', `TreeOpen("${this.tree}",${this.shot})`],
+            ['default_node', default_node_expr], // TODO: Fix
+            ['path', `getnci((${node}), "FULLPATH")`],
+        ];
+
+        await this.connection.getMany(request)
+        .then(async (response) => {
+            if (response.path.hasOwnProperty('error')) {
+                console.error(response.path);
+                return;
+            }
+
+            if (response.path.hasOwnProperty('value')) {
+                let path = response.path.value;
+                path = path.split('::')[1];
+                
+                let used = [];
+                let parts = path.split(/[:\.]/);
+                for (let i = 1; i < parts.length; ++i) {
+                    used.push(parts[i]);
+                    console.log(used);
+                    await this.dir(used.join(':'));
+                }
+            }
+        });
+    }
+
+    static async findOrOpen(tree, shot_expr, node)
+    {
+        let traverser = null;
+
+        let request = [
+            ['open', `TreeOpen("${tree}",${shot_expr})`],
+            ['tree', '$EXPT'],
+            ['shot', '$SHOT'],
+            ['path', `getnci((${node}), "FULLPATH")`]
+        ];
+        await Connection.current.getMany(request)
+        .then((response) => {
+            if (response.open.hasOwnProperty('error')) {
+                console.error(response.open.error);
+                return;
+            }
+
+            tree = response.tree.value;
+            let shot = response.shot.value;
+
+            let found = false;
+            for (let i = 0; i < Traverser.traversers.length; ++i) {
+                traverser = Traverser.traversers[i];
+                if (traverser.tree == tree && traverser.shot == shot) {
+                    traverser.show();
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                traverser = new Traverser(tree, shot);
+            }
+
+            // HACK: Add real methods for expand/collapse to Traverser
+            document.querySelector('*[data-action="traverser-expand"]').click();
+
+        });
+
+        return traverser;
+    }
 
     constructor(tree, shot_expr)
     {
@@ -81,13 +161,13 @@ export class Traverser
         this.element.dataset.tree = this.tree;
         this.element.dataset.shot = this.shot;
 
-        document.querySelector('#traversers').appendChild(this.element);
+        document.querySelector('#traversers').append(this.element);
 
         this.option = document.createElement('option');
         this.option.value = this.id;
         this.option.innerText = `${this.tree}/${this.shot}`;
 
-        document.querySelector('#traverser-select').appendChild(this.option);
+        document.querySelector('#traverser-select').prepend(this.option);
 
         this.show();
 
@@ -123,6 +203,16 @@ export class Traverser
 
         let index = Traverser.traversers.indexOf(this);
         Traverser.traversers.splice(index, 1);
+
+        if (Traverser.activeTraverser == this) {
+            if (Traverser.traversers.length == 0) {
+                Traverser.activeTraverser = null;
+                document.querySelector('#traverser-select').value = 0;
+            }
+            else {
+                Traverser.activeTraverser = Traverser.traversers.at(-1);
+            }
+        }
     }
 
     show() {
@@ -132,6 +222,8 @@ export class Traverser
         this.element.classList.add('active');
 
         document.querySelector('#traverser-select').value = this.id;
+
+        Traverser.activeTraverser = this;
     }
 
     addNode(parent, nid, path, usage, num_descendants) {
@@ -211,9 +303,10 @@ export class Traverser
     async dir(node) {
         let request = [
             ['open', `TreeOpen("${this.tree}",${this.shot})`],
-            ['nid', `getnci(${node}, "NID_NUMBER")`],
-            ['child_nids', `_wscnids=getnci(getnci(${node},"CHILDREN_NIDS"),"NID_NUMBER")`],
-            ['member_nids', `_wsmnids=getnci(getnci(${node},"MEMBER_NIDS"),"NID_NUMBER")`],
+            ['default_node', 'SetDefaultNid(0)'],
+            ['nid', `_wsnid=getnci(${node}, "NID_NUMBER")`],
+            ['child_nids', `_wscnids=getnci(getnci(_wsnid,"CHILDREN_NIDS"),"NID_NUMBER")`],
+            ['member_nids', `_wsmnids=getnci(getnci(_wsnid,"MEMBER_NIDS"),"NID_NUMBER")`],
             ['child_names', `getnci(_wscnids,"FULLPATH")`],
             ['member_names', `getnci(_wsmnids,"FULLPATH")`],
             ['child_usages', `getnci(_wscnids,"USAGE_STR")`],
@@ -227,8 +320,6 @@ export class Traverser
             let nid = response.nid.value;
 
             let $parent = this.getNode(nid);
-
-            $parent.classList.add('expanded');
 
             let $members = $parent.querySelector(`.members`);
             let $children = $parent.querySelector(`.children`);
@@ -244,7 +335,10 @@ export class Traverser
                 console.error(response.child_nids.error);
             }
 
+            let count = 0;
             if (response.member_nids.hasOwnProperty('value')) {
+                count += response.member_nids.value.length;
+
                 for (let i = 0; i < response.member_nids.value.length; ++i) {
                     let member_nid = response.member_nids.value[i];
                     let member_path = response.member_names.value[i];
@@ -256,6 +350,8 @@ export class Traverser
             }
 
             if (response.child_nids.hasOwnProperty('value')) {
+                count += response.child_nids.value.length;
+                
                 for (let i = 0; i < response.child_nids.value.length; ++i) {
                     let child_nid = response.child_nids.value[i];
                     let child_path = response.child_names.value[i];
@@ -264,6 +360,10 @@ export class Traverser
 
                     this.addNode($children, child_nid, child_path, child_usage, child_num_descendants);
                 }
+            }
+
+            if (count > 0) {
+                $parent.classList.add('expanded');
             }
         })
     }

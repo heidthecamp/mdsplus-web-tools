@@ -22,6 +22,18 @@ window.onload = () => {
             Scope.addPanel().edit();
         });
 
+    document.querySelector('*[data-action="prev-shot"]')
+        .addEventListener('click', async (e) => {
+            --Scope.shot_expr_offset;
+            Scope.refresh();
+        });
+
+    document.querySelector('*[data-action="next-shot"]')
+        .addEventListener('click', async (e) => {
+            ++Scope.shot_expr_offset;
+            Scope.refresh();
+        });
+
     document.querySelector('*[data-action="reset"]')
         .addEventListener('click', async (e) => {
             Scope.reset();
@@ -39,9 +51,21 @@ window.onload = () => {
                 const pickerOpts = {
                     types: [
                         {
-                            description: "Legacy Scopes",
+                            description: "dwscope",
+                            accept: {
+                                "*": [".dat"],
+                            },
+                        },
+                        {
+                            description: "jScope",
                             accept: {
                                 "*": [".dat", ".jscp"],
+                            },
+                        },
+                        {
+                            description: "Web Scope",
+                            accept: {
+                                "*": [".json"],
                             },
                         },
                     ],
@@ -89,45 +113,13 @@ window.onload = () => {
     document.querySelector('*[data-action="traverser-collapse"]')
         .addEventListener('click', (e) => {
             document.querySelector('#traverser-panel').classList.add('hidden');
-            Scope.refresh(); // TODO: Remove
+            Scope.render();
         });
 
     document.querySelector('*[data-action="traverser-expand"]')
         .addEventListener('click', (e) => {
             document.querySelector('#traverser-panel').classList.remove('hidden');
-            Scope.refresh(); // TODO: Remove
-        });
-
-    document.querySelector('*[data-action="traverser-open"]')
-        .addEventListener('click', (e) => {
-            let $overlay = document.getElementById('overlay');
-            $overlay.innerHTML = '';
-            $overlay.classList.add('shown');
-
-            let $traverserOpenTemplate = document.querySelector('#traverser-open-form-template');
-            $overlay.appendChild($traverserOpenTemplate.content.cloneNode(true));
-
-            document.querySelectorAll(`#traverser-open-form *[data-action="open"]`)
-                .forEach((node) => {
-                    node.addEventListener('click', (e) => {
-                        let tree = document.querySelector('#traverser-tree').value;
-                        let shot = document.querySelector('#traverser-shot').value;
-
-                        // TODO: Improve
-                        new Traverser(tree, shot); // TODO: Mode
-
-                        $overlay.innerHTML = '';
-                        $overlay.classList.remove('shown');
-                    });
-                });
-
-            document.querySelectorAll(`#traverser-open-form *[data-action="cancel"]`)
-                .forEach((node) => {
-                    node.addEventListener('click', (e) => {
-                        $overlay.innerHTML = '';
-                        $overlay.classList.remove('shown');
-                    });
-                });
+            Scope.render();
         });
 
     document.querySelector('*[data-action="traverser-close"]')
@@ -149,11 +141,65 @@ window.onload = () => {
     document.querySelector('#traverser-select')
         .addEventListener('change', (e) => {
             let id = parseInt(e.target.value);
-            for (let i = 0; i < Traverser.traversers.length; ++i) {
-                let traverser = Traverser.traversers[i];
-                if (traverser.id == id) {
-                    traverser.show();
-                    break;
+            console.log(id);
+            if (id == 0) {
+                return;
+            }
+            if (id == -1) {
+                e.target.value = 0;
+                if (Traverser.activeTraverser !== null) {
+                    Traverser.activeTraverser.show();
+                }
+
+                let $overlay = document.getElementById('overlay');
+                $overlay.innerHTML = '';
+                $overlay.classList.add('shown');
+
+                let $traverserOpenForm = document.createElement('form');
+
+                let $traverserOpenTemplate = document.querySelector('#traverser-open-form-template');
+                $traverserOpenForm.appendChild($traverserOpenTemplate.content.cloneNode(true));
+
+                $overlay.append($traverserOpenForm);
+
+                document.querySelector('#traverser-tree').focus();
+
+                let openTraverser = (e) => {
+                    let tree = document.querySelector('#traverser-tree').value;
+                    let shot = document.querySelector('#traverser-shot').value;
+
+                    // TODO: Improve
+                    new Traverser(tree, shot); // TODO: Mode
+
+                    $overlay.innerHTML = '';
+                    $overlay.classList.remove('shown');
+
+                    e.preventDefault();
+                    return false;
+                }
+
+                $traverserOpenForm.addEventListener('submit', openTraverser);
+
+                document.querySelectorAll(`#traverser-open-form *[data-action="open"]`)
+                    .forEach((node) => {
+                        node.addEventListener('click', openTraverser);
+                    });
+
+                document.querySelectorAll(`#traverser-open-form *[data-action="cancel"]`)
+                    .forEach((node) => {
+                        node.addEventListener('click', (e) => {
+                            $overlay.innerHTML = '';
+                            $overlay.classList.remove('shown');
+                        });
+                    });
+            }
+            else {
+                for (let i = 0; i < Traverser.traversers.length; ++i) {
+                    let traverser = Traverser.traversers[i];
+                    if (traverser.id == id) {
+                        traverser.show();
+                        break;
+                    }
                 }
             }
         });

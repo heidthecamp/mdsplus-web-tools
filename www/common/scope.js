@@ -9,6 +9,7 @@ export class Scope
     static title_expr = '$SHOT';
 
     static defaults = new GlobalDefaults();
+    static shot_expr_offset = 0;
 
     static grid = null;
 
@@ -58,6 +59,9 @@ export class Scope
         }
 
         Scope.updating = true;
+        
+        // HACK:
+        await Scope.updateMetadata();
 
         for (var i = 0; i < Scope.panels.length; ++i) {
             Scope.panels[i].resetViewport();
@@ -65,9 +69,19 @@ export class Scope
             await Scope.panels[i].render();
         }
 
-        await Scope.updateTitle();
+        await Scope.updateMetadata();
 
         Scope.updating = false;
+    }
+
+    static async render() {
+        if (Scope.updating) {
+            return;
+        }
+        
+        for (var i = 0; i < Scope.panels.length; ++i) {
+            await Scope.panels[i].render();
+        }
     }
 
     static getPanelById(id) {
@@ -112,25 +126,42 @@ export class Scope
 
     static async setTitle(title_expr) {
         Scope.title_expr = title_expr;
-        await Scope.updateTitle();
+        await Scope.updateMetadata();
     }
 
-    static async updateTitle() {
-        if (Scope.title_expr != '' && Scope.title_expr != null) {
-            await Connection.current.getMany([ ['title', Scope.title_expr] ])
-            .then((response) => {
-                if (response.title.hasOwnProperty('value')) {
-                    Scope.title = response.title.value;
+    static async updateMetadata() {
+        let request = [];
 
-                    document.title = Scope.title;
-                    document.querySelectorAll('.window-title')
-                        .forEach((e) => {
-                            e.innerText = Scope.title;
-                        });
+        if (Scope.title_expr != '' && Scope.title_expr != null) {
+            request.push(['title', Scope.title_expr]);
+        }
+
+        if (Scope.defaults.shot_expr != '' && Scope.defaults.shot_expr != null) {
+            request.push(['shot', Scope.defaults.shot_expr + '+' + Scope.shot_expr_offset]);
+        }
+
+        if (request.length > 0) {
+            await Connection.current.getMany(request)
+            .then((response) => {
+                if (response.hasOwnProperty('title')) {
+                    if (response.title.hasOwnProperty('value')) {
+                        Scope.title = response.title.value;
+
+                        document.title = Scope.title;
+                        document.querySelectorAll('.window-title')
+                            .forEach((e) => {
+                                e.innerText = Scope.title;
+                            });
+                    }
+                }
+
+                if (response.hasOwnProperty('shot')) {
+                    if (response.shot.hasOwnProperty('value')) {
+                        document.querySelector('#current-shot').innerText = response.shot.value;
+                    }
                 }
             });
         }
-
     }
 
 };

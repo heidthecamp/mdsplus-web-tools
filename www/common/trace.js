@@ -93,6 +93,9 @@ export class MDSplusTrace extends Trace
     {
         let getValueOrDefault = (property) => {
             if (global_defaults_flags[property] && Scope.defaults[property] !== null) {
+                if (property == 'shot_expr') {
+                    return Scope.defaults[property] + '+' + Scope.shot_expr_offset;
+                }
                 return Scope.defaults[property];
             }
 
@@ -123,7 +126,7 @@ export class MDSplusTrace extends Trace
         }
 
         // TODO: Only call if needed?
-        request.push([ 'default_node_expr', default_node_expr ]);
+        request.push([ 'default_node', default_node_expr ]);
 
         let y_expr = getValueOrDefault('y_expr');
         let x_expr = getValueOrDefault('x_expr');

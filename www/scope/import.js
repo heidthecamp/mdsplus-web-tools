@@ -287,7 +287,7 @@ export async function importFile(file) {
                 }
             }
 
-            Scope.setTitle(data['title_expr']);
+            await Scope.setTitle(data['title_expr']);
         }
 
         Scope.refresh();
