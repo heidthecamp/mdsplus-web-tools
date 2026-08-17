@@ -234,7 +234,7 @@ export class Traverser
         $node.appendChild(document.querySelector('#traverser-node-template').content.cloneNode(true));
         
         $node.dataset.nid = nid;
-        $node.title = usage;
+        // $node.title = usage;
 
         if (num_descendants > 0) {
             $node.classList.add('expandable');
@@ -253,6 +253,93 @@ export class Traverser
             }
         });
 
+        $name.addEventListener('mouseenter', (e) => {
+            this.timeout = setTimeout(async (e) => {
+                let description = e.target.getAttribute('data-description');
+
+                let $traverserPreview = document.querySelector('#traverser-preview');
+                $traverserPreview.classList.add('shown');
+                $traverserPreview.style.top = e.clientY;
+                $traverserPreview.style.left = e.clientX + 20;
+
+                let request = [
+                    ['open', `TreeOpen("${this.tree}",${this.shot})`],
+                ];
+
+                if (description == null) { // TODO:
+                    request = request.concat([
+                        ['name', `trim(getnci(${nid}, "NODE_NAME"))`],
+                        ['status', `getnci(${nid}, "STATUS")`],
+                        ['flags', `getnci(${nid}, "GET_FLAGS")`],
+                        ['decompile', `TreeDecompileRecord(${nid})`],
+                        ['tags', `TreeFindAllNodeTags(${nid})`]
+                    ]);
+
+                    document.querySelector('#traverser-preview .description').innerText = 'Loading...';
+                }
+                else {
+                    document.querySelector('#traverser-preview .description').innerHTML = description;
+                }
+
+                if (usage == 'SIGNAL') {
+                    request = request.concat([
+                        ['y', `TreeGetRecord(${nid}, _wssig), _wssig=toms510(_wssig)`],
+                        ['x', `dim_of(_wssig)`],
+                    ]);
+                }
+
+                if (request.length > 1) {
+                    await this.connection.getMany(request)
+                    .then((response) => {
+                    console.log(response);
+                        if (description == null) {
+                            let onOff = (response.status.value == 0 ? 'On' : 'Off');
+                            description = `<b>${response.name.value}</b> (${onOff})<br>`;
+                            description += `<b>Usage:</b> ${usage}<br>`;
+
+                            let tags = response.tags.value;
+                            if (tags !== null) {
+                                for (var i = 0; i < tags.length; ++i) {
+                                    tags[i] = '\\' + tags[i];
+                                }
+                                description += `<b>Tags:</b> ${tags.join(', ')}<br>`;
+                            }
+
+                            // TODO: Truncate when really long
+                            let expression = response.decompile.value;
+                            if (expression != '*') {
+                                if (expression.length > 20) {
+                                    description += `<b>Expression:</b><div class="expression">${expression}</div>`;
+                                }
+                                else {
+                                    description += `<b>Expression:</b> <span class="expression">${expression}</span>`;
+                                }
+                            }
+                            
+                            e.target.dataset.description = description;
+                            document.querySelector('#traverser-preview .description').innerHTML = description;
+                        }
+
+                        if (usage == 'SIGNAL') {
+                            document.querySelector('#traverser-preview').classList.add('plot-shown');
+
+                            // TODO: Don't reach into preview panel
+                            let trace = new PreviewTrace(response.y.value, response.x.value);
+                            this.previewPanel.setViewport(trace.bounds);
+                            this.previewPanel.setTraces([trace]);
+                            this.previewPanel.render();
+                        }
+                    });
+                }
+            }, 500, e);
+        });
+
+        $name.addEventListener('mouseleave', (e) => {
+            clearTimeout(this.timeout);
+            document.querySelector('#traverser-preview .plot').innerHTML = '';
+            document.querySelector('#traverser-preview').classList.remove('shown', 'plot-shown');
+        });
+
         if (usage == 'SIGNAL') {
             $node.classList.add('signal');
             $name.addEventListener('dblclick', async (e) => {
@@ -262,34 +349,35 @@ export class Traverser
                 panel.render();
             });
 
-            $name.addEventListener('mouseenter', (e) => {
-                this.timeout = setTimeout(async (e) => {
-                    let $traverserPreview = document.querySelector('#traverser-preview');
-                    $traverserPreview.classList.add('shown');
-                    $traverserPreview.style.top = e.clientY - 200;
-                    $traverserPreview.style.left = e.clientX;
+            // TODO: Enable in some other form
+            // $name.addEventListener('mouseenter', (e) => {
+            //     this.timeout = setTimeout(async (e) => {
+            //         let $traverserPreview = document.querySelector('#traverser-preview');
+            //         $traverserPreview.classList.add('shown');
+            //         $traverserPreview.style.top = e.clientY - 200;
+            //         $traverserPreview.style.left = e.clientX;
 
-                    let request = [
-                        ['open', `TreeOpen("${this.tree}",${this.shot})`],
-                        ['nid', `getnci(${nid}, "NID_NUMBER")`],
-                        ['y', `TreeGetRecord(${nid}, _wssig), _wssig=toms510(_wssig)`],
-                        ['x', `dim_of(_wssig)`],
-                    ];
-                    await this.connection.getMany(request)
-                    .then((response) => {
-                        // TODO: Don't reach into preview panel
-                        let trace = new PreviewTrace(response.y.value, response.x.value);
-                        this.previewPanel.setViewport(trace.bounds);
-                        this.previewPanel.setTraces([trace]);
-                        this.previewPanel.render();
-                    });
-                }, 500, e);
-            });
+            //         let request = [
+            //             ['open', `TreeOpen("${this.tree}",${this.shot})`],
+            //             ['nid', `getnci(${nid}, "NID_NUMBER")`],
+            //             ['y', `TreeGetRecord(${nid}, _wssig), _wssig=toms510(_wssig)`],
+            //             ['x', `dim_of(_wssig)`],
+            //         ];
+            //         await this.connection.getMany(request)
+            //         .then((response) => {
+            //             // TODO: Don't reach into preview panel
+            //             let trace = new PreviewTrace(response.y.value, response.x.value);
+            //             this.previewPanel.setViewport(trace.bounds);
+            //             this.previewPanel.setTraces([trace]);
+            //             this.previewPanel.render();
+            //         });
+            //     }, 500, e);
+            // });
 
-            $name.addEventListener('mouseleave', (e) => {
-                clearTimeout(this.timeout);
-                document.querySelector('#traverser-preview').classList.remove('shown');
-            });
+            // $name.addEventListener('mouseleave', (e) => {
+            //     clearTimeout(this.timeout);
+            //     document.querySelector('#traverser-preview').classList.remove('shown');
+            // });
 
         }
 

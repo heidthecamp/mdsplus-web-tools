@@ -14,6 +14,13 @@ import { D3Renderer, CanvasRenderer, Renderer } from "../common/renderer.js";
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
 
+window.autosaveTimeout = null;
+
+window.autosave = () => {
+    console.log('Autosave');
+    localStorage.setItem("ws-autosave", Export.exportJSON());
+}
+
 window.onload = () => {
     window.scope = Scope;
 
@@ -92,6 +99,9 @@ window.onload = () => {
                     felement.remove();
                 });
                 felement.click();
+
+                clearTimeout(window.autosaveTimeout);
+                window.autosaveTimeout = setTimeout(window.autosave, 1000);
             }
         })
 
@@ -222,35 +232,49 @@ window.onload = () => {
 
     Scope.initGrid();
 
-    let sin = Scope.addPanel(
-        "'Sample Data with ' // size(_data1) + size(_data2) + size(_data3) // ' points'",
-        { x: 0, y: 0, width: 12, height: 6 },
-        -1, 1, null, null,
-        0x0381
-    );
-    sin.addTrace(
-        null, null, null,
-        "_data1 = sin(0 : 50 : 0.05) * 0.9",
-        null,
-        null,
-        "red"
-    );
-    sin.addTrace(
-        null, null, null,
-        "_data2 = cos(0 : 50 : 0.05) * 0.8",
-        null,
-        null,
-        "blue"
-    );
-    sin.addTrace(
-        null, null, null,
-        "_data3 = sin((0 : 50 : 0.05) - $PI) * 0.7",
-        null,
-        null,
-        "green"
-    );
+    let lastSave = localStorage.getItem("ws-autosave");
+    if (lastSave !== null) {
+        try {
+            Import.importJSON(lastSave);
+        }
+        catch (e) {
 
-    Scope.setTitle("if_error($SHOT,'No Shot Open') // ' - Running as ' // whoami()");
+        }
+    }
+    else {
+        let sin = Scope.addPanel(
+            "'Sample Data with ' // size(_data1) + size(_data2) + size(_data3) // ' points'",
+            { x: 0, y: 0, width: 12, height: 6 },
+            -1, 1, null, null,
+            0x0381
+        );
+        sin.addTrace(
+            null, null, null,
+            "_data1 = sin(0 : 50 : 0.05) * 0.9",
+            null,
+            null,
+            "red"
+        );
+        sin.addTrace(
+            null, null, null,
+            "_data2 = cos(0 : 50 : 0.05) * 0.8",
+            null,
+            null,
+            "blue"
+        );
+        sin.addTrace(
+            null, null, null,
+            "_data3 = sin((0 : 50 : 0.05) - $PI) * 0.7",
+            null,
+            null,
+            "green"
+        );
+    
+        
+    
+        Scope.setTitle("if_error($SHOT,'No Shot Open') // ' - Running as ' // whoami()");
+    }
+
     Scope.refresh();
 }
 
@@ -265,6 +289,9 @@ document.addEventListener('drop', async (e) => {
     document.getElementById('panels').innerHTML = ''; // HACK:
 
     await Import.importFile(file);
+
+    clearTimeout(window.autosaveTimeout);
+    window.autosaveTimeout = setTimeout(window.autosave, 1000);
 });
 
 document.addEventListener("dragover", (e) => {

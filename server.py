@@ -103,6 +103,27 @@ def handle_connection(ws: ServerConnection):
         'return(_sig);' +
     '}; 42') # if we return the function itself it gets called, so we return some dummy data
 
+    conn.get(
+    'public fun TreeDecompileRecord(in _nid) {' +
+        '_out=1;' +
+        '_status=TreeShr->TreeGetRecord(val(_nid), xd(_out));' +
+        'return(execute("decompile(`_out)"));' +
+    '}; 42') # if we return the function itself it gets called, so we return some dummy data
+
+    conn.get(
+    'public fun TreeFindAllNodeTags(in _nid) {' +
+        '_tags=[];' +
+        '_nidlocal=getnci(_nid,"nid_number");' +
+        '_ctx=0q;' +
+        '_tagnam=repeat(" ",64);' +
+        '_status=TreeShr->TreeFindNodeTagsDsc(val(_nidlocal),ref(_ctx),descr(_tagnam));' +
+        'while (_status & 1) {' +
+            '_tags=[_tags, _tagnam];' +
+            '_status=TreeShr->TreeFindNodeTagsDsc(val(_nidlocal),ref(_ctx),descr(_tagnam));' +
+        '}' +
+        'return(_tags);' +
+    '}; 42') # if we return the function itself it gets called, so we return some dummy data
+
     for message in ws:
         request = json.loads(message)
         response = {}

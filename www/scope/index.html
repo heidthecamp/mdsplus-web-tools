@@ -203,20 +203,30 @@
             color: black;
         }
         #traverser-preview {
-            width: 400px;
-            height: 200px;
             position: fixed;
             display: none;
-            border: 1px solid black;
-            padding: 5px;
             background-color: white;
+            max-width: 400px;
+            border: 1px solid black;
+        }
+        #traverser-preview .description {
+            word-wrap: break-word;
+            padding: 5px;
+        }
+        #traverser-preview .description .expression {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 80%;
+        }
+        #traverser-preview.plot-shown .description {
+            border-top: 1px solid black;
         }
         #traverser-preview.shown {
             display: block;
         }
-        #traverser-preview .plot {
-            width: 100%;
-            height: 100%;
+        #traverser-preview.plot-shown .plot {
+            width: 400px;
+            height: 200px;
+            padding-right: 20px;
         }
         #traverser-select {
             width: calc(100% - 60px);
@@ -617,6 +627,7 @@
 
     <div id="traverser-preview">
         <div class="plot"></div>
+        <div class="description"></div>
     </div>
 
     <div id="overlay"></div>

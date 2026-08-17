@@ -36,6 +36,9 @@ export class Scope
             let panel = Scope.getPanelById(id);
             await panel.update();
             await panel.render();
+
+            clearTimeout(window.autosaveTimeout);
+            window.autosaveTimeout = setTimeout(window.autosave, 1000);
         });
     };
 
@@ -49,6 +52,9 @@ export class Scope
         Scope.panels = [];
 
         Scope.initGrid();
+
+        clearTimeout(window.autosaveTimeout);
+        window.autosaveTimeout = setTimeout(window.autosave, 1000);
     }
 
     static updating = false;
@@ -127,6 +133,9 @@ export class Scope
     static async setTitle(title_expr) {
         Scope.title_expr = title_expr;
         await Scope.updateMetadata();
+
+        clearTimeout(window.autosaveTimeout);
+        window.autosaveTimeout = setTimeout(window.autosave, 1000);
     }
 
     static async updateMetadata() {

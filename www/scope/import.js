@@ -3,6 +3,61 @@ import { Panel } from "../common/panel.js";
 import { Scope } from "../common/scope.js";
 import { GlobalDefaults, GlobalDefaultsFlags } from "./defaults.js";
 
+export async function importJSON(text) {
+    let valueOrNull = (object, key) => {
+        return object.hasOwnProperty(key) ? object[key] : null;
+    };
+
+    let data = JSON.parse(text);
+
+    for (const [key, value] of Object.entries(data['global_defaults'])) {
+        Scope.defaults[key] = value;
+    }
+
+    for (var i = 0; i < data['panels'].length; ++i) {
+        let panel = data['panels'][i];
+
+        let global_default_flags = new GlobalDefaultsFlags();
+        if (panel.hasOwnProperty('global_default_flags')) {
+            for (const [key, value] of Object.entries(panel['global_default_flags'])) {
+                global_default_flags[key] = value;
+            }
+        }
+
+        let newPanel = Scope.addPanel(
+            valueOrNull(panel, 'title_expr'),
+            valueOrNull(panel, 'position'),
+            valueOrNull(panel, 'y_min_expr'),
+            valueOrNull(panel, 'y_max_expr'),
+            valueOrNull(panel, 'x_min_expr'),
+            valueOrNull(panel, 'x_max_expr'),
+            global_default_flags
+        );
+
+        if (panel.hasOwnProperty('traces')) {
+            for (var j = 0; j < panel['traces'].length; ++j) {
+                let trace = panel['traces'][j];
+
+                newPanel.addTrace(
+                    valueOrNull(trace, 'tree'),
+                    valueOrNull(trace, 'shot_expr'),
+                    valueOrNull(trace, 'default_node_expr'),
+                    valueOrNull(trace, 'y_expr'),
+                    valueOrNull(trace, 'x_expr'),
+                    valueOrNull(trace, 'trace_type'),
+                    valueOrNull(trace, 'trace_color'),
+                    valueOrNull(trace, 'point_type'),
+                    valueOrNull(trace, 'point_color')
+                );
+            }
+        }
+    }
+
+    if (data.hasOwnProperty('title_expr')) {
+        Scope.setTitle(data['title_expr']);
+    }
+}
+
 export async function importFile(file) {
     if (!file.name.endsWith("dat") && !file.name.endsWith("jscp") && !file.name.endsWith("json")) {
         console.error("Unsupported file type")
@@ -17,58 +72,7 @@ export async function importFile(file) {
         Scope.reset();
 
         if (file.name.endsWith('json')) {
-            let valueOrNull = (object, key) => {
-                return object.hasOwnProperty(key) ? object[key] : null;
-            };
-
-            let data = JSON.parse(reader.result);
-
-            for (const [key, value] of Object.entries(data['global_defaults'])) {
-                Scope.defaults[key] = value;
-            }
-
-            for (var i = 0; i < data['panels'].length; ++i) {
-                let panel = data['panels'][i];
-
-                let global_default_flags = new GlobalDefaultsFlags();
-                if (panel.hasOwnProperty('global_default_flags')) {
-                    for (const [key, value] of Object.entries(panel['global_default_flags'])) {
-                        global_default_flags[key] = value;
-                    }
-                }
-
-                let newPanel = Scope.addPanel(
-                    valueOrNull(panel, 'title_expr'),
-                    valueOrNull(panel, 'position'),
-                    valueOrNull(panel, 'y_min_expr'),
-                    valueOrNull(panel, 'y_max_expr'),
-                    valueOrNull(panel, 'x_min_expr'),
-                    valueOrNull(panel, 'x_max_expr'),
-                    global_default_flags
-                );
-
-                if (panel.hasOwnProperty('traces')) {
-                    for (var j = 0; j < panel['traces'].length; ++j) {
-                        let trace = panel['traces'][j];
-
-                        newPanel.addTrace(
-                            valueOrNull(trace, 'tree'),
-                            valueOrNull(trace, 'shot_expr'),
-                            valueOrNull(trace, 'default_node_expr'),
-                            valueOrNull(trace, 'y_expr'),
-                            valueOrNull(trace, 'x_expr'),
-                            valueOrNull(trace, 'trace_type'),
-                            valueOrNull(trace, 'trace_color'),
-                            valueOrNull(trace, 'point_type'),
-                            valueOrNull(trace, 'point_color')
-                        );
-                    }
-                }
-            }
-
-            if (data.hasOwnProperty('title_expr')) {
-                Scope.setTitle(data['title_expr']);
-            }
+            importJSON(reader.result);
         }
         else {
             let data = {

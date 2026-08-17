@@ -255,6 +255,9 @@ export class Panel
         if (this.renderer != null) {
             this.renderer.remove();
         }
+
+        clearTimeout(window.autosaveTimeout);
+        window.autosaveTimeout = setTimeout(window.autosave, 1000);
     }
 
 }
@@ -457,6 +460,7 @@ export class MDSplusPanel extends Panel
         $traceForm.appendChild(traceFormTemplate.content.cloneNode(true));
         $traceForm.querySelector('*[data-action="open-trace-traverser"]').dataset.id = id;
 
+        // TODO: Why is this querySelectorAll for an ID?
         $traceForm.querySelectorAll('#remove-button').forEach(element => {
             element.addEventListener('click', () => {
                 this.traces.splice((id - 1), 1); // Remove current ID from list of traces
@@ -616,6 +620,9 @@ export class MDSplusPanel extends Panel
             updateValue('x_expr', `trace-x_expr-${id}`, i);
             updateValue('trace_color', `trace-color-${id}`, i);
         }
+
+        clearTimeout(window.autosaveTimeout);
+        window.autosaveTimeout = setTimeout(window.autosave, 1000);
 
         return needUpdate;
     }

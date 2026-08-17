@@ -141,6 +141,9 @@ export class GlobalDefaults
                     $overlay.innerHTML = '';
                     $overlay.classList.remove('shown');
 
+                    clearTimeout(window.autosaveTimeout);
+                    window.autosaveTimeout = setTimeout(window.autosave, 1000);
+
                     Scope.refresh();
                 });
             });
