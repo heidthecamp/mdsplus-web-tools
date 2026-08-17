@@ -1,6 +1,6 @@
 
 import { Scope } from "./scope.js";
-import { Bounds } from "./bounds.js";
+import { Bounds } from "../common/bounds.js";
 
 export class Trace
 {

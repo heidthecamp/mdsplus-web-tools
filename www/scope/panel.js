@@ -1,10 +1,10 @@
-import { Bounds } from "./bounds.js";
-import { Position } from "./position.js";
-import { Connection } from "./connection.js";
-import { Scope } from "./scope.js";
-import { GlobalDefaults, GlobalDefaultsFlags } from "../scope/defaults.js";
+import { Bounds } from "../common/bounds.js";
+import { Position } from "../common/position.js";
+import { Connection } from "../common/connection.js";
+import { Scope } from "../common/scope.js";
+import { GlobalDefaults, GlobalDefaultsFlags } from "./defaults.js";
 
-import { D3Renderer, CanvasRenderer, Renderer } from "./renderer.js";
+import { D3Renderer, CanvasRenderer, Renderer } from "../common/renderer.js";
 import { MDSplusTrace } from "./trace.js";
 import { Traverser } from "./traverser.js";
 
@@ -242,6 +242,7 @@ export class Panel
     }
 
     removeElement() {
+        console.log(`Removing ${this.id}`)
         // TODO: call Scope.grid.removeWidget, and null out widget
         // TODO: 
         // document.getElementById(`panel-${this.id}`).remove();

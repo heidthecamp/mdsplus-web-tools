@@ -1,10 +1,10 @@
 
-import { Connection } from "./connection.js";
+import { Connection } from "../common/connection.js";
 import { Scope } from "./scope.js";
 
-import { CanvasRenderer } from "./renderer.js";
+import { CanvasRenderer } from "../common/renderer.js";
 import { PreviewTrace } from "./trace.js";
-import { Bounds } from "./bounds.js";
+import { Bounds } from "../common/bounds.js";
 import { PreviewPanel } from "./panel.js";
 
 let NextId = 1;

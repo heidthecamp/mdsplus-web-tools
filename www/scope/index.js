@@ -43,7 +43,7 @@ window.onload = () => {
 
     document.querySelector('*[data-action="reset"]')
         .addEventListener('click', async (e) => {
-            Scope.reset();
+            await Scope.reset();
             Scope.refresh();
         });
 

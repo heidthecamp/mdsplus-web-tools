@@ -1,5 +1,5 @@
 
-import { Panel, MDSplusPanel } from "./panel.js";
+import { Panel, MDSplusPanel } from "../scope/panel.js";
 import { GlobalDefaults } from "../scope/defaults.js";
 import "../resources/gridstack-all.js";
 import { Connection } from "./connection.js";
@@ -46,10 +46,12 @@ export class Scope
         Scope.setTitle("\"MDSplus Scope\"");
         Scope.defaults = new GlobalDefaults();
 
-        for (var i = 0; i < Scope.panels.length; ++i) {
-            Scope.panels[i].removeElement();
-        }
+        let panelsToRemove = Scope.panels;
         Scope.panels = [];
+
+        for (var i = 0; i < panelsToRemove.length; ++i) {
+            panelsToRemove[i].removeElement();
+        }
 
         Scope.initGrid();
 
