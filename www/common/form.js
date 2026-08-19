@@ -55,6 +55,7 @@ export class Form
     }
 
     save() {
+        console.log('Saving')
         if (this.apply()) {
             this.close();
         }
