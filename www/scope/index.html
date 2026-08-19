@@ -267,38 +267,40 @@
     </template>
 
     <template id="traverser-open-form-template">
-        <div id="traverser-open-form" class="container-fluid">
-            <div class="row">
-                <div class="col-4">
-                    <div class="row mb-3">
-                        <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
-                        <div class="col-sm-9">
-                            <input class="form-control" id="traverser-tree" type="text" />
+        <form>
+            <div id="traverser-open-form" class="container-fluid">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="row mb-3">
+                            <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" id="traverser-tree" type="text" />
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="traverser-shot" class="col-sm-2 col-form-label">Shot</label>
-                        <div class="col-sm-9">
-                            <input class="form-control" id="traverser-shot" type="text" />
+                        <div class="row mb-3">
+                            <label for="traverser-shot" class="col-sm-2 col-form-label">Shot</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" id="traverser-shot" type="text" />
+                            </div>
                         </div>
-                    </div>
-                    <!--
-                    <div class="row mb-3">
-                        <label for="traverser-mode" class="col-sm-2 col-form-label">Mode</label>
-                        <div class="col-sm-9">
-                            <input class="form-control" id="traverser-mode" type="text" />
+                        <!--
+                        <div class="row mb-3">
+                            <label for="traverser-mode" class="col-sm-2 col-form-label">Mode</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" id="traverser-mode" type="text" />
+                            </div>
                         </div>
-                    </div>
-                    -->
-                    <div class="row">
-                        <div class="container-fluid">
-                            <input type="submit" data-action="open" class="btn btn-primary" value="Open" />
-                            <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                        -->
+                        <div class="row">
+                            <div class="container-fluid">
+                                <input type="submit" data-action="save" class="btn btn-primary" value="Open" />
+                                <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
     </template>
 
     <template id="panel-template">
@@ -458,9 +460,9 @@
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1"></div>
-                <label for="trace-color" class="col-sm-2 col-form-label">Trace Color</label>
+                <label for="trace-trace_color" class="col-sm-2 col-form-label">Trace Color</label>
                 <div class="col-sm-9">
-                    <input class="form-control" id="trace-color" type="text" />
+                    <input class="form-control" id="trace-trace_color" type="text" />
                 </div>
             </div>
         </li>
@@ -634,13 +636,6 @@
         </div>
     </div>
 
-    <div id="traverser-preview">
-        <div class="plot"></div>
-        <div class="description"></div>
-    </div>
-
-    <div id="overlay"></div>
-
     <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-0 border-top  mt-0 px-2"> 
                 <div id="error-message" class="col-md-4 d-flex align-items-center justify-content-start mb-3 mb-md-0 me-md-auto"></div>
@@ -653,6 +648,11 @@
                     </li>
                 </ul>
         </footer>
+    </div>
+
+    <div id="traverser-preview">
+        <div class="plot"></div>
+        <div class="description"></div>
     </div>
 
 </body>

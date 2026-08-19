@@ -52,7 +52,7 @@ export class Response
     }
 
     hasValue(name) {
-        return this.data.hasOwnProperty(name);
+        return (this.data.hasOwnProperty(name) && this.data[name].hasOwnProperty('value'));
     }
 
     getValue(name) {

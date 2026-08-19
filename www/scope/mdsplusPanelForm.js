@@ -67,7 +67,6 @@ export class MDSplusPanelForm extends Form
         }
 
         this.showTraceForm(0);
-
     }
 
     getInput(name, trace_id=null)
@@ -80,8 +79,12 @@ export class MDSplusPanelForm extends Form
         }
     }
 
-    getTraceForm(id) {
+    removeTraceForm(id) {
+        document.getElementById(`trace-form-${id}`).remove();
+        document.getElementById(`trace-tab-${id}`).remove();
 
+        let index = this.trace_form_ids.indexOf(id);
+        this.trace_form_ids.splice(index, 1);
     }
 
     addTraceForm(trace=null)
@@ -198,7 +201,7 @@ export class MDSplusPanelForm extends Form
             this.getInput('tree', id).value = this.valueOr(trace.tree, '');
             this.getInput('shot_expr', id).value = this.valueOr(trace.shot_expr, '');
             this.getInput('default_node_expr', id).value = this.valueOr(trace.default_node_expr, '');
-            this.getInput('color', id).value = this.valueOr(trace.trace_color, 'black');
+            this.getInput('trace_color', id).value = this.valueOr(trace.trace_color, 'black');
         }
         
         return id;
@@ -255,15 +258,12 @@ export class MDSplusPanelForm extends Form
             if (index != null) {
                 // HACK?
                 if (this.panel.traces[index][name] != value) {
-                    console.log(name, index, 'changed');
-                    console.log(this.panel.traces[index][name], value);
                     needUpdate = true;
                     this.panel.traces[index][name] = value;
                 }
             }
             else {
                 if (this.panel[name] != value) {
-                    console.log(name, 'changed');
                     needUpdate = true;
                     this.panel[name] = value;
                 }

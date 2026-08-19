@@ -48,9 +48,10 @@ export class PreviewTrace extends Trace
 
 export class Traverser
 {
-    constructor(tree, shot_expr)
+    constructor(tree, shot_expr, on_double_click = null)
     {
         this.id = NextId++;
+        this.on_double_click = on_double_click;
 
         this.timeout = null;
 
@@ -58,7 +59,10 @@ export class Traverser
 
         this.setConnection(Connection.current);
 
-        this.open(tree, shot_expr).then(this.addElement);
+        this.addElement();
+
+        // HACK: Improve
+        this.open_promise = this.open(tree, shot_expr);
     }
 
     async open(tree, shot_expr) {
@@ -81,13 +85,13 @@ export class Traverser
                 this.tree = response.getValue('tree');
                 this.shot = response.getValue('shot');
     
-                this.addElement();
-                this.addNode(this.element, 0, `\\${this.tree.toUpperCase()}::TOP`, 'SPECIAL', 1); // TODO: Calculate correct number of descendants
+                this.addNode(this.$element, 0, `\\${this.tree.toUpperCase()}::TOP`, 'SPECIAL', 1); // TODO: Calculate correct number of descendants
                 this.dir(0);
             });
         }
         catch (e) {
             Utils.showErrorMessage(e.message);
+            this.close();
         }
     }
 
@@ -109,19 +113,19 @@ export class Traverser
     }
 
     addElement() {
-        this.element = document.createElement('div');
-        this.element.dataset.id = this.id;
-        this.element.classList.add('traverser');
+        this.$element = document.createElement('div');
+        this.$element.dataset.id = this.id;
+        this.$element.classList.add('traverser');
         
         // TODO: Remove?
-        this.element.dataset.tree = this.tree;
-        this.element.dataset.shot = this.shot;
+        this.$element.dataset.tree = this.tree;
+        this.$element.dataset.shot = this.shot;
 
-        document.querySelector('#traversers').append(this.element);
+        document.querySelector('#traversers').append(this.$element);
     }
 
     removeElement() {
-        this.element.remove();
+        this.$element.remove();
     }
 
     async reveal(node, default_node_expr = null)
@@ -151,7 +155,6 @@ export class Traverser
                 let parts = path.split(/[:\.]/);
                 for (let i = 1; i < parts.length; ++i) {
                     used.push(parts[i]);
-                    console.log(used);
                     await this.dir(used.join(':'));
                 }
             });
@@ -226,11 +229,23 @@ export class Traverser
                     try {
                         await this.connection.getMany(request)
                         .then((response) => {
-                            response.checkForErrors();
+                            try {
+                                response.checkForErrors();
+                            }
+                            catch (e) {
+                                if (!e.message.startsWith('%TDI')) {
+                                    throw e;
+                                }
+                            }
     
                             if (description == null) {
                                 let onOff = (response.getValue('status') == 0 ? 'On' : 'Off');
                                 description = `<b>${response.getValue('name')}</b> (${onOff})<br>`;
+
+                                if (usage == 'SIGNAL') {
+                                    description += 'Double click to add scope panel<br>';
+                                }
+                                
                                 description += `<b>Usage:</b> ${usage}<br>`;
     
                                 let tags = response.getValue('tags');
@@ -244,11 +259,16 @@ export class Traverser
                                 // TODO: Truncate when really long
                                 let expression = response.getValue('decompile');
                                 if (expression != '*') {
-                                    if (expression.length > 20) {
-                                        description += `<b>Expression:</b><div class="expression">${expression}</div>`;
+                                    if (expression.length < 200) {
+                                        if (expression.length > 20) {
+                                            description += `<b>Expression:</b><div class="expression">${expression}</div>`;
+                                        }
+                                        else {
+                                            description += `<b>Expression:</b> <span class="expression">${expression}</span>`;
+                                        }
                                     }
                                     else {
-                                        description += `<b>Expression:</b> <span class="expression">${expression}</span>`;
+                                        description += `<b>Expression:</b> <span class="expression">...</span>`;
                                     }
                                 }
                                 
@@ -256,11 +276,19 @@ export class Traverser
                                 document.querySelector('#traverser-preview .description').innerHTML = description;
                             }
     
-                            if (usage == 'SIGNAL') {
+                            if (response.hasValue('y') && response.hasValue('x')) {
                                 document.querySelector('#traverser-preview').classList.add('plot-shown');
     
                                 let trace = new PreviewTrace(response.getValue('y'), response.getValue('x'));
                                 this.renderer.render([trace]);
+                            }
+
+                            // Move the preview up onto the screen
+                            let previewBottom = $traverserPreview.getBoundingClientRect().bottom;
+                            let screenBottom = window.innerHeight;
+                            let footerHeight = document.querySelector('footer').getBoundingClientRect().height;
+                            if (previewBottom > (screenBottom - footerHeight)) {
+                                $traverserPreview.style.top = e.clientY - (previewBottom - screenBottom) - footerHeight;
                             }
                         });
                     }
@@ -279,13 +307,10 @@ export class Traverser
 
         if (usage == 'SIGNAL') {
             $node.classList.add('signal');
-            $name.addEventListener('dblclick', async (e) => {
-                // TODO:
-                // let panel = Scope.addPanel(`"${name}"`, { width: 6, height: 6 });
-                // panel.addTrace(this.tree, this.shot, null, path);
-                // await panel.update();
-                // panel.render();
-            });
+            if (this.on_double_click !== null) {
+                // HACK:
+                $name.addEventListener('dblclick', (e) => this.on_double_click(this.tree, this.shot, name, path));
+            }
 
         }
 
@@ -293,7 +318,7 @@ export class Traverser
     }
 
     getNode(nid) {
-        return this.element.querySelector(`*[data-nid="${nid}"]`);
+        return this.$element.querySelector(`*[data-nid="${nid}"]`);
     }
 
     async dir(node) {
@@ -313,7 +338,15 @@ export class Traverser
 
         await Connection.current.getMany(request)
         .then((response) => {
-            response.checkForErrors();
+            try {
+                response.checkForErrors();
+            }
+            catch (e) {
+                // A node could have just children or just members
+                if (!e.message.startsWith('%TREE-W-NNF')) {
+                    throw e;
+                }
+            }
 
             let nid = response.getValue('nid');
 
@@ -355,7 +388,7 @@ export class Traverser
             if (count > 0) {
                 $parent.classList.add('expanded');
             }
-        })
+        });
     }
 
 }

@@ -281,7 +281,6 @@ export class Panel
     }
 
     removeElement() {
-        console.log(`Removing ${this.id}`)
         // TODO: call Scope.grid.removeWidget, and null out widget
         // TODO: 
         // document.getElementById(`panel-${this.id}`).remove();

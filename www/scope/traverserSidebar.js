@@ -1,18 +1,36 @@
 
 import { Connection } from "../common/connection.js";
+import { Form } from "../common/form.js";
 import { Traverser } from "../common/traverser.js";
-import * as Utils from "../common/utils.js";
 import { Scope } from "./scope.js";
+
+import * as Utils from "../common/utils.js";
+import { MDSplusPanel } from "./mdsplusPanel.js";
+import { MDSplusTrace } from "./mdsplusTrace.js";
+
+class TraverserOpenForm extends Form
+{
+    constructor() {
+        super('traverser-open-form-template');
+
+        document.querySelector('#traverser-tree').focus();
+    }
+
+    apply() {
+        let tree = document.querySelector('#traverser-tree').value;
+        let shot = document.querySelector('#traverser-shot').value;
+
+        TraverserSidebar.findOrOpen(tree, shot);
+
+        return true;
+    }
+
+};
 
 export class TraverserSidebar
 {
     static traversers = [];
     static active_traverser = null;
-
-    static getTraverserBy(id) {
-
-        return null;
-    }
 
     static init()
     {
@@ -49,41 +67,8 @@ export class TraverserSidebar
                     if (TraverserSidebar.active_traverser !== null) {
                         TraverserSidebar.show(TraverserSidebar.active_traverser);
                     }
-    
-                    let $overlay = Utils.showOverlay();
 
-                    let $traverserOpenForm = document.createElement('form');
-                    $traverserOpenForm.append(Utils.inflateTemplate('traverser-open-form-template'));
-    
-                    $overlay.append($traverserOpenForm);
-    
-                    document.querySelector('#traverser-tree').focus();
-    
-                    let openTraverser = (e) => {
-                        let tree = document.querySelector('#traverser-tree').value;
-                        let shot = document.querySelector('#traverser-shot').value;
-
-                        TraverserSidebar.findOrOpen(tree, shot);
-    
-                        Utils.hideOverlay();
-    
-                        e.preventDefault();
-                        return false;
-                    }
-    
-                    $traverserOpenForm.addEventListener('submit', openTraverser);
-    
-                    document.querySelectorAll(`#traverser-open-form *[data-action="open"]`)
-                        .forEach((node) => {
-                            node.addEventListener('click', openTraverser);
-                        });
-    
-                    document.querySelectorAll(`#traverser-open-form *[data-action="cancel"]`)
-                        .forEach((node) => {
-                            node.addEventListener('click', (e) => {
-                                Utils.hideOverlay();
-                            });
-                        });
+                    Form.show(new TraverserOpenForm());
                 }
                 else {
                     for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
@@ -112,7 +97,7 @@ export class TraverserSidebar
         document.querySelectorAll('.traverser')
             .forEach((node) => node.classList.remove('active'));
 
-        traverser.element.classList.add('active');
+        traverser.$element.classList.add('active');
 
         document.querySelector('#traverser-select').value = traverser.id;
 
@@ -135,7 +120,7 @@ export class TraverserSidebar
 
         try {
             await Connection.current.getMany(request)
-            .then((response) => {
+            .then(async (response) => {
                 response.checkForErrors();
     
                 tree = response.getValue('tree');
@@ -152,8 +137,10 @@ export class TraverserSidebar
                 }
     
                 if (!found) {
-                    traverser = new Traverser(tree, shot);
+                    traverser = new Traverser(tree, shot, TraverserSidebar.onDoubleClick);
                     TraverserSidebar.traversers.push(traverser);
+
+                    await traverser.open_promise;
 
                     traverser.option = document.createElement('option');
                     traverser.option.value = traverser.id;
@@ -175,7 +162,21 @@ export class TraverserSidebar
         return traverser;
     }
 
-    close(traverser)
+    // HACK:
+    static async onDoubleClick(tree, shot, name, path) {
+        let panel = Scope.addPanel(
+            new MDSplusPanel(`"${name}"`),
+            { width: 6, height: 6 }
+        );
+        panel.addTrace(
+            new MDSplusTrace(tree, shot, null, path)
+        );
+
+        await panel.update();
+        panel.render();
+    }
+
+    static close(traverser)
     {
         traverser.option.remove();
         traverser.removeElement();
