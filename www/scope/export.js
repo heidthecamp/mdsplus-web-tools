@@ -1,7 +1,5 @@
 
-import { Panel } from "../common/panel.js";
-import { Scope } from "../common/scope.js";
-import { GlobalDefaults } from "./defaults.js";
+import { Scope } from "./scope.js";
 
 export function exportJSON() {
     let clean = (object) => {
@@ -62,20 +60,6 @@ export function exportJSON() {
             'y_max_expr': panel.y_max_expr,
             'x_min_expr': panel.x_min_expr,
             'x_max_expr': panel.x_max_expr,
-            'global_default_flags': {
-                'update': panel.global_defaults_flags.update,
-                'tree': panel.global_defaults_flags.tree,
-                'shot_expr': panel.global_defaults_flags.shot_expr,
-                'default_node_expr': panel.global_defaults_flags.default_node_expr,
-                'x_expr': panel.global_defaults_flags.x_expr,
-                'y_expr': panel.global_defaults_flags.y_expr,
-                'x_min_expr': panel.global_defaults_flags.x_min_expr,
-                'x_max_expr': panel.global_defaults_flags.x_max_expr,
-                'y_min_expr': panel.global_defaults_flags.y_min_expr,
-                'y_max_expr': panel.global_defaults_flags.y_max_expr,
-                'title_expr': panel.global_defaults_flags.title_expr,
-                'event': panel.global_defaults_flags.event,
-            },
             'traces': traces,
         }));
     }
@@ -84,6 +68,7 @@ export function exportJSON() {
 }
 
 export async function exportFile(type) {
+    // TODO: Implement when the functionality is available
     // if (Window.showSaveFilePicker) {
     //     let fileInfo = await Window.showSaveFilePicker({
     //         types: [
@@ -123,7 +108,7 @@ export async function exportFile(type) {
         link.setAttribute('download', 'scope.json');
 
         link.style.display = 'none';
-        document.body.appendChild(link);
+        document.body.append(link);
         
         link.click();
 

@@ -119,7 +119,7 @@
         .error {
             text-align: center;
             color: red;
-            font-size: 40px;
+            font-size: 20px;
             margin-top: 20px;
         }
 
@@ -254,6 +254,10 @@
             width: 150px;
             text-align: center;
         }
+
+        #error-message {
+            color: red;
+        }
     </style>
 
     <template id="traverser-node-template">
@@ -305,6 +309,7 @@
                         <img src="../octicons/gear.svg" />
                     </a>
                     <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" data-action="refresh-panel">Refresh</a></li>
                         <li><a class="dropdown-item" data-action="edit">Edit</a></li>
                         <li><a class="dropdown-item" data-action="auto-x-y">Auto X & Y</a></li>
                         <li><a class="dropdown-item" data-action="auto-x">Auto X</a></li>
@@ -324,47 +329,47 @@
                 <div class="col-4">
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input tabindex="0" id="panel-title_expr-default" type="checkbox">
+                            <input id="panel-title_expr-default" type="checkbox">
                         </div>
                         <label for="panel-title_expr" class="col-sm-2 col-form-label">Title</label>
                         <div class="col-sm-9">
-                            <input tabindex="1" class="form-control" id="panel-title_expr" type="text" />
+                            <input class="form-control" id="panel-title_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input tabindex="2" id="panel-y_min_expr-default" type="checkbox" />
+                            <input id="panel-y_min_expr-default" type="checkbox" />
                         </div>
                         <label for="panel-y_min_expr" class="col-sm-2 col-form-label">Y Min</label>
                         <div class="col-sm-9">
-                            <input tabindex="3" class="form-control" id="panel-y_min_expr" type="text" />
+                            <input class="form-control" id="panel-y_min_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input tabindex="4" id="panel-y_max_expr-default" type="checkbox" />
+                            <input id="panel-y_max_expr-default" type="checkbox" />
                         </div>
                         <label for="panel-y_max_expr" class="col-sm-2 col-form-label">Y Max</label>
                         <div class="col-sm-9">
-                            <input tabindex="5" class="form-control" id="panel-y_max_expr" type="text" />
+                            <input class="form-control" id="panel-y_max_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input tabindex="6" id="panel-x_min_expr-default" type="checkbox" />
+                            <input id="panel-x_min_expr-default" type="checkbox" />
                         </div>
                         <label for="panel-x_min_expr" class="col-sm-2 col-form-label">X Min</label>
                         <div class="col-sm-9">
-                            <input tabindex="7" class="form-control" id="panel-x_min_expr" type="text" />
+                            <input class="form-control" id="panel-x_min_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input tabindex="8" id="panel-x_max_expr-default" type="checkbox" />
+                            <input id="panel-x_max_expr-default" type="checkbox" />
                         </div>
                         <label for="panel-x_max_expr" class="col-sm-2 col-form-label">X Max</label>
                         <div class="col-sm-9">
-                            <input tabindex="9" class="form-control" id="panel-x_max_expr" type="text" />
+                            <input class="form-control" id="panel-x_max_expr" type="text" />
                         </div>
                     </div>
                     
@@ -380,25 +385,7 @@
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-sm-1 panel-defaults">
-                            <div style="height: 60px;"></div>
-                            <div class="row mb-3">
-                                <input tabindex="12" id="trace-y_expr-default" type="checkbox" /> <br />
-                            </div>
-                            <div class="row mb-3">
-                                <input tabindex="14" id="trace-x_expr-default" type="checkbox" /> <br />
-                            </div>
-                            <div class="row mb-3">
-                                <input tabindex="16" id="trace-tree-default" type="checkbox" /> <br />
-                            </div>
-                            <div class="row mb-3">
-                                <input tabindex="18" id="trace-shot_expr-default" type="checkbox" /> <br />
-                            </div>
-                            <div class="row mb-3">
-                                <input tabindex="20" id="trace-default_node_expr-default" type="checkbox" /> <br />
-                            </div>
-                        </div>
-                        <div id="trace-forms" class="col-sm-11"></div>
+                        <div id="trace-forms" class="col-sm-12"></div>
                     </div>
                     <div class="row">
                         <div class="container-fluid">
@@ -417,48 +404,66 @@
     </template>
 
     <template id="trace-form-template">
-        <div class="row mb-3">
-            <div class="container-fluid">
-                <button type="button", class="btn btn-secondary" data-action="open-trace-traverser">Open in Traverser</button>
-                <button type="button", data-action="remove-trace" class="btn btn-danger" id="remove-button">Remove</button>
+        <li class="trace-form">
+            <div class="row mb-3">
+                <div class="container-fluid">
+                    <button type="button", class="btn btn-secondary" data-action="reveal-trace-in-traverser">Reveal in Traverser</button>
+                    <button type="button", data-action="remove-trace-form" class="btn btn-danger" id="remove-button">Remove</button>
+                </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label for="trace-y_expr" class="col-sm-3 col-form-label">Y Axis</label>
-            <div class="col-sm-9">
-                <input tabindex="13" class="form-control" id="trace-y_expr" type="text" />
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-y_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-y_expr" class="col-sm-2 col-form-label">Y Axis</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-y_expr" type="text" />
+                </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label for="trace-x_expr" class="col-sm-3 col-form-label">X Axis</label>
-            <div class="col-sm-9">
-                <input tabindex="15" class="form-control" id="trace-x_expr" type="text" />
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-x_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-x_expr" class="col-sm-2 col-form-label">X Axis</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-x_expr" type="text" />
+                </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label for="trace-tree" class="col-sm-3 col-form-label">Tree</label>
-            <div class="col-sm-9">
-                <input tabindex="17" class="form-control" id="trace-tree" type="text" />
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-tree-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-tree" class="col-sm-2 col-form-label">Tree</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-tree" type="text" />
+                </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label for="trace-shot_expr" class="col-sm-3 col-form-label">Shot</label>
-            <div class="col-sm-9">
-                <input tabindex="19" class="form-control" id="trace-shot_expr" type="text" />
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-shot_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-shot_expr" class="col-sm-2 col-form-label">Shot</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-shot_expr" type="text" />
+                </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label for="trace-default_node_expr" class="col-sm-3 col-form-label">Default Node</label>
-            <div class="col-sm-9">
-                <input tabindex="21" class="form-control" id="trace-default_node_expr" type="text" />
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-default_node_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-default_node_expr" class="col-sm-2 col-form-label">Default Node</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-default_node_expr" type="text" />
+                </div>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label for="trace-color" class="col-sm-3 col-form-label">Trace Color</label>
-            <div class="col-sm-9">
-                <input tabindex="23" class="form-control" id="trace-color" type="text" />
+            <div class="row mb-3">
+                <div class="col-sm-1"></div>
+                <label for="trace-color" class="col-sm-2 col-form-label">Trace Color</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-color" type="text" />
+                </div>
             </div>
-        </div>
+        </li>
     </template>
 
     <template id="global-defaults-form-template">
@@ -638,10 +643,8 @@
 
     <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-0 border-top  mt-0 px-2"> 
-                <div id="error-message" class="col-md-4 d-flex align-items-center justify-content-start mb-3 mb-md-0 me-md-auto">tdi error messages</div>
-                <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center">
-                    Status goes here
-                </div>
+                <div id="error-message" class="col-md-4 d-flex align-items-center justify-content-start mb-3 mb-md-0 me-md-auto"></div>
+                <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
                 <ul class="nav col-md-4 justify-content-end">
                     <li class="nav-item">
                         <a href="https://www.github.com" class="nav-link px-2">

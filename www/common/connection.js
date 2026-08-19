@@ -1,4 +1,65 @@
 
+export class Response
+{
+    constructor(json) {
+        try {
+            this.data = JSON.parse(json);
+            this.outstanding = [];
+
+            // TODO: Improve
+            for (const [key, value] of Object.entries(this.data)) {
+                if (!!value.value && Object.getPrototypeOf(value.value) === Object.prototype) {
+                    this.outstanding.push(key);
+                }
+            }
+        }
+        catch (e) {
+            this.data = { error: e.message };
+        }
+    }
+
+    checkForErrors() {
+        if (this.data.hasOwnProperty('error')) {
+            throw Error(this.data.error);
+        }
+
+        for (let key in this.data) {
+            if (this.data[key].hasOwnProperty('error')) {
+                throw Error(this.data[key].error);
+            }
+        }
+    }
+
+    hasError(name = null) {
+        if (name === null) {
+            return this.data.hasOwnProperty('error');
+        }
+        return this.data[name].hasOwnProperty('error');
+    }
+
+    getError(name = null) {
+        if (name === null) {
+            if (this.data.hasOwnProperty('error')) {
+                return this.data.error;
+            }
+        }
+
+        if (this.data[name].hasOwnProperty('error')) {
+            return this.data[name].error;
+        }
+
+        return null;
+    }
+
+    hasValue(name) {
+        return this.data.hasOwnProperty(name);
+    }
+
+    getValue(name) {
+        return this.data[name].value;
+    }
+}
+
 export class Connection
 {
     static current = new Connection();
@@ -65,27 +126,14 @@ export class Connection
     handleMessage(data) {
         if (this.requests.length > 0) {
             if (this.response == null) {
-                // TODO: Possibly remove?
-                // data = data.replaceAll('NaN', '0');
-                this.response = JSON.parse(data);
+                this.response = new Response(data);
 
-                // TODO: Improve
-                if (this.response.hasOwnProperty('error')) {
-                    console.error(this.response.error);
+                if (this.response.hasError()) {
                     let request = this.requests.shift();
-                    request.reject(this.response.error);
-                    return;
+                    request.reject(this.response.getError());
                 }
-
-                let outstanding = 0;
-                for (const [key, value] of Object.entries(this.response)) {
-                    if (!!value.value && Object.getPrototypeOf(value.value) === Object.prototype) {
-                        ++outstanding;
-                    }
-                }
-
-                // No outstanding data messages, resolve immediately
-                if (outstanding == 0) {
+                else if (this.response.outstanding.length == 0) {
+                    // No outstanding data messages, resolve immediately
                     let request = this.requests.shift();
                     request.resolve(this.response);
                     this.response = null;
@@ -93,64 +141,73 @@ export class Connection
             }
             else {
                 // Handle one outstanding data message
-                let outstanding = 0;
-                for (const [key, value] of Object.entries(this.response)) {
-                    if (!!value.value && Object.getPrototypeOf(value.value) === Object.prototype) {
-                        if (data == null) {
-                            ++outstanding;
-                        }
-                        else {
-                            switch (value.value.type) {
-                            case 'int8':
-                                this.response[key].value = new Int8Array(data);
-                                break;
-                            case 'int16':
-                                this.response[key].value = new Int16Array(data);
-                                break;
-                            case 'int32':
-                                this.response[key].value = new Int32Array(data);
-                                break;
-                            // case 'int64':
-                            //     this.response[key].value = new BigInt64Array(data);
-                            //     break;
-                            case 'uint8':
-                                this.response[key].value = new Uint8Array(data);
-                                break;
-                            case 'uint16':
-                                this.response[key].value = new Uint16Array(data);
-                                break;
-                            case 'uint32':
-                                this.response[key].value = new Uint32Array(data);
-                                break;
-                            // case 'uint64':
-                            //     this.response[key].value = new BigUint64Array(data);
-                            //     break;
-                            case 'float32':
-                                this.response[key].value = new Float32Array(data);
-                                break;
-                            case 'float64':
-                                this.response[key].value = new Float64Array(data);
-                                break;
-                            }
+                let key = this.response.outstanding.shift();
 
-                            data = null;
-                        }
+                if (data === null) {
+                    this.response.data[key].value = null;
+                }
+                else {
+                    let info = this.response.data[key].value;
+
+                    let array = null;
+                    switch (info.type) {
+                    case 'int8':
+                        array = new Int8Array(data);
+                        break;
+                    case 'int16':
+                        array = new Int16Array(data);
+                        break;
+                    case 'int32':
+                        array = new Int32Array(data);
+                        break;
+                    // case 'int64':
+                    // array = new BigInt64Array(data);
+                    //     break;
+                    case 'uint8':
+                        array = new Uint8Array(data);
+                        break;
+                    case 'uint16':
+                        array = new Uint16Array(data);
+                        break;
+                    case 'uint32':
+                        array = new Uint32Array(data);
+                        break;
+                    // case 'uint64':
+                    // array = new BigUint64Array(data);
+                    //     break;
+                    case 'float32':
+                        array = new Float32Array(data);
+                        break;
+                    case 'float64':
+                        array = new Float64Array(data);
+                        break;
                     }
+
+                    if (array.length != info.length) {
+                        // Freak out
+                    }
+
+                    this.response.data[key] = { value: array };
+
+                    data = null;
                 }
 
                 // If all outstanding data messages are received, then resolve
-                if (outstanding == 0) {
+                if (this.response.outstanding.length == 0) {
                     let request = this.requests.shift();
                     request.resolve(this.response);
                     this.response = null;
                 }
             }
         }
+        else {
+            console.error('Unexpected response packet', data);
+        }
     }
 
     async getMany(request) {
         if (this.ws === undefined) {
-            return false;
+            throw Error('WebSocket is closed');
         }
 
         let promise = new Promise(

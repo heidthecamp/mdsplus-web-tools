@@ -1,37 +1,50 @@
 
-import { Panel } from "../common/panel.js";
-import { Scope } from "../common/scope.js";
-import { GlobalDefaults, GlobalDefaultsFlags } from "./defaults.js";
+import { Scope } from "./scope.js";
+import { MDSplusTrace } from "./mdsplusTrace.js";
 
-export async function importJSON(text) {
+var GlobalDefaultMask = {
+    update: (1 << 0),
+    experiment: (1 << 7),
+    shot: (1 << 8),
+    default_node: (1 << 9),
+    x: (1 << 10),
+    y: (1 << 11),
+    xmin: (1 << 12),
+    xmax: (1 << 13),
+    ymin: (1 << 14),
+    ymax: (1 << 15),
+    title: (1 << 16),
+    event: (1 << 17),
+};
+
+export function importJSON(text) {
     let valueOrNull = (object, key) => {
         return object.hasOwnProperty(key) ? object[key] : null;
     };
 
     let data = JSON.parse(text);
+    if (data === null) {
+        throw Error('Invalid JSON');
+    }
 
-    for (const [key, value] of Object.entries(data['global_defaults'])) {
-        Scope.defaults[key] = value;
+    if (data.hasOwnProperty('global_defaults')) {
+        for (const [key, value] of Object.entries(data['global_defaults'])) {
+            Scope.defaults[key] = value;
+        }
     }
 
     for (var i = 0; i < data['panels'].length; ++i) {
         let panel = data['panels'][i];
 
-        let global_default_flags = new GlobalDefaultsFlags();
-        if (panel.hasOwnProperty('global_default_flags')) {
-            for (const [key, value] of Object.entries(panel['global_default_flags'])) {
-                global_default_flags[key] = value;
-            }
-        }
-
         let newPanel = Scope.addPanel(
-            valueOrNull(panel, 'title_expr'),
-            valueOrNull(panel, 'position'),
-            valueOrNull(panel, 'y_min_expr'),
-            valueOrNull(panel, 'y_max_expr'),
-            valueOrNull(panel, 'x_min_expr'),
-            valueOrNull(panel, 'x_max_expr'),
-            global_default_flags
+            new MDSplusPanel(
+                valueOrNull(panel, 'title_expr'),
+                valueOrNull(panel, 'position'),
+                valueOrNull(panel, 'y_min_expr'),
+                valueOrNull(panel, 'y_max_expr'),
+                valueOrNull(panel, 'x_min_expr'),
+                valueOrNull(panel, 'x_max_expr'),
+            )
         );
 
         if (panel.hasOwnProperty('traces')) {
@@ -39,15 +52,17 @@ export async function importJSON(text) {
                 let trace = panel['traces'][j];
 
                 newPanel.addTrace(
-                    valueOrNull(trace, 'tree'),
-                    valueOrNull(trace, 'shot_expr'),
-                    valueOrNull(trace, 'default_node_expr'),
-                    valueOrNull(trace, 'y_expr'),
-                    valueOrNull(trace, 'x_expr'),
-                    valueOrNull(trace, 'trace_type'),
-                    valueOrNull(trace, 'trace_color'),
-                    valueOrNull(trace, 'point_type'),
-                    valueOrNull(trace, 'point_color')
+                    new MDSplusTrace(
+                        valueOrNull(trace, 'tree'),
+                        valueOrNull(trace, 'shot_expr'),
+                        valueOrNull(trace, 'default_node_expr'),
+                        valueOrNull(trace, 'y_expr'),
+                        valueOrNull(trace, 'x_expr'),
+                        valueOrNull(trace, 'trace_type'),
+                        valueOrNull(trace, 'trace_color'),
+                        valueOrNull(trace, 'point_type'),
+                        valueOrNull(trace, 'point_color')
+                    )
                 );
             }
         }
@@ -67,6 +82,7 @@ export async function importFile(file) {
 
     const reader = new FileReader();
 
+
     // TODO: Add a confirmation
     reader.onload = async () => {
         Scope.reset();
@@ -83,8 +99,12 @@ export async function importFile(file) {
                     shot: null,
                     default_node: null,
                     title: null,
-                    y_expr: null,
-                    x_expr: null,
+                    y: null,
+                    x: null,
+                    xmin: null,
+                    xmax: null,
+                    ymin: null,
+                    ymax: null,
                 },
                 plots: [],
             };
@@ -127,9 +147,9 @@ export async function importFile(file) {
                             experiment: null,
                             shot: null,
                             default_node: null,
-                            title_expr: null,
-                            y_expr: null,
-                            x_expr: null,
+                            title: null,
+                            y: null,
+                            x: null,
                             row: null,
                             col: null,
                         });
@@ -151,11 +171,14 @@ export async function importFile(file) {
                         case 'experiment':
                             data['plots'][index]['experiment'] = value;
                             break;
+                        case 'shot':
+                            data['plots'][index]['shot'] = value;
+                            break;
                         case 'y':
-                            data['plots'][index]['y_expr'] = fixNewlines(value);
+                            data['plots'][index]['y'] = fixNewlines(value);
                             break;
                         case 'x':
-                            data['plots'][index]['x_expr'] = fixNewlines(value);
+                            data['plots'][index]['x'] = fixNewlines(value);
                             break;
                         case 'ymin':
                             data['plots'][index]['ymin'] = parseFloat(value);
@@ -176,7 +199,7 @@ export async function importFile(file) {
                             data['plots'][index]['event'] = fixNewlines(value);
                             break;
                         case 'title':
-                            data['plots'][index]['title_expr'] = fixNewlines(value);
+                            data['plots'][index]['title'] = fixNewlines(value);
                             break;
                         case 'label':
                             data['plots'][index]['label'] = fixNewlines(value);
@@ -196,7 +219,7 @@ export async function importFile(file) {
                             });
                             break;
                         case 'title':
-                            data['title_expr'] = value;
+                            data['title'] = value;
                             break;
                         // case 'icon_name': break;
                         // case 'title_event': break;
@@ -214,6 +237,18 @@ export async function importFile(file) {
                             break;
                         case 'global_1_1.shot':
                             data['global']['shot'] = value;
+                            break;
+                        case 'global_1_1.default_node':
+                            data['global']['default_node'] = value;
+                            break;
+                        case 'global_1_1.title':
+                            data['global']['title'] = value;
+                            break;
+                        case 'global_1_1.y':
+                            data['global']['y'] = value;
+                            break;
+                        case 'global_1_1.x':
+                            data['global']['x'] = value;
                             break;
                         case 'global_1_1.xmin':
                             data['global']['xmin'] = value;
@@ -236,16 +271,16 @@ export async function importFile(file) {
                 }
             }
             
-            Scope.defaults.tree = data['global'].experiment;
-            Scope.defaults.shot_expr = data['global'].shot;
-            Scope.defaults.default_node_expr = data['global'].default_node;
-            Scope.defaults.title_expr = data['global'].title_expr;
-            Scope.defaults.y_expr = data['global'].y_expr;
-            Scope.defaults.x_expr = data['global'].x_expr;
-            Scope.defaults.x_min_expr = data['global'].xmin;
-            Scope.defaults.x_max_expr = data['global'].xmax;
-            Scope.defaults.y_min_expr = data['global'].ymin;
-            Scope.defaults.y_max_expr = data['global'].ymax;
+            Scope.defaults.tree = data['global']['experiment'];
+            Scope.defaults.shot_expr = data['global']['shot'];
+            Scope.defaults.default_node_expr = data['global']['default_node'];
+            Scope.defaults.title_expr = data['global']['title'];
+            Scope.defaults.y_expr = data['global']['y'];
+            Scope.defaults.x_expr = data['global']['x'];
+            Scope.defaults.x_min_expr = data['global']['xmin'];
+            Scope.defaults.x_max_expr = data['global']['xmax'];
+            Scope.defaults.y_min_expr = data['global']['ymin'];
+            Scope.defaults.y_max_expr = data['global']['ymax'];
 
             let columnWidth = Math.floor(Math.max(1, 12 / data['columns']));
 
@@ -254,34 +289,114 @@ export async function importFile(file) {
             
             for (var i = 0; i < data['plots'].length; ++i) {
                 let plot = data['plots'][i];
+                let mask = plot.global_defaults;
 
                 let rowHeight = Math.ceil(Math.max(1, 16 / rows_in_column[column]) * 2);
+
+                // if (((mask & GlobalDefaultMask.update) > 0)) {
+                //     plot.update = null;
+                // }
+
+                if (((mask & GlobalDefaultMask.xmin) > 0)) {
+                    plot.x_min = null;
+                }
+                else if (plot.x_min === null) {
+                    plot.x_min = '';
+                }
+
+                if (((mask & GlobalDefaultMask.xmax) > 0)) {
+                    plot.x_max = null;
+                }
+                else if (plot.x_max === null) {
+                    plot.x_max = '';
+                }
+
+                if (((mask & GlobalDefaultMask.ymin) > 0)) {
+                    plot.y_min = null;
+                }
+                else if (plot.y_min === null) {
+                    plot.y_min = '';
+                }
+
+                if (((mask & GlobalDefaultMask.ymax) > 0)) {
+                    plot.y_max = null;
+                }
+                else if (plot.y_max === null) {
+                    plot.y_max = '';
+                }
+
+                if (((mask & GlobalDefaultMask.title) > 0)) {
+                    plot.title = null;
+                }
+                else if (plot.title === null) {
+                    plot.title = '';
+                }
+
+                // if (((mask & GlobalDefaultMask.event) > 0)) {
+                //     plot.event = null;
+                // }
                 
                 // TODO: Take the title from the first trace that has one
-                let title = data['plots'][i].title_expr;
                 // TODO: Use plot.row, plot.col to set _ROW and _COL
                 let panel = Scope.addPanel(
-                    title,
+                    new MDSplusPanel(
+                        plot.title,
+                        plot.ymin,
+                        plot.ymax,
+                        plot.xmin,
+                        plot.xmax,
+                    ),
                     {
                         x: column * columnWidth,
                         y: row * rowHeight,
                         width: columnWidth,
                         height: rowHeight,
                     },
-                    plot.y_min,
-                    plot.y_max,
-                    plot.x_min,
-                    plot.x_max,
-                    plot.global_defaults
                 );
 
-                panel.addTrace(
+                if (((mask & GlobalDefaultMask.experiment) > 0)) {
+                    plot.experiment = null;
+                }
+                else if (plot.experiment === null) {
+                    plot.experiment = '';
+                }
+
+                if (((mask & GlobalDefaultMask.shot) > 0)) {
+                    plot.shot = null;
+                }
+                else if (plot.shot === null) {
+                    plot.shot = '';
+                }
+
+                if (((mask & GlobalDefaultMask.default_node) > 0)) {
+                    plot.default_node = null;
+                }
+                else if (plot.default_node === null) {
+                    plot.default_node = '';
+                }
+
+                if (((mask & GlobalDefaultMask.x) > 0)) {
+                    plot.x = null;
+                }
+                else if (plot.x === null) {
+                    plot.x = '';
+                }
+
+                if (((mask & GlobalDefaultMask.y) > 0)) {
+                    plot.y = null;
+                }
+                else if (plot.y === null) {
+                    plot.y = '';
+                }
+
+                // TODO: Support jScope multi-plot format
+                panel.addTrace(new MDSplusTrace(
                     plot.experiment,
                     plot.shot,
                     plot.default_node,
-                    plot.y_expr,
-                    plot.x_expr,
-                );
+                    plot.y,
+                    plot.x,
+                ));
                 panels.push(panel);
 
                 ++row;
@@ -291,7 +406,7 @@ export async function importFile(file) {
                 }
             }
 
-            await Scope.setTitle(data['title_expr']);
+            await Scope.setTitle(data['title']);
         }
 
         Scope.refresh();
