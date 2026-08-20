@@ -1,10 +1,20 @@
 
 export function showErrorMessage(message) {
+    if (message === null) {
+        document.querySelector('#error-message').innerText = '';
+        return;
+    }
+
     console.error(message);
     document.querySelector('#error-message').innerText = message;
 }
 
 export function showStatusMessage(message) {
+    if (message === null) {
+        document.querySelector('#status').innerText = '';
+        return;
+    }
+
     document.querySelector('#status').innerText = message;
 }
 

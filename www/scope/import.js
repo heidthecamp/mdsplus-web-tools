@@ -1,6 +1,7 @@
 
 import { Scope } from "./scope.js";
 import { MDSplusTrace } from "./mdsplusTrace.js";
+import { MDSplusPanel } from "./mdsplusPanel.js";
 
 var GlobalDefaultMask = {
     update: (1 << 0),
@@ -39,12 +40,12 @@ export function importJSON(text) {
         let newPanel = Scope.addPanel(
             new MDSplusPanel(
                 valueOrNull(panel, 'title_expr'),
-                valueOrNull(panel, 'position'),
                 valueOrNull(panel, 'y_min_expr'),
                 valueOrNull(panel, 'y_max_expr'),
                 valueOrNull(panel, 'x_min_expr'),
                 valueOrNull(panel, 'x_max_expr'),
-            )
+            ),
+            valueOrNull(panel, 'position'),
         );
 
         if (panel.hasOwnProperty('traces')) {

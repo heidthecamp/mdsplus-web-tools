@@ -32,7 +32,7 @@ export class Scope
 {
     static title_expr = '$SHOT';
 
-    static defaults = InitialDefaults;
+    static defaults = { ...InitialDefaults };
 
     static shot_expr_offset = 0;
 
@@ -49,7 +49,7 @@ export class Scope
     }
 
     static autosave() {
-        console.info('Autosave at', performance.now());
+        console.info('Autosave at', performance.now().toFixed(2));
         localStorage.setItem("ws-autosave", Export.exportJSON());
     }
 
@@ -187,11 +187,12 @@ export class Scope
     };
 
     static reset() {
-        Utils.showErrorMessage('');
-        Utils.showStatusMessage('');
+        Utils.showErrorMessage(null);
+        Utils.showStatusMessage(null);
 
         Scope.setTitle("\"MDSplus Scope\"");
-        Scope.defaults = InitialDefaults;
+        Scope.defaults = { ...InitialDefaults };
+        Scope.shot_expr_offset = 0;
 
         let panelsToRemove = Scope.panels;
         Scope.panels = [];
