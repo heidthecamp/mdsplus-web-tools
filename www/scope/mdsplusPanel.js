@@ -123,6 +123,10 @@ export class MDSplusPanel extends Panel
 
     async update()
     {
+        if (this.widget === null) {
+            return;
+        }
+
         // TODO: Fix conflit with preview
         this.widget.style.opacity = 0.2;
         let $error = this.widget.querySelector('.error');
@@ -196,6 +200,10 @@ export class MDSplusPanel extends Panel
 
     async render()
     {
+        if (this.widget === null) {
+            return;
+        }
+        
         if (this.widget.querySelector('.error') != null) {
             return;
         }

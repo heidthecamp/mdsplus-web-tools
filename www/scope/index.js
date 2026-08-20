@@ -63,6 +63,11 @@ document.addEventListener('drop', async (e) => {
     e.preventDefault();
 
     const file = e.dataTransfer.items[0].getAsFile();
+    if (file === null) {
+        return;
+    }
+
+    // TODO: Additional filtering
 
     for (var i = 0; i < Scope.panels.length; ++i) {
         Scope.panels[i].removeElement();

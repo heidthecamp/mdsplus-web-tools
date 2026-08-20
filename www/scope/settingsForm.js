@@ -46,7 +46,6 @@ export class SettingsForm extends Form
         Scope.queueAutosave();
         Scope.refresh();
         
-
         return true;
     }
 };

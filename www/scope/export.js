@@ -53,15 +53,18 @@ export function exportJSON() {
             }));
         }
 
-        data['panels'].push(clean({
-            'title_expr': panel.title_expr,
-            'position': panel.position(),
-            'y_min_expr': panel.y_min_expr,
-            'y_max_expr': panel.y_max_expr,
-            'x_min_expr': panel.x_min_expr,
-            'x_max_expr': panel.x_max_expr,
-            'traces': traces,
-        }));
+        let position = panel.position()
+        if (position !== null) {
+            data['panels'].push(clean({
+                'title_expr': panel.title_expr,
+                'position': position,
+                'y_min_expr': panel.y_min_expr,
+                'y_max_expr': panel.y_max_expr,
+                'x_min_expr': panel.x_min_expr,
+                'x_max_expr': panel.x_max_expr,
+                'traces': traces,
+            }));
+        }
     }
 
     return JSON.stringify(data);

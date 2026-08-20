@@ -32,7 +32,7 @@ export class Scope
 {
     static title_expr = '$SHOT';
 
-    static defaults = { ...InitialDefaults };
+    static defaults = Utils.cloneObject(InitialDefaults);
 
     static shot_expr_offset = 0;
 
@@ -85,6 +85,7 @@ export class Scope
     
         document.querySelector('*[data-action="import"]')
             .addEventListener('click', async (e) => {
+                // TODO: ????
                 try {
                     const pickerOpts = {
                         types: [
@@ -186,12 +187,13 @@ export class Scope
         });
     };
 
-    static reset() {
+    static async reset() {
+
         Utils.showErrorMessage(null);
         Utils.showStatusMessage(null);
 
-        Scope.setTitle("\"MDSplus Scope\"");
-        Scope.defaults = { ...InitialDefaults };
+        Scope.title_expr = "\"MDSplus Scope\"";
+        Scope.defaults = Utils.cloneObject(InitialDefaults);
         Scope.shot_expr_offset = 0;
 
         let panelsToRemove = Scope.panels;
@@ -200,6 +202,9 @@ export class Scope
         for (var i = 0; i < panelsToRemove.length; ++i) {
             panelsToRemove[i].removeElement();
         }
+
+        await Scope.closeAllTrees()
+            .then(() => Scope.updateMetadata());
 
         Scope.initGrid();
 
@@ -309,62 +314,13 @@ export class Scope
         }
     }
 
+    static async closeAllTrees() {
+        await Connection.current.getMany([
+            ['close', '_i=0;WHILE(IAND(TreeClose(),1)) _i++;_i'],
+        ]);
+    }
+
     static edit() {
         Form.show(new SettingsForm());
-        // let $overlay = Utils.showOverlay();
-        // $overlay.append(Utils.inflateTemplate('global-defaults-form-template'));
-
-        // document.getElementById('scope-title_expr').value = Scope.title_expr; // TODO: Move to Panel
-
-        // // Update the form values
-        // document.getElementById('global-defaults-title_expr').value = Scope.defaults.title_expr ?? '';
-        // document.getElementById('global-defaults-y_expr').value = Scope.defaults.y_expr ?? '';
-        // document.getElementById('global-defaults-y-min').value = Scope.defaults.y_min_expr ?? '';
-        // document.getElementById('global-defaults-y-max').value = Scope.defaults.y_max_expr ?? '';
-        // document.getElementById('global-defaults-x_expr').value = Scope.defaults.x_expr ?? '';
-        // document.getElementById('global-defaults-x-min').value = Scope.defaults.x_min_expr ?? '';
-        // document.getElementById('global-defaults-x-max').value = Scope.defaults.x_max_expr ?? '';
-        // document.getElementById('global-defaults-tree').value = Scope.defaults.tree ?? '';
-        // document.getElementById('global-defaults-shot_expr').value = Scope.defaults.shot_expr ?? '';
-        // document.getElementById('global-defaults-default_node_expr').value = Scope.defaults.default_node_expr ?? '';
-
-        // document.querySelectorAll(`#global-defaults-form *[data-action="save"]`)
-        //     .forEach((node) => {
-        //         node.addEventListener('click', (e) => {
-                    
-        //             Scope.title_expr = document.getElementById('scope-title_expr').value;
-
-        //             Scope.defaults.title_expr = document.getElementById('global-defaults-title_expr').value;
-        //             Scope.defaults.y_expr = document.getElementById('global-defaults-y_expr').value;
-        //             Scope.defaults.y_min_expr = document.getElementById('global-defaults-y-min').value;
-        //             Scope.defaults.y_max_expr = document.getElementById('global-defaults-y-max').value;
-        //             Scope.defaults.x_expr = document.getElementById('global-defaults-x_expr').value;
-        //             Scope.defaults.x_min_expr = document.getElementById('global-defaults-x-min').value;
-        //             Scope.defaults.x_max_expr = document.getElementById('global-defaults-x-max').value;
-        //             Scope.defaults.tree = document.getElementById('global-defaults-tree').value;
-        //             Scope.defaults.shot_expr = document.getElementById('global-defaults-shot_expr').value;
-        //             Scope.defaults.default_node_expr = document.getElementById('global-defaults-default_node_expr').value;
-
-        //             Utils.hideOverlay();
-
-        //             Scope.queueAutosave();
-        //             Scope.refresh();
-        //         });
-        //     });
-
-        // document.querySelectorAll(`#global-defaults-form *[data-action="reset"]`)
-        //     .forEach((node) => {
-        //         node.addEventListener('click', (e) => {
-        //             Scope.defaults.edit(); // HACK
-        //         });
-        //     });
-
-        // document.querySelectorAll(`#global-defaults-form *[data-action="cancel"]`)
-        //     .forEach((node) => {
-        //         node.addEventListener('click', (e) => {
-        //             Utils.hideOverlay();
-        //         });
-        //     });
-
     }
 };

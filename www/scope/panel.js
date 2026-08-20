@@ -16,6 +16,8 @@ export class Panel
     ) {
         this.id = NextId++;
 
+        this.widget = null;
+
         this.title = title;
 
         this.traces = [];
@@ -172,6 +174,10 @@ export class Panel
     }
 
     position() {
+        if (this.widget === null) {
+            return null;
+        }
+
         return {
             width: this.widget.gridstackNode.w,
             height: this.widget.gridstackNode.h,
@@ -188,12 +194,12 @@ export class Panel
             position = new Position();
         }
 
-        if (position.width == null) {
-            position.width = 6;
+        if (position.width === null) {
+            position.width = 12;
         }
 
-        if (!position.height == null) {
-            position.height = 2;
+        if (position.height === null) {
+            position.height = 6;
         }
 
         this.widget = Scope.grid.addWidget({

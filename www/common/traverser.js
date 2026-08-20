@@ -140,7 +140,8 @@ export class Traverser
         let request = [
             ['open', `TreeOpen("${this.tree}",${this.shot})`],
             ['default_node', default_node_expr], // TODO: Fix
-            ['path', `getnci((${node}), "FULLPATH")`],
+            ['nid', `_wsnid=getnci((${node}), "NID_NUMBER")`],
+            ['path', `getnci(_wsnid, "FULLPATH")`],
         ];
 
         try {
@@ -157,6 +158,10 @@ export class Traverser
                     used.push(parts[i]);
                     await this.dir(used.join(':'));
                 }
+
+                let focused_node = this.$element.querySelector(`*[data-nid="${response.getValue('nid')}"]`);
+                focused_node.classList.add('focused');
+                setTimeout(() => focused_node.classList.remove('focused'), 2000);
             });
         }
         catch (e) {
@@ -169,6 +174,7 @@ export class Traverser
 
         let name = path.split(/[:\.]/).at(-1);
         let $node = document.createElement('div');
+        $node.classList.add('traverser-node');
         $node.append(Utils.inflateTemplate('traverser-node-template'));
         
         $node.dataset.nid = nid;

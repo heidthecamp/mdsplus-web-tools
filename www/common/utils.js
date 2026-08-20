@@ -22,16 +22,19 @@ export function inflateTemplate(id) {
     return document.getElementById(id).content.cloneNode(true);
 }
 
-export function showOverlay()
+export function showOverlay(onClose=null)
 {
     let $overlay = document.createElement('div');
-    $overlay.id = 'overlay';
-    $overlay.classList.add('shown');
+    $overlay.classList.add('overlay');
     document.body.append($overlay);
 
     $overlay.addEventListener('mousedown', (e) => {
         if (e.target == $overlay) {
-            hideOverlay();
+            hideOverlay($overlay);
+            
+            if (onClose !== null) {
+                onClose($overlay);
+            }
         }
     });
 
@@ -45,10 +48,19 @@ export function showOverlay()
     return $overlay;
 }
 
-export function hideOverlay()
+export function hideOverlay($overlay)
 {
-    let $overlay = document.querySelector('#overlay');
     if ($overlay) {
         $overlay.remove();
     }
+}
+
+export function hideAllOverlays()
+{
+    document.querySelector('.overlay')
+        .forEach((node) => node.remove());
+}
+
+export function cloneObject(obj) {
+    return { ...obj };
 }

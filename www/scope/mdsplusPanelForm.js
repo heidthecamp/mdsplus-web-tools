@@ -148,7 +148,7 @@ export class MDSplusPanelForm extends Form
                         traverser.reveal(node, default_node_expr);
 
                         // HACK: Effectively "cancel"
-                        Utils.hideOverlay();
+                        this.close();
                     }
 
                 });
@@ -190,19 +190,22 @@ export class MDSplusPanelForm extends Form
         });
 
         this.setupGlobalDefaults('y_expr', trace, id);
-        this.setupGlobalDefaults('x_expr', trace,id);
-        this.setupGlobalDefaults('tree', trace,id);
-        this.setupGlobalDefaults('shot_expr', trace,id);
-        this.setupGlobalDefaults('default_node_expr', trace,id);
+        this.setupGlobalDefaults('x_expr', trace, id);
+        this.setupGlobalDefaults('tree', trace, id);
+        this.setupGlobalDefaults('shot_expr', trace, id);
+        this.setupGlobalDefaults('default_node_expr', trace, id);
 
-        if (trace !== null) {
-            this.getInput('y_expr', id).value = this.valueOr(trace.y_expr, '');
-            this.getInput('x_expr', id).value = this.valueOr(trace.x_expr, '');
-            this.getInput('tree', id).value = this.valueOr(trace.tree, '');
-            this.getInput('shot_expr', id).value = this.valueOr(trace.shot_expr, '');
-            this.getInput('default_node_expr', id).value = this.valueOr(trace.default_node_expr, '');
-            this.getInput('trace_color', id).value = this.valueOr(trace.trace_color, 'black');
+        // HACK:
+        if (trace === null) {
+            trace = {};
         }
+
+        this.getInput('y_expr', id).value = this.valueOr(trace.y_expr, MDSplusTrace.Defaults.y_expr);
+        this.getInput('x_expr', id).value = this.valueOr(trace.x_expr, MDSplusTrace.Defaults.x_expr);
+        this.getInput('tree', id).value = this.valueOr(trace.tree, MDSplusTrace.Defaults.tree);
+        this.getInput('shot_expr', id).value = this.valueOr(trace.shot_expr, MDSplusTrace.Defaults.shot_expr);
+        this.getInput('default_node_expr', id).value = this.valueOr(trace.default_node_expr, MDSplusTrace.Defaults.default_node_expr);
+        this.getInput('trace_color', id).value = this.valueOr(trace.trace_color, MDSplusTrace.Defaults.trace_color);
         
         return id;
     }
@@ -225,7 +228,7 @@ export class MDSplusPanelForm extends Form
     }
 
     apply() {
-        let initialEdit = (this.panel.element === null);
+        let initialEdit = (this.panel.widget === null);
         if (initialEdit) {
             this.panel.addElement();
         }
@@ -299,25 +302,41 @@ export class MDSplusPanelForm extends Form
     {
         let $input = this.getInput(name, trace_id);
         let $checkbox = this.getInput(`${name}-default`, trace_id);
+
+        $input.addEventListener('dblclick', (e) => {
+            console.log(e);
+            $checkbox.checked = false;
+            $input.removeAttribute('readonly');
+        });
         
         $checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
-                $input.disabled = true;
+                $input.setAttribute('readonly', 'readonly');
                 $input.placeholder = Scope.defaults[name] ? Scope.defaults[name] : '';
             }
             else {
-                $input.disabled = false;
+                $input.removeAttribute('readonly');
                 $input.placeholder = '';
             }
         });
 
         try {
-            if (trace === null) {
-                $checkbox.checked = (this.panel[name] === null);
+            let value = null;
+
+            if (trace_id === null) {
+                value = this.panel[name];
             }
             else {
-                $checkbox.checked = (trace[name] === null);
+                if (trace === null) {
+                    value = MDSplusTrace.Defaults[name];
+                }
+                else {
+                    value = trace[name];
+                }
             }
+
+            $checkbox.checked = (value === null);
+            
         } catch(e) {
             console.error(e);
             $checkbox.checked = true;
@@ -325,7 +344,7 @@ export class MDSplusPanelForm extends Form
 
         // TODO: Remove, this should be automatic when onchange is called
         if ($checkbox.checked) {
-            $input.disabled = true;
+            $input.setAttribute('readonly', 'readonly');
             $input.placeholder = Scope.defaults[name] ? Scope.defaults[name] : '';
         }
     }

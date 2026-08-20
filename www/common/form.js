@@ -6,16 +6,20 @@ export class Form
     static active_form = null;
 
     static show(form) {
-        if (Form.active_form !== null) {
-            Form.active_form.close();
-        }
+        Form.close();
         Form.active_form = form;
     }
 
+    static close() {
+        if (Form.active_form !== null) {
+            Form.active_form.close();
+        }
+    }
+
     constructor(templateId) {
-        let $overlay = Utils.showOverlay();
+        this.$overlay = Utils.showOverlay(() => this.close());
         this.$element = Utils.inflateTemplate(templateId).firstElementChild;
-        $overlay.append(this.$element);
+        this.$overlay.append(this.$element);
 
         this.$element.querySelectorAll('*[data-action="save"]')
             .forEach((node) => {
@@ -45,8 +49,10 @@ export class Form
     }
 
     close() {
-        Form.active_form = null;
-        Utils.hideOverlay();
+        Utils.hideOverlay(this.$overlay);
+        if (Form.active_form === this) {
+            Form.active_form = null;
+        }
     }
 
     apply() {
@@ -70,7 +76,7 @@ export class Form
     }
 
     valueOr(value, defaultValue=null) {
-        if (value === null || typeof value == "undefined"){
+        if (value === null || value === undefined || typeof value == "undefined"){
             return defaultValue;
         }
         return value
