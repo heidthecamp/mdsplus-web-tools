@@ -65,12 +65,14 @@
         #overlay {
             display: none;
             position: fixed;
+            padding-bottom: 100px;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.4);
             z-index: 1000;
+            overflow: scroll;
         }
         #overlay.shown {
             display: block;
@@ -113,9 +115,10 @@
         .column {
             flex-direction: column;
         }
-        .nav-link:hover {
-            opacity: 0.5;
-        }
+        /* .nav-link:hover {
+            background-color: #CCC;
+            opacity: 0.5; 
+        } */
         .error {
             text-align: center;
             color: red;
@@ -258,6 +261,17 @@
         #error-message {
             color: red;
         }
+        .form {
+            position: relative;
+        }
+        .exit {
+            position: absolute;
+            top: 7.5;
+            right: 7.5;
+        }
+        .exit:hover {
+            cursor: pointer;
+        }
     </style>
 
     <template id="traverser-node-template">
@@ -268,7 +282,8 @@
 
     <template id="traverser-open-form-template">
         <form>
-            <div id="traverser-open-form" class="container-fluid">
+            <div id="traverser-open-form" class="container-fluid form">
+                <img src="../octicons/x-circle.svg" data-action="cancel" role="button" class="exit" />
                 <div class="row">
                     <div class="col-4">
                         <div class="row mb-3">
@@ -326,7 +341,7 @@
     </template>
 
     <template id="panel-form-template">
-        <div id="panel-form" class="container-fluid">
+        <div id="panel-form" class="container-fluid form">
             <div class="row">
                 <div class="col-4">
                     <div class="row mb-3">
@@ -402,6 +417,7 @@
                     Loading...
                 </div>
             </div>
+            <img src="../octicons/x-circle.svg" data-action="cancel" role="button" class="exit" />
         </div>
     </template>
 
@@ -469,7 +485,8 @@
     </template>
 
     <template id="global-defaults-form-template">
-        <div id="global-defaults-form" class="container-fluid">
+        <div id="global-defaults-form" class="container-fluid form">
+            <img src="../octicons/x-circle.svg" data-action="cancel" role="button" class="exit" />
             <legend for="settings-form-form">Settings</legend>
             <fieldset id="settings-form" class="col-sm-11">
                 <div class="row mb-3">
@@ -622,10 +639,10 @@
                                     <img src="../octicons/three-bars.svg" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" data-action="import">Import</a></li>
-                                    <li><a class="dropdown-item" data-action="export">Export</a></li>
-                                    <li><a class="dropdown-item" data-action="settings">Settings</a></li>
-                                    <li><a class="dropdown-item" data-action="reset">Reset</a></li>
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="export">Export</a></li>
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="settings">Settings</a></li>
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="reset">Reset</a></li>
                                 </ul>
                             </li>
                         </ul>
