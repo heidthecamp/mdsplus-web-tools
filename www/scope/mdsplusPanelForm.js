@@ -1,6 +1,6 @@
 
 import { D3Renderer } from "../common/d3Renderer.js";
-import { Form } from "../common/form.js";
+import { Form, ConfirmForm } from "../common/form.js";
 import { MDSplusTrace } from "./mdsplusTrace.js";
 import { Scope } from "./scope.js";
 import { TraverserSidebar } from "./traverserSidebar.js";
@@ -24,13 +24,40 @@ export class MDSplusPanelForm extends Form
         this.preview_renderer = new D3Renderer(document.querySelector('#panel-preview'));
         this.preview_renderer.render(this.panel.traces);
 
-        document.querySelectorAll(`#panel-form *[data-action="add-trace"]`)
+        document.querySelectorAll('#panel-form input')
+            .forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    this.unsaved = true;
+                });
+            });
+
+        document.querySelectorAll('#panel-form *[data-action="add-trace"]')
             .forEach((button) => {
                 button.addEventListener('click', (e) => {
                     let id = this.addTraceForm();
                     this.showTraceForm(id);
                 })
             });
+    }
+
+    cancel() {
+        this.unsaved = false;
+        super.cancel();
+    }
+
+    close() {
+        console.log('MDSplusPanelForm close');
+        if (this.unsaved) {
+            new ConfirmForm(
+                'You have unsaved changes, are you sure you want to close?',
+                () => {
+                    super.close();
+                }
+            )
+        }
+        else {
+            super.close();
+        }
     }
 
     reset() {
@@ -67,6 +94,7 @@ export class MDSplusPanelForm extends Form
         }
 
         this.showTraceForm(0);
+        this.unsaved = false;
     }
 
     getInput(name, trace_id=null)
@@ -92,7 +120,7 @@ export class MDSplusPanelForm extends Form
         let id = this.next_trace_id++;
         this.trace_form_ids.push(id);
 
-        let $trace_form = Utils.inflateTemplate('trace-form-template').firstElementChild;
+        let $trace_form = Utils.inflateTemplate(document.getElementById('trace-form-template'));
         $trace_form.id = `trace-form-${id}`;
         $trace_form.dataset.id = id;
 
@@ -157,12 +185,17 @@ export class MDSplusPanelForm extends Form
         $trace_form.querySelectorAll('*[data-action="remove-trace-form"]')
             .forEach((button) => {
                 button.addEventListener('click', (e) => {
-                    this.removeTraceForm(id);
+                    new ConfirmForm(
+                        `Remove Trace #${id + 1}?`,
+                        () => {
+                            this.removeTraceForm(id);
 
-                    // HACK:
-                    if (this.trace_form_ids.length > 0) {
-                        this.showTraceForm(this.trace_form_ids[0]);
-                    }
+                            // HACK:
+                            if (this.trace_form_ids.length > 0) {
+                                this.showTraceForm(this.trace_form_ids[0]);
+                            }
+                        }
+                    );
                 })
             });
 
@@ -294,6 +327,7 @@ export class MDSplusPanelForm extends Form
         }
 
         Scope.queueAutosave();
+        this.unsaved = false;
 
         return true;
     }

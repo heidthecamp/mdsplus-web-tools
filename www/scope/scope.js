@@ -3,7 +3,7 @@ import { Connection } from "../common/connection.js";
 import { MDSplusPanel } from "./mdsplusPanel.js";
 import { TraverserSidebar } from "./traverserSidebar.js";
 import { SettingsForm } from "./settingsForm.js";
-import { Form } from "../common/form.js";
+import { ConfirmForm, Form } from "../common/form.js";
 
 import * as Import from "./import.js";
 import * as Export from "./export.js";
@@ -35,11 +35,12 @@ export class Scope
     static defaults = Utils.cloneObject(InitialDefaults);
 
     static shot_expr_offset = 0;
+    static resample = true;
 
     static grid = null;
 
     static panels = [];
-    static updating = false;
+    static updating = [];
 
     static autosave_timeout = null;
 
@@ -72,10 +73,20 @@ export class Scope
                 Scope.refresh();
             });
     
+        document.querySelector('*[data-action="reset-shot"]')
+            .addEventListener('click', async (e) => {
+                Scope.shot_expr_offset = 0;
+                Scope.refresh();
+            });
+    
         document.querySelector('*[data-action="reset"]')
             .addEventListener('click', async (e) => {
-                await Scope.reset();
-                Scope.refresh();
+                Form.show(new ConfirmForm(
+                    'Remove all panels and reset settings?',
+                    () => {
+                        Scope.reset().then(Scope.refresh);
+                    }
+                ));
             });
     
         document.querySelector('*[data-action="export"]')
@@ -139,9 +150,7 @@ export class Scope
     
         document.querySelector('*[data-action="refresh"]')
             .addEventListener('click', async (e) => {
-                e.target.classList.remove('active');
-                await Scope.refresh();
-                e.target.classList.add('active');
+                Scope.refresh();
             });
     
         document.querySelector('*[data-action="settings"]')
@@ -212,27 +221,28 @@ export class Scope
     }
 
     static async refresh() {
-        if (Scope.updating) {
+        if (Scope.updating.length > 0) {
+            await Scope.updateMetadata();
+            Scope.updating = Utils.cloneArray(Scope.panels);
             return;
         }
 
         Utils.showStatusMessage(`Refreshing...`);
         let before = performance.now();
 
-        Scope.updating = true;
+        Scope.updating = Utils.cloneArray(Scope.panels);
         
         // HACK:
         await Scope.updateMetadata();
 
-        for (var i = 0; i < Scope.panels.length; ++i) {
-            Scope.panels[i].resetViewport();
-            await Scope.panels[i].update(true);
-            await Scope.panels[i].render();
+        while (Scope.updating.length > 0) {
+            let panel = Scope.updating.shift();
+            panel.resetViewport();
+            await panel.update(true);
+            await panel.render();
         }
 
         await Scope.updateMetadata();
-
-        Scope.updating = false;
 
         let after = performance.now();
         let duration = (after - before) / 1000.0;
@@ -240,12 +250,11 @@ export class Scope
     }
 
     static async render() {
-        if (Scope.updating) {
-            return;
-        }
-        
         for (var i = 0; i < Scope.panels.length; ++i) {
-            await Scope.panels[i].render();
+            let panel = Scope.panels[i];
+            if (Scope.updating.indexOf(panel) == -1) {
+                await panel.render();
+            }
         }
     }
 

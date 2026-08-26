@@ -117,14 +117,19 @@ export class MDSplusTrace extends Trace
         // // TODO: Investigate what exactly this does
         // request.push([ 'stc', `SetTimeContext(${res_start}, ${res_stop}, ${res_delta}, "MinMax")` ]);
 
+        let cnr = '_wssig';
+        if (Scope.resample) {
+            cnr = `CropAndResample(_wssig,${res_start},${res_stop},${count})`;
+        }
+
         // TODO: Improve
         // Fallback default
         if (x_expr == null || x_expr == '') {
-            y_expr = `_wssig=(${y_expr};), _wssig=CropAndResample(_wssig,${res_start},${res_stop},${count})`;
+            y_expr = `_wssig=(${y_expr};), _wssig=${cnr}, data(_wssig)`;
             x_expr = 'dim_of(_wssig)';
         }
         else {
-            y_expr = `_wssig=(${y_expr};), _wssig=make_signal(data(_wssig), *, (${x_expr};)), _wssig=CropAndResample(_wssig,${res_start},${res_stop},${count})`;
+            y_expr = `_wssig=(${y_expr};), _wssig=make_signal(data(_wssig), *, (${x_expr};)), _wssig=${cnr}, data(_wssig)`;
             x_expr = 'dim_of(_wssig)';
         }
 
@@ -135,6 +140,11 @@ export class MDSplusTrace extends Trace
         try {
             await conn.getMany(request)
             .then((response) => {
+                // TODO: Improve, For errors from Resample()
+                if (typeof response.getValue('y') === 'string') {
+                    throw Error(response.getValue('y'));
+                }
+
                 response.checkForErrors();
 
                 let y = response.getValue('y');

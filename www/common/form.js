@@ -18,8 +18,13 @@ export class Form
 
     constructor(templateId) {
         this.$overlay = Utils.showOverlay(() => this.close());
-        this.$element = Utils.inflateTemplate(templateId).firstElementChild;
+        this.$element = Utils.inflateTemplate(document.getElementById(templateId));
         this.$overlay.append(this.$element);
+
+        this.$element.querySelectorAll('*[data-action="close"]')
+            .forEach((node) => {
+                node.addEventListener('click', (e) => this.close());
+            });
 
         this.$element.querySelectorAll('*[data-action="save"]')
             .forEach((node) => {
@@ -49,6 +54,7 @@ export class Form
     }
 
     close() {
+        console.log('Form close');
         Utils.hideOverlay(this.$overlay);
         if (Form.active_form === this) {
             Form.active_form = null;
@@ -83,3 +89,30 @@ export class Form
     }
 
 };
+
+export class ConfirmForm extends Form
+{
+    constructor(html, onAccept=null, onReject=null)
+    {
+        super('confirm-form-template');
+
+        this.onAccept = onAccept;
+        this.onReject = onReject;
+        
+        document.querySelector('#confirm-message').innerHTML = html;
+    }
+
+    save() {
+        if (this.onAccept !== null) {
+            this.onAccept();
+        }
+        super.save();
+    }
+
+    cancel() {
+        if (this.onReject !== null) {
+            this.onReject();
+        }
+        super.cancel();
+    }
+}

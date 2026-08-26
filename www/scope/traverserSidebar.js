@@ -1,6 +1,6 @@
 
 import { Connection } from "../common/connection.js";
-import { Form } from "../common/form.js";
+import { ConfirmForm, Form } from "../common/form.js";
 import { Traverser } from "../common/traverser.js";
 import { Scope } from "./scope.js";
 
@@ -45,12 +45,17 @@ export class TraverserSidebar
                 let id = parseInt(document.querySelector('#traverser-select').value);
         
                 for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
-                    if (TraverserSidebar.traversers[i].id == id) {
-                        TraverserSidebar.close(TraverserSidebar.traversers[i]);
+                    let traverser = TraverserSidebar.traversers[i];
+                    if (traverser.id == id) {
+                        new ConfirmForm(
+                            `Close Traverser ${traverser.tree}/${traverser.shot}?`,
+                            () => {
+                                TraverserSidebar.close(traverser);
+                            }
+                        );
                         break;
                     }
                 }
-    
             });
 
             document.querySelector('#traverser-select').value = 0;
@@ -184,7 +189,7 @@ export class TraverserSidebar
         let index = TraverserSidebar.traversers.indexOf(traverser);
         TraverserSidebar.traversers.splice(index, 1);
 
-        if (TraverserSidebar.active_traverser == this) {
+        if (TraverserSidebar.active_traverser == traverser) {
             if (TraverserSidebar.traversers.length == 0) {
                 TraverserSidebar.active_traverser = null;
                 document.querySelector('#traverser-select').value = 0;

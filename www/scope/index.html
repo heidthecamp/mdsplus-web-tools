@@ -73,16 +73,25 @@
             z-index: 1000;
             overflow: scroll;
         }
-        #panel-form,
-        #global-defaults-form,
-        #traverser-open-form {
-            width: 80%;
+        .form {
+            position: relative;
             margin: 100px auto 0 auto;
             padding: 20px;
             padding-right: 40px;
             border: 1px solid black;
             border-radius: 20px;
             background-color: white;
+        }
+        #confirm-form {
+            width: 400px;
+        }
+        #confirm-message {
+            font-size: 20px;
+            text-align: center;
+        }
+        #panel-form,
+        #settings-form {
+            width: 80%;
         }
         #panel-form input[type="checkbox"] {
             margin-top: 13px;
@@ -259,6 +268,10 @@
             font-weight: bold;
         }
 
+        #traverser-open-form {
+            width: 400px;
+        }
+
         #current-shot {
             font-family: monospace;
             padding-left: 5px;
@@ -269,12 +282,6 @@
             text-align: center;
         }
 
-        #error-message {
-            color: red;
-        }
-        .form {
-            position: relative;
-        }
         .exit {
             position: absolute;
             top: 7.5;
@@ -285,46 +292,55 @@
         }
     </style>
 
+    <template id="confirm-form-template">
+        <form id="confirm-form" class="container-fluid form">
+            <div class="row">
+                <div id="confirm-message" class="container"></div>
+            </div>
+            <div class="row">
+                <div class="container">
+                    <button type="submit" data-action="save" class="btn btn-danger">Confirm</button>
+                    <button type="button" data-action="cancel" class="btn btn-primary">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
     <template id="traverser-node-template">
-        <span class="name"></span>
-        <div class="members"></div>
-        <div class="children"></div>
+        <div class="traverser-node">
+            <span class="name"></span>
+            <div class="members"></div>
+            <div class="children"></div>
+        </div>
     </template>
 
     <template id="traverser-open-form-template">
-        <form>
-            <div id="traverser-open-form" class="container-fluid form">
-                <img src="../octicons/x-circle.svg" data-action="cancel" role="button" class="exit" />
-                <div class="row">
-                    <div class="col-4">
-                        <div class="row mb-3">
-                            <div data-action="cancel">X</div>
-                            <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" id="traverser-tree" type="text" />
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label for="traverser-shot" class="col-sm-2 col-form-label">Shot</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" id="traverser-shot" type="text" />
-                            </div>
-                        </div>
-                        <!--
-                        <div class="row mb-3">
-                            <label for="traverser-mode" class="col-sm-2 col-form-label">Mode</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" id="traverser-mode" type="text" />
-                            </div>
-                        </div>
-                        -->
-                        <div class="row">
-                            <div class="container-fluid">
-                                <input type="submit" data-action="save" class="btn btn-primary" value="Open" />
-                                <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
+        <form id="traverser-open-form" class="form">
+            <img src="../octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <div class="row mb-3">
+                <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="traverser-tree" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="traverser-shot" class="col-sm-2 col-form-label">Shot</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="traverser-shot" type="text" />
+                </div>
+            </div>
+            <!--
+            <div class="row mb-3">
+                <label for="traverser-mode" class="col-sm-2 col-form-label">Mode</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="traverser-mode" type="text" />
+                </div>
+            </div>
+            -->
+            <div class="row">
+                <div class="container-fluid">
+                    <input type="submit" data-action="save" class="btn btn-primary" value="Open" />
+                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
                 </div>
             </div>
         </form>
@@ -430,7 +446,7 @@
                     Loading...
                 </div>
             </div>
-            <img src="../octicons/x-circle.svg" data-action="cancel" role="button" class="exit" />
+            <img src="../octicons/x-circle.svg" data-action="close" role="button" class="exit" />
         </div>
     </template>
 
@@ -497,15 +513,21 @@
         </li>
     </template>
 
-    <template id="global-defaults-form-template">
-        <div id="global-defaults-form" class="container-fluid form">
-            <img src="../octicons/x-circle.svg" data-action="cancel" role="button" class="exit" />
+    <template id="settings-form-template">
+        <div id="settings-form" class="container-fluid form">
+            <img src="../octicons/x-circle.svg" data-action="close" role="button" class="exit" />
             <legend for="settings-form-form">Settings</legend>
             <fieldset id="settings-form" class="col-sm-11">
                 <div class="row mb-3">
                     <label for="scope-title_expr" class="col-sm-3 col-form-label">Title:</label>
                     <div class="col-sm-9">
                         <input id="scope-title_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="scope-resample" class="col-sm-3 col-form-label">Resample:</label>
+                    <div class="col-sm-9">
+                        <input id="scope-resample" type="checkbox" />
                     </div>
                 </div>
             </fieldset>
@@ -633,6 +655,9 @@
                                 <button class="btn btn-primary" type="button" data-action="next-shot">
                                     +1
                                 </button>
+                                <button class="btn btn-primary" type="button" data-action="reset-shot">
+                                    Reset
+                                </button>
                             </li>
                         </ul>
                         <div class="navbar-brand window-title">Window Title</div>
@@ -655,7 +680,7 @@
                                     <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>
                                     <li><a class="dropdown-item nav-link" role="button" data-action="export">Export</a></li>
                                     <li><a class="dropdown-item nav-link" role="button" data-action="settings">Settings</a></li>
-                                    <li><a class="dropdown-item nav-link" role="button" data-action="reset">Reset</a></li>
+                                    <li><a class="dropdown-item nav-link text-danger" role="button" data-action="reset">Reset</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -668,7 +693,7 @@
 
     <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-0 border-top  mt-0 px-2"> 
-                <div id="error-message" class="col-md-4 d-flex align-items-center justify-content-start mb-3 mb-md-0 me-md-auto"></div>
+                <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
                 <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
                 <ul class="nav col-md-4 justify-content-end">
                     <li class="nav-item">
@@ -684,6 +709,8 @@
         <div class="plot"></div>
         <div class="description"></div>
     </div>
+
+
 
 </body>
 </html>

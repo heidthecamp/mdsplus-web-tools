@@ -173,9 +173,7 @@ export class Traverser
         usage = usage.split('TreeUSAGE_').at(-1);
 
         let name = path.split(/[:\.]/).at(-1);
-        let $node = document.createElement('div');
-        $node.classList.add('traverser-node');
-        $node.append(Utils.inflateTemplate('traverser-node-template'));
+        let $node = Utils.inflateTemplate(document.getElementById('traverser-node-template'));
         
         $node.dataset.nid = nid;
 

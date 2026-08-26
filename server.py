@@ -98,7 +98,10 @@ def handle_connection(ws: ServerConnection):
         '}' +
         'if (size(_sig) > _count) {' +
             '_delta = (float(_end) - float(_start)) / float(_count);' +
-            '_sig = resample(_sig, _start, _end, _delta);' +
+            '_result = resample(_sig, _start, _end, _delta);' +
+            'if (kind(_result) != 14) {' +
+                '_sig = _result;' # HACK: Filter errors from resample() which just returns a string...
+            '}' +
         '}' +
         'return(_sig);' +
     '}; 42') # if we return the function itself it gets called, so we return some dummy data

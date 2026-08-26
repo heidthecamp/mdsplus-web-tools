@@ -18,8 +18,8 @@ export function showStatusMessage(message) {
     document.querySelector('#status').innerText = message;
 }
 
-export function inflateTemplate(id) {
-    return document.getElementById(id).content.cloneNode(true);
+export function inflateTemplate(template) {
+    return template.content.cloneNode(true).firstElementChild;
 }
 
 export function showOverlay(onClose=null)
@@ -29,11 +29,12 @@ export function showOverlay(onClose=null)
     document.body.append($overlay);
 
     $overlay.addEventListener('mousedown', (e) => {
-        if (e.target == $overlay) {
-            hideOverlay($overlay);
-            
+        if (e.target == $overlay) {            
             if (onClose !== null) {
                 onClose($overlay);
+            }
+            else {
+                hideOverlay($overlay);
             }
         }
     });
@@ -59,6 +60,11 @@ export function hideAllOverlays()
 {
     document.querySelector('.overlay')
         .forEach((node) => node.remove());
+}
+
+// TODO: Remove? These exist mostly for legibility
+export function cloneArray(arr) {
+    return [ ...arr ];
 }
 
 export function cloneObject(obj) {

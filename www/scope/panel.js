@@ -6,6 +6,7 @@ import * as Utils from "../common/utils.js";
 
 import { Scope } from "./scope.js";
 import { Trace } from "../common/trace.js";
+import { ConfirmForm, Form } from "../common/form.js";
 
 let NextId = 1;
 
@@ -44,6 +45,11 @@ export class Panel
 
     async refresh()
     {
+        let index = Scope.updating.indexOf(this);
+        if (index != -1) {
+            Scope.updating.splice(index, 1);
+        }
+        
         Utils.showStatusMessage(`Refreshing panel...`);
         let before = performance.now();
 
@@ -232,7 +238,11 @@ export class Panel
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.removeElement();
+                    Form.show(new ConfirmForm("Delete panel?",
+                        () => {
+                            this.removeElement()
+                        }
+                    ));
                 });
             });
             
