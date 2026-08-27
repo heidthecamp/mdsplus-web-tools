@@ -35,22 +35,29 @@
     </template>
 
     <template id="traverser-node-template">
-        <div class="traverser-node">
-            <div class="traverser-item">
-                <div class="expand-icon"></div>
-                <span class="name"></span>
-                <a class="dropdown-toggle traverser-dropdown active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="./dist/external/octicons/gear.svg" width="16" style="filter: invert(1);" />
+        <div class="node">
+            <div class="item">
+                <div class="handle">
+                    <div class="expand-icon inverted"></div>
+                    <span class="name"></span>
+                </div>
+                <a class="context-menu dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img class="inverted" src="./dist/external/octicons/gear.svg" width="16" />
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" role="button" data-action="edit">Edit</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="all-x-auto-y">All X Auto Y</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="auto-y">Auto Y</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="auto-x">Auto X</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="auto-x-y">Auto X & Y</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="refresh-panel">Refresh</a></li>
-                    <li><hr /></li>
-                    <li><a class="dropdown-item warn" role="button" data-action="remove">Delete</a></li>
+                <ul class="dropdown-menu dropright">
+                    <!-- <li class="only-signal"><a class="dropdown-item" role="button" data-action="">Preview</a></li> -->
+                    <li class="only-signal"><a class="dropdown-item" role="button" data-action="traverser-add-to-dashboard">Add to Dashboard</a></li>
+                    <li class="only-signal"><hr /></li>
+                    <!-- TODO: Think about what should go here -->
+                    <li><a class="dropdown-item" role="button" data-action="">Display Data</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="">Modify Data</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="">Display Flags</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="">Modify Flags</a></li>
+                    <!-- Only when open for edit-->
+                    <li class="only-edit"><hr /></li>
+                    <li class="only-edit"><a class="dropdown-item" role="button" data-action="">Add Member</a></li>
+                    <li class="only-edit"><a class="dropdown-item" role="button" data-action="">Add Child</a></li>
+                    <li class="only-edit"><a class="dropdown-item warn" role="button" data-action="">Remove</a></li>
                 </ul>
             </div>
             <div class="members"></div>
@@ -408,35 +415,30 @@
 
     <div id="scope-page" class="container-fluid position-relative pb-5">
         <div class="row flex-nowrap">
-            <div id="traverser-panel" class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark hidden">
+            <div id="traverser-sidebar" class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 position-relative bg-dark hidden">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                    <div id="traverser-minimized" data-action="traverser-expand" role="button">
-                        <img id="traverser-expand" src="./dist/external/octicons/move-to-end.svg" style="filter: invert(1);" />
-                        <div class="traverser-title">Traverser</div>
+                    <div class="header" data-action="traverser-sidebar-toggle">
+                        <img class="open-sidebar-icon inverted" src="./dist/external/octicons/move-to-end.svg" />
+                        <img class="close-sidebar-icon inverted" src="./dist/external/octicons/move-to-start.svg" />
+                        <div class="title">Traverser</div>
                     </div>
-                    <div id="traverser-content">
-                        <a id="traverser-collapse" data-action="traverser-collapse" role="button">
-                            <img src="./dist/external/octicons/move-to-start.svg" style="filter: invert(1);" />
-                        </a>
-                        <div class="traverser-title">Traverser</div>
-                        <div id="traverser-tabs d-flex">
-                            <select id="traverser-select">
+                    <div class="content">
+                        <div class="d-flex">
+                            <select id="traverser-select" class="flex-grow-1">
                                 <option value="0" disabled="disabled" selected="selected">----------</option>
                                 <option value="-1">Open New Traverser</option>
                             </select>
-                            <a data-bs-toggle="dropdown" role="button" title="traverser menu" style="filter: invert(1);">
+                            <a class="flex-shrink-0 ps-2 inverted" data-bs-toggle="dropdown" role="button" title="traverser menu">
                                 <img src="./dist/external/octicons/three-bars.svg" />
                             </a>
                             <ul class="dropdown-menu dropdown-menu-middle">
-                                <li><a class="dropdown-item" role="button" data-action="traverser-open-new">Open</a></li>
-                                <li><a class="dropdown-item" role="button" data-action="traverser-reveal">Reveal Node</a></li>
+                                <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-open-tree">Open</a></li>
+                                <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-reveal">Reveal Node</a></li>
                                 <li><hr /></li>
-                                <li><a class="dropdown-item text-danger" role="button" data-action="traverser-close">Close</a></li>
+                                <li><a class="dropdown-item text-danger" role="button" data-action="traverser-sidebar-close">Close</a></li>
                             </ul>
                         </div>
-                        <div id="traversers">
-                            
-                        </div>
+                        <div id="traversers"></div>
                     </div>
                 </div>
             </div>

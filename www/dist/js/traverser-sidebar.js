@@ -46,47 +46,66 @@ class TraverserOpenForm extends Form
 
 export class TraverserSidebar
 {
+    static element = null;
+    static select = null;
+
     static traversers = [];
     static active_traverser = null;
 
     static init()
     {
-        document.querySelector('*[data-action="traverser-collapse"]')
-            .addEventListener('click', TraverserSidebar.collapse);
+        TraverserSidebar.element = document.querySelector('#traverser-sidebar');
+        TraverserSidebar.select = document.querySelector('#traverser-select');
+
+        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-open"]')
+            .forEach((button) => {
+                button.addEventListener('click', () => TraverserSidebar.collapse());
+            });
     
-        document.querySelector('*[data-action="traverser-expand"]')
-            .addEventListener('click', TraverserSidebar.expand);
+        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-close"]')
+            .forEach((button) => {
+                button.addEventListener('click', () => TraverserSidebar.expand());
+            });
     
-        document.querySelector('*[data-action="traverser-close"]')
-            .addEventListener('click', (e) => {
-                let id = parseInt(document.querySelector('#traverser-select').value);
-        
-                for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
-                    let traverser = TraverserSidebar.traversers[i];
-                    if (traverser.id == id) {
-                        ConfirmForm.ask(
-                            `Close Traverser ${traverser.tree}/${traverser.shot}?`,
-                            () => {
-                                TraverserSidebar.close(traverser);
-                            }
-                        );
-                        break;
+        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-toggle"]')
+            .forEach((button) => {
+                button.addEventListener('click', () => TraverserSidebar.toggle());
+            });
+    
+        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-close"]')
+            .forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    let id = parseInt(document.querySelector('#traverser-select').value);
+            
+                    for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
+                        let traverser = TraverserSidebar.traversers[i];
+                        if (traverser.id == id) {
+                            ConfirmForm.ask(
+                                `Close Traverser ${traverser.tree}/${traverser.shot}?`,
+                                () => {
+                                    TraverserSidebar.close(traverser);
+                                }
+                            );
+                            break;
+                        }
                     }
-                }
+                });
             });
 
-        document.querySelector('*[data-action="traverser-reveal"]')
-            .addEventListener('click', (e) => Form.show(new TraverserRevealForm()));
+        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-reveal"]')
+            .forEach((button) => {
+                button.addEventListener('click', (e) => Form.show(new TraverserRevealForm()));
+            });
 
-        document.querySelector('*[data-action="traverser-open-new"]')
-            .addEventListener('click', (e) => {
-                Form.show(new TraverserOpenForm());
-            })
+        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-open-tree"]')
+            .forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    Form.show(new TraverserOpenForm());
+                });
+            });
 
-        document.querySelector('#traverser-select').value = 0;
-
-        document.querySelector('#traverser-select')
-        .addEventListener('change', (e) => {
+        TraverserSidebar.select.value = 0;
+        TraverserSidebar.select.addEventListener('change', (e) => {
             let id = parseInt(e.target.value);
             if (id == 0) {
                 return;
@@ -112,13 +131,18 @@ export class TraverserSidebar
         });
     }
 
+    static toggle() {
+        TraverserSidebar.element.classList.toggle('hidden');
+        Scope.render();
+    }
+
     static expand() {
-        document.querySelector('#traverser-panel').classList.remove('hidden');
+        TraverserSidebar.element.classList.remove('hidden');
         Scope.render();
     }
 
     static collapse() {
-        document.querySelector('#traverser-panel').classList.add('hidden');
+        TraverserSidebar.element.classList.add('hidden');
         Scope.render();
     }
 
@@ -176,7 +200,7 @@ export class TraverserSidebar
                     traverser.option.value = traverser.id;
                     traverser.option.innerText = `${tree}/${shot}`;
             
-                    document.querySelector('#traverser-select').prepend(traverser.option);
+                    TraverserSidebar.select.prepend(traverser.option);
 
                     TraverserSidebar.show(traverser);
                 }
@@ -192,18 +216,18 @@ export class TraverserSidebar
         return traverser;
     }
 
-    // HACK:
+    // TODO: Rename
     static async onDoubleClick(tree, shot, name, path) {
         let panel = Scope.addPanel(
             new MDSplusPanel(`"${name}"`),
-            { width: 6, height: 6 }
+            { width: 6, height: 6 },
+            true
         );
         panel.addTrace(
             new MDSplusTrace(tree, shot, null, path)
         );
 
-        await panel.update();
-        panel.render();
+        panel.edit();
     }
 
     static close(traverser)
@@ -217,7 +241,7 @@ export class TraverserSidebar
         if (TraverserSidebar.active_traverser == traverser) {
             if (TraverserSidebar.traversers.length == 0) {
                 TraverserSidebar.active_traverser = null;
-                document.querySelector('#traverser-select').value = 0;
+                TraverserSidebar.select.value = 0;
             }
             else {
                 TraverserSidebar.active_traverser = TraverserSidebar.traversers.at(-1);

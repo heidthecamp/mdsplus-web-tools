@@ -1,3 +1,16 @@
+
+@import url("./scope.css");
+@import url("./traverser.css");
+
+.inverted {
+    filter: invert(1);
+}
+
+*[data-action] {
+    cursor: pointer;
+}
+
+
 .options {
     position: absolute;
     top: 50%;
@@ -55,8 +68,7 @@ h1 {
     margin-bottom: 5px;
     font-size: 20px;
 }
-.scope,
-#traverser-panel {
+.scope {
     padding-left: 0 !important;
     padding-right: 0 !important;
     overflow-x: hidden !important;
@@ -83,7 +95,7 @@ h1 {
 .navbar-nav {
     flex-direction: row;
 }
-.handle {
+.panel .handle {
     flex: 1;
     height: 40px; /* HACK: Improve */
     cursor: pointer;
@@ -160,146 +172,11 @@ h1 {
     margin-top: 20px;
 }
 
-.traverser-node.focused > .name {
-    animation: blinker 0.8s linear infinite;
-}
-
-@keyframes blinker {
-50% {
-    opacity: 0;
-}
-}
-
 input[readonly],
 input[readonly]:focus {
     background-color: #EEE;
 }
 
-.traverser-title {
-    font-size: 30px;
-}
-#traverser-panel {
-    position: relative;
-}
-#traverser-panel.hidden {
-    width: 50px;
-}
-#traverser-panel.hidden #traverser-content {
-    display: none;
-}
-#traverser-minimized {
-    display: none;
-    position: absolute;
-    top: 15px;
-    left: 0px;
-    width: 50px;
-}
-#traverser-expand {
-    display: block;
-    margin-left: 15px;
-    margin-bottom: 10px;
-}
-#traverser-panel.hidden #traverser-minimized {
-    display: block;
-}
-#traverser-minimized .traverser-title {
-    rotate: 90deg;
-}
-#traverser-collapse {
-    float: left;
-    margin-top: 8px;
-    margin-right: 10px;
-}
-#traverser-content {
-    width: 100%;
-}
-#traverser-open {
-    cursor: pointer;
-}
-.traverser {
-    display: none;
-}
-.traverser.active {
-    display: block;
-}
-.traverser .expandable > .traverser-item > .name {
-    cursor: pointer;
-}
-
-.expand-icon {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 16px;
-    filter: invert(1);
-}
-.traverser .expandable > .traverser-item > .expand-icon{
-    background-image: url("../external/octicons/chevron-right.svg");
-}
-.traverser .expanded > .traverser-item > .expand-icon {
-    background-image: url("../external/octicons/chevron-down.svg");
-}
-.traverser .children,
-.traverser .members {
-    padding-left: 20px;
-    display: none;
-}
-.traverser .expanded > .children,
-.traverser .expanded > .members {
-    display: block;
-}
-.traverser .children .name::before {
-    content: '.';
-}
-.traverser .members .name::before {
-    content: ':';
-}
-.traverser .signal {
-    cursor: pointer;
-}
-#traverser-tabs {
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-#traverser-tabs .nav-link {
-    color: white;
-    cursor: pointer;
-}
-#traverser-tabs .nav-link.active {
-    color: black;
-}
-#traverser-preview {
-    position: fixed;
-    display: none;
-    background-color: white;
-    max-width: 400px;
-    border: 1px solid black;
-}
-#traverser-preview .description {
-    word-wrap: break-word;
-    padding: 5px;
-}
-#traverser-preview .description .expression {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 80%;
-}
-#traverser-preview.plot-shown .description {
-    border-top: 1px solid black;
-}
-#traverser-preview.shown {
-    display: block;
-}
-#traverser-preview.plot-shown .plot {
-    width: 400px;
-    height: 200px;
-    padding-right: 20px;
-}
-#traverser-select {
-    width: calc(100% - 60px);
-}
 .warn {
     color: #A22 !important;
 }

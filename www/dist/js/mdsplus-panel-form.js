@@ -265,10 +265,10 @@ export class MDSplusPanelForm extends Form
     apply() {
         let initialEdit = (this.panel.widget === null);
         if (initialEdit) {
-            this.panel.addElement();
+            this.panel.addElement(this.panel.initialPosition);
         }
 
-        let needUpdate = false;
+        let needUpdate = initialEdit;
 
         while (this.panel.traces.length > this.trace_form_ids.length) {
             this.panel.removeTrace(-1);

@@ -122,6 +122,7 @@ export class Traverser
         this.$element.dataset.tree = this.tree;
         this.$element.dataset.shot = this.shot;
 
+        // TODO: Parameterize / Rename
         document.querySelector('#traversers').append(this.$element);
     }
 
@@ -170,22 +171,22 @@ export class Traverser
         }
     }
 
-    addNode(parent, nid, path, usage, num_descendants) {
+    addNode(parent, nid, path, usage, num_descendants, prefix='') {
         usage = usage.split('TreeUSAGE_').at(-1);
 
         let name = path.split(/[:\.]/).at(-1);
         let $node = Utils.inflateTemplate(document.getElementById('traverser-node-template'));
-        
         $node.dataset.nid = nid;
 
         if (num_descendants > 0) {
             $node.classList.add('expandable');
         }
         
-        let $name = $node.querySelector('.name');
-        $name.innerText = name;
+        $node.querySelector('.name').innerText = `${prefix}${name}`;
 
-        $name.addEventListener('click', (e) => {
+        let $handle = $node.querySelector('.handle');
+
+        $handle.addEventListener('click', (e) => {
             if ($node.classList.contains('expanded')) {
                 $node.classList.remove('expanded');
             }
@@ -194,14 +195,14 @@ export class Traverser
             }
         });
 
-        $name.addEventListener('mouseenter', (e) => {
+        $handle.addEventListener('mouseenter', (e) => {
             this.timeout = setTimeout(async (e) => {
-                let description = e.target.getAttribute('data-description');
+                let description = $node.getAttribute('data-description');
 
                 let $traverserPreview = document.querySelector('#traverser-preview');
                 $traverserPreview.classList.add('shown');
-                $traverserPreview.style.top = e.clientY;
-                $traverserPreview.style.left = e.clientX + 20;
+                $traverserPreview.style.top = `${e.clientY}px`;
+                $traverserPreview.style.left = `${e.clientX + 20}px`;
 
                 let request = [
                     ['open', `TreeOpen("${this.tree}",${this.shot})`],
@@ -276,7 +277,7 @@ export class Traverser
                                     }
                                 }
                                 
-                                e.target.dataset.description = description;
+                                $node.dataset.description = description;
                                 document.querySelector('#traverser-preview .description').innerHTML = description;
                             }
     
@@ -303,7 +304,7 @@ export class Traverser
             }, 500, e);
         });
 
-        $name.addEventListener('mouseleave', (e) => {
+        $handle.addEventListener('mouseleave', (e) => {
             clearTimeout(this.timeout);
             document.querySelector('#traverser-preview .plot').innerHTML = '';
             document.querySelector('#traverser-preview').classList.remove('shown', 'plot-shown');
@@ -311,10 +312,16 @@ export class Traverser
 
         if (usage == 'SIGNAL') {
             $node.classList.add('signal');
-            if (this.on_double_click !== null) {
-                // HACK:
-                $name.addEventListener('dblclick', (e) => this.on_double_click(this.tree, this.shot, name, path));
-            }
+
+            $node.querySelectorAll('*[data-action="traverser-add-to-dashboard"')
+                .forEach((button) => {
+                    button.addEventListener('click', () => {
+                        // HACK:
+                        if (this.on_double_click !== null) {
+                            this.on_double_click(this.tree, this.shot, name, path);
+                        }
+                    });
+                });
 
         }
 
@@ -372,7 +379,7 @@ export class Traverser
                 count += member_nids.length;
 
                 for (let i = 0; i < member_nids.length; ++i) {
-                    this.addNode($members, member_nids[i], member_names[i], member_usages[i], member_num_descendants[i]);
+                    this.addNode($members, member_nids[i], member_names[i], member_usages[i], member_num_descendants[i], ':');
                 }
             }
 
@@ -385,7 +392,7 @@ export class Traverser
                 count += child_nids.length;
                 
                 for (let i = 0; i < child_nids.length; ++i) {
-                    this.addNode($children, child_nids[i], child_names[i], child_usages[i], child_num_descendants[i]);
+                    this.addNode($children, child_nids[i], child_names[i], child_usages[i], child_num_descendants[i], '.');
                 }
             }
 

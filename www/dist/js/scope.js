@@ -354,6 +354,9 @@ export class Scope
         if (!initialEdit) {
             panel.addElement(position);
         }
+        else {
+            panel.initialPosition = position;
+        }
         return panel;
     }
     
