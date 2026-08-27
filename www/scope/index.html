@@ -151,6 +151,9 @@
         .traverser-title {
             font-size: 30px;
         }
+        #traverser-panel {
+            position: relative;
+        }
         #traverser-panel.hidden {
             width: 50px;
         }
@@ -288,6 +291,12 @@
         .exit:hover {
             cursor: pointer;
         }
+
+        .page-header {
+            border-bottom: 1px solid #CCC;
+            font-size: 20px;
+        }
+
     </style>
 
     <template id="confirm-form-template">
@@ -641,7 +650,41 @@
 
 </head>
 <body>
-    <script type="module" src="index.js"></script>
+    <nav class="navbar navbar-expand-lg py-0 justify-content-between page-header">
+        <div class="container-fluid">
+            <a href="https://mdsplus.org" target="_blank" class="navbar-brand logo">
+                <span style="color: rgb(227, 148, 0); font-weight: bold;">MDS</span><span style="color: rgb(0, 136, 255)">plus</span>
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="#scope" class="nav-link active"><!-- TODO: Mark the correct "page" as active -->
+                            Scope
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link" title="Coming Soon!">
+                            Traverser
+                        </span>
+                    </li>
+                </ul>
+            </div>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="https://mdsplus.readthedocs.io" target="_blank" class="nav-link">
+                        Documentation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://www.github.com/MDSplus/mdsplus" target="_blank" class="nav-link">
+                        <img src="../octicons/mark github.svg" width="28" height="28" />
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="page-header">
+    </div>
 
     <div class="container-fluid pb-5">
         <div class="row flex-nowrap">
@@ -732,15 +775,9 @@
 
     <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-0 border-top  mt-0 px-2"> 
-                <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
-                <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
-                <ul class="nav col-md-4 justify-content-end">
-                    <li class="nav-item">
-                        <a href="https://www.github.com" class="nav-link px-2">
-                            <img src="../octicons/mark github.svg" />
-                        </a>
-                    </li>
-                </ul>
+            <div id="username" class="col-md-4">Connected as unknown</li>
+            <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
+            <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
         </footer>
     </div>
 
@@ -749,7 +786,6 @@
         <div class="description"></div>
     </div>
 
-
-
+    <script type="module" src="index.js"></script>
 </body>
 </html>

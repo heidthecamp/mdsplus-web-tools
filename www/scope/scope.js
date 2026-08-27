@@ -30,6 +30,8 @@ const InitialDefaults = {
 
 export class Scope
 {
+    static whoami = null;
+
     static title_expr = '$SHOT';
 
     static defaults = Utils.cloneObject(InitialDefaults);
@@ -288,6 +290,10 @@ export class Scope
     static async updateMetadata() {
         let request = [];
 
+        if (Scope.whoami === null) {
+            request.push(['whoami', 'whoami()']);
+        }
+
         if (Scope.title_expr !== null && Scope.title_expr !== '') {
             request.push(['title', Scope.title_expr]);
         }
@@ -300,6 +306,12 @@ export class Scope
             try {
                 await Connection.current.getMany(request)
                 .then((response) => {
+                    if (response.hasValue('whoami')) {
+                        Scope.whoami = response.getValue('whoami');
+
+                        document.querySelector('#username').innerText = `Connected as ${Scope.whoami}`;
+                    }
+
                     if (response.hasValue('title')) {
                         Scope.title = response.getValue('title', 'MDSplus Scope');
 
