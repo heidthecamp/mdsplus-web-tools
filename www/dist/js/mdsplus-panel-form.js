@@ -136,6 +136,13 @@ export class MDSplusPanelForm extends Form
             node.htmlFor += `-${id}`;
         });
 
+        $trace_form.querySelectorAll('*[data-action="duplicate-trace"]')
+            .forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    this.cloneTraceForm(id);
+                });
+            });
+
         $trace_form.querySelectorAll('*[data-action="reveal-trace-in-traverser"]')
             .forEach((button) => {
                 button.addEventListener('click', async (e) => {
@@ -245,6 +252,26 @@ export class MDSplusPanelForm extends Form
         return id;
     }
 
+    cloneTraceForm(other_id)
+    {
+        let id = this.addTraceForm();
+
+        this.copyTraceInput('y_expr', id, other_id);
+        this.copyTraceInput('x_expr', id, other_id);
+        this.copyTraceInput('tree', id, other_id);
+        this.copyTraceInput('shot_expr', id, other_id);
+        this.copyTraceInput('default_node_expr', id, other_id);
+        this.copyTraceInput('trace_color', id, other_id);
+
+        this.showTraceForm(id);
+
+        let traceTab = document.querySelector(`#trace-tab-${id}`);
+        traceTab.classList.add('focused');
+        setTimeout(() => {
+            traceTab.classList.remove('focused');
+        }, 2000);
+    }
+
     showTraceForm(id)
     {
         // TODO: Improve
@@ -332,6 +359,23 @@ export class MDSplusPanelForm extends Form
         this.unsaved = false;
 
         return true;
+    }
+
+    copyTraceInput(name, trace_id, old_trace_id) {
+        let $input = this.getInput(name, trace_id);
+        let $checkbox = this.getInput(`${name}-default`, trace_id);
+
+        $input.value = this.getInput(name, old_trace_id).value;
+        if ($checkbox !== null) { // TODO: Remove if everything has a global default
+            $checkbox.checked = this.getInput(`${name}-default`, old_trace_id).checked;
+
+            if ($checkbox.checked) {
+                $input.setAttribute('readonly', 'readonly');
+            }
+            else {
+                $input.removeAttribute('readonly');
+            }
+        }
     }
 
     setupGlobalDefaults(name, trace=null, trace_id=null)

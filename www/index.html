@@ -223,9 +223,14 @@
     <template id="trace-form-template">
         <li class="trace-form">
             <div class="row mb-3">
-                <div class="container-fluid">
-                    <button type="button", class="btn btn-secondary" data-action="reveal-trace-in-traverser">Reveal in Traverser</button>
-                    <button type="button", data-action="remove-trace-form" class="btn btn-danger" id="remove-button">Remove</button>
+                <div class="container-fluid d-flex">
+                    <div class="flex-grow-1">
+                        <button type="button", class="btn btn-primary" data-action="duplicate-trace">Duplicate Trace</button>
+                        <button type="button", class="btn btn-secondary" data-action="reveal-trace-in-traverser">Reveal in Traverser</button>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button type="button", data-action="remove-trace-form" class="btn btn-danger" id="remove-button">Remove</button>
+                    </div>
                 </div>
             </div>
             <div class="row mb-3">

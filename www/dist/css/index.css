@@ -235,3 +235,15 @@ input[readonly]:focus {
 .drag .drop-overlay {
     display: block;
 }
+
+
+
+.trace-tab.focused {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
