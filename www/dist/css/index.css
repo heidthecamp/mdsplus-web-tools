@@ -222,14 +222,24 @@ input[readonly]:focus {
 .traverser.active {
     display: block;
 }
-.traverser .expandable > .name {
+.traverser .expandable > .traverser-item > .name {
     cursor: pointer;
 }
-.traverser .expandable > .name::after {
-    content: ' +';
+
+.expand-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px;
+    filter: invert(1);
 }
-.traverser .expanded > .name::after {
-    content: ' -';
+.traverser .expandable > .traverser-item > .expand-icon{
+    background-image: url("../external/octicons/chevron-right.svg");
+}
+.traverser .expanded > .traverser-item > .expand-icon {
+    background-image: url("../external/octicons/chevron-down.svg");
 }
 .traverser .children,
 .traverser .members {

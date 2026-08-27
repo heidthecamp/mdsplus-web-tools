@@ -186,9 +186,8 @@ export class Traverser
         $name.innerText = name;
 
         $name.addEventListener('click', (e) => {
-            let $parent = e.target.parentNode;
-            if ($parent.classList.contains('expanded')) {
-                $parent.classList.remove('expanded');
+            if ($node.classList.contains('expanded')) {
+                $node.classList.remove('expanded');
             }
             else {
                 this.dir(nid);
