@@ -154,7 +154,7 @@ export class Traverser
                 
                 let used = [];
                 let parts = path.split(/[:\.]/);
-                for (let i = 1; i < parts.length; ++i) {
+                for (let i = 1; i < parts.length - 1; ++i) {
                     used.push(parts[i]);
                     await this.dir(used.join(':'));
                 }

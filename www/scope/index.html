@@ -82,9 +82,11 @@
             border-radius: 20px;
             background-color: white;
         }
-        #confirm-form {
+
+        .small-form {
             width: 400px;
         }
+
         #confirm-message {
             font-size: 20px;
             text-align: center;
@@ -131,7 +133,7 @@
             margin-top: 20px;
         }
 
-        .traverser-node.focused .name {
+        .traverser-node.focused > .name {
             animation: blinker 0.8s linear infinite;
         }
 
@@ -268,10 +270,6 @@
             font-weight: bold;
         }
 
-        #traverser-open-form {
-            width: 400px;
-        }
-
         #current-shot {
             font-family: monospace;
             padding-left: 5px;
@@ -293,7 +291,7 @@
     </style>
 
     <template id="confirm-form-template">
-        <form id="confirm-form" class="container-fluid form">
+        <form id="confirm-form" class="container-fluid form small-form">
             <div class="row">
                 <div id="confirm-message" class="container"></div>
             </div>
@@ -308,14 +306,29 @@
 
     <template id="traverser-node-template">
         <div class="traverser-node">
-            <span class="name"></span>
+            <div>
+                <span class="name"></span>
+                <a class="dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="../octicons/gear.svg" width="16" style="filter: invert(1);" />
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" role="button" data-action="edit">Edit</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="all-x-auto-y">All X Auto Y</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="auto-y">Auto Y</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="auto-x">Auto X</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="auto-x-y">Auto X & Y</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="refresh-panel">Refresh</a></li>
+                    <li><hr /></li>
+                    <li><a class="dropdown-item warn" role="button" data-action="remove">Delete</a></li>
+                </ul>
+            </div>
             <div class="members"></div>
             <div class="children"></div>
         </div>
     </template>
 
     <template id="traverser-open-form-template">
-        <form id="traverser-open-form" class="form">
+        <form id="traverser-open-form" class="form small-form">
             <img src="../octicons/x-circle.svg" data-action="close" role="button" class="exit" />
             <div class="row mb-3">
                 <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
@@ -346,6 +359,24 @@
         </form>
     </template>
 
+    <template id="traverser-reveal-form-template">
+        <form id="traverser-reveal-form" class="form small-form">
+            <img src="../octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <div class="row mb-3">
+                <label for="reveal-node" class="col-sm-2 col-form-label">Node</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="reveal-node" type="text" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="container-fluid">
+                    <input type="submit" data-action="save" class="btn btn-primary" value="Open" />
+                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
     <template id="panel-template">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
@@ -362,7 +393,8 @@
                         <li><a class="dropdown-item" role="button" data-action="refresh-panel">Refresh</a></li>
                         <li><hr /></li>
                         <li><a class="dropdown-item warn" role="button" data-action="remove">Delete</a></li>
-                    </ul></div>
+                    </ul>
+                </div>
                 <div class="navbar-brand title handle"></div>
             </div>
         </nav>
@@ -624,14 +656,20 @@
                             <img src="../octicons/move-to-start.svg" style="filter: invert(1);" />
                         </a>
                         <div class="traverser-title">Traverser</div>
-                        <div id="traverser-tabs">
+                        <div id="traverser-tabs d-flex">
                             <select id="traverser-select">
                                 <option value="0" disabled="disabled" selected="selected">----------</option>
                                 <option value="-1">Open New Traverser</option>
                             </select>
-                            <a data-action="traverser-close" role="button" title="Close current Traverser">
-                                <img src="../octicons/trash.svg" style="filter: invert(1);" />
+                            <a data-bs-toggle="dropdown" role="button" title="traverser menu" style="filter: invert(1);">
+                                <img src="../octicons/three-bars.svg" />
                             </a>
+                            <ul class="dropdown-menu dropdown-menu-middle">
+                                <li><a class="dropdown-item" role="button" data-action="traverser-open-new">Open</a></li>
+                                <li><a class="dropdown-item" role="button" data-action="traverser-reveal">Reveal Node</a></li>
+                                <li><hr /></li>
+                                <li><a class="dropdown-item text-danger" role="button" data-action="traverser-close">Close</a></li>
+                            </ul>
                         </div>
                         <div id="traversers">
                             
@@ -680,6 +718,7 @@
                                     <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>
                                     <li><a class="dropdown-item nav-link" role="button" data-action="export">Export</a></li>
                                     <li><a class="dropdown-item nav-link" role="button" data-action="settings">Settings</a></li>
+                                    <li><hr /></li>
                                     <li><a class="dropdown-item nav-link text-danger" role="button" data-action="reset">Reset</a></li>
                                 </ul>
                             </li>

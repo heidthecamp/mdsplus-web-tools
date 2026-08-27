@@ -8,6 +8,23 @@ import * as Utils from "../common/utils.js";
 import { MDSplusPanel } from "./mdsplusPanel.js";
 import { MDSplusTrace } from "./mdsplusTrace.js";
 
+
+class TraverserRevealForm extends Form
+{
+    constructor() {
+        super('traverser-reveal-form-template');
+        document.querySelector('#reveal-node').focus();
+    }
+
+    apply() {
+        let node = document.querySelector('#reveal-node').value;
+        if (node !== null) {
+            TraverserSidebar.active_traverser.reveal(node);
+        }
+        this.close();
+    }
+}
+
 class TraverserOpenForm extends Form
 {
     constructor() {
@@ -58,33 +75,41 @@ export class TraverserSidebar
                 }
             });
 
-            document.querySelector('#traverser-select').value = 0;
-    
-            document.querySelector('#traverser-select')
-            .addEventListener('change', (e) => {
-                let id = parseInt(e.target.value);
-                if (id == 0) {
-                    return;
+        document.querySelector('*[data-action="traverser-reveal"]')
+            .addEventListener('click', (e) => Form.show(new TraverserRevealForm()));
+
+        document.querySelector('*[data-action="traverser-open-new"]')
+            .addEventListener('click', (e) => {
+                Form.show(new TraverserOpenForm());
+            })
+
+        document.querySelector('#traverser-select').value = 0;
+
+        document.querySelector('#traverser-select')
+        .addEventListener('change', (e) => {
+            let id = parseInt(e.target.value);
+            if (id == 0) {
+                return;
+            }
+
+            if (id == -1) {
+                e.target.value = 0;
+                if (TraverserSidebar.active_traverser !== null) {
+                    TraverserSidebar.show(TraverserSidebar.active_traverser);
                 }
 
-                if (id == -1) {
-                    e.target.value = 0;
-                    if (TraverserSidebar.active_traverser !== null) {
-                        TraverserSidebar.show(TraverserSidebar.active_traverser);
-                    }
-
-                    Form.show(new TraverserOpenForm());
-                }
-                else {
-                    for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
-                        let traverser = TraverserSidebar.traversers[i];
-                        if (traverser.id == id) {
-                            TraverserSidebar.show(traverser);
-                            break;
-                        }
+                Form.show(new TraverserOpenForm());
+            }
+            else {
+                for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
+                    let traverser = TraverserSidebar.traversers[i];
+                    if (traverser.id == id) {
+                        TraverserSidebar.show(traverser);
+                        break;
                     }
                 }
-            });
+            }
+        });
     }
 
     static expand() {
