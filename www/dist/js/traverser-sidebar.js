@@ -64,7 +64,7 @@ export class TraverserSidebar
                 for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
                     let traverser = TraverserSidebar.traversers[i];
                     if (traverser.id == id) {
-                        new ConfirmForm(
+                        ConfirmForm.ask(
                             `Close Traverser ${traverser.tree}/${traverser.shot}?`,
                             () => {
                                 TraverserSidebar.close(traverser);

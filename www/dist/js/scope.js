@@ -69,29 +69,41 @@ export class Scope
         document.querySelector('*[data-action="prev-shot"]')
             .addEventListener('click', async (e) => {
                 --Scope.shot_expr_offset;
+
+                document.querySelectorAll('*[data-action="reset-shot"]')
+                    .forEach((button) => button.disabled = (Scope.shot_expr_offset == 0));
+
                 Scope.refresh();
             });
     
         document.querySelector('*[data-action="next-shot"]')
             .addEventListener('click', async (e) => {
                 ++Scope.shot_expr_offset;
+
+                document.querySelectorAll('*[data-action="reset-shot"]')
+                    .forEach((button) => button.disabled = (Scope.shot_expr_offset == 0));
+
                 Scope.refresh();
             });
     
         document.querySelector('*[data-action="reset-shot"]')
             .addEventListener('click', async (e) => {
                 Scope.shot_expr_offset = 0;
+
+                document.querySelectorAll('*[data-action="reset-shot"]')
+                    .forEach((button) => button.disabled = true);
+
                 Scope.refresh();
             });
     
         document.querySelector('*[data-action="reset"]')
             .addEventListener('click', async (e) => {
-                Form.show(new ConfirmForm(
+                ConfirmForm.ask(
                     'Remove all panels and reset settings?',
                     () => {
                         Scope.reset().then(Scope.refresh);
                     }
-                ));
+                );
             });
     
         document.querySelector('*[data-action="export"]')

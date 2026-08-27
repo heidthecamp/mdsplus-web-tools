@@ -239,11 +239,11 @@ export class Panel
             .forEach((node) => {
                 node.addEventListener('click', (e) => {
                     e.preventDefault();
-                    Form.show(new ConfirmForm("Delete panel?",
+                    ConfirmForm.ask("Delete panel?",
                         () => {
                             this.removeElement()
                         }
-                    ));
+                    );
                 });
             });
             

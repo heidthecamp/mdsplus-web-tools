@@ -312,8 +312,8 @@ input[readonly]:focus {
 
 .exit {
     position: absolute;
-    top: 7.5;
-    right: 7.5;
+    top: 8px;
+    right: 8px;
 }
 .exit:hover {
     cursor: pointer;

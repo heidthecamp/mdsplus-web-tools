@@ -27,7 +27,8 @@ export class MDSplusPanelForm extends Form
 
         document.querySelectorAll('#panel-form input')
             .forEach((input) => {
-                input.addEventListener('change', (e) => {
+                input.addEventListener('keyup', (e) => {
+                    // TODO: Remove event listener after first trigger
                     this.unsaved = true;
                 });
             });
@@ -49,7 +50,7 @@ export class MDSplusPanelForm extends Form
     close() {
         console.log('MDSplusPanelForm close');
         if (this.unsaved) {
-            new ConfirmForm(
+            ConfirmForm.ask(
                 'You have unsaved changes, are you sure you want to close?',
                 () => {
                     super.close();
@@ -186,7 +187,7 @@ export class MDSplusPanelForm extends Form
         $trace_form.querySelectorAll('*[data-action="remove-trace-form"]')
             .forEach((button) => {
                 button.addEventListener('click', (e) => {
-                    new ConfirmForm(
+                    ConfirmForm.ask(
                         `Remove Trace #${id + 1}?`,
                         () => {
                             this.removeTraceForm(id);

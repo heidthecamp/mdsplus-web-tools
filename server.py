@@ -202,7 +202,7 @@ def websocket_main():
 
 def webserver_main():
     print(f'Serving on http://{address}:{webserver_port}')
-    print(f'Serving scope on http://{address}:{webserver_port}/scope')
+    print(f'Serving scope on http://{address}:{webserver_port}#scope')
 
     server = HTTPServer((address, webserver_port), HTTPRequestHandler)
     server.serve_forever()
