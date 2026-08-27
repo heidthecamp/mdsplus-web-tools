@@ -1,15 +1,16 @@
 
-import { Connection } from "../common/connection.js";
-import { MDSplusPanel } from "./mdsplusPanel.js";
-import { TraverserSidebar } from "./traverserSidebar.js";
-import { SettingsForm } from "./settingsForm.js";
-import { ConfirmForm, Form } from "../common/form.js";
+import { ConfirmForm } from "./confirm-form.js";
+import { Connection } from "./connection.js";
+import { Form } from "./form.js";
+import { MDSplusPanel } from "./mdsplus-panel.js";
+import { SettingsForm } from "./settings-form.js";
+import { TraverserSidebar } from "./traverser-sidebar.js";
 
-import * as Import from "./import.js";
 import * as Export from "./export.js";
-import * as Utils from "../common/utils.js";
+import * as Import from "./import.js";
+import * as Utils from "./utils.js";
 
-import "../resources/gridstack-all.js";
+import "../external/gridstack-all.js";
 
 const InitialDefaults = {
     tree: null,
@@ -58,6 +59,8 @@ export class Scope
 
     static init()
     {
+        window.location.hash = 'scope';
+        
         document.querySelector('*[data-action="add-panel"]')
             .addEventListener('click', (e) => {
                 Scope.addPanel(new MDSplusPanel(), null, true).edit();

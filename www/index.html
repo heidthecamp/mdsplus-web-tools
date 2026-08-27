@@ -1,75 +1,509 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>MDSplus Web Tools</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" /> 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <style>
-        #title {
-            font-size: 80px;
-            text-align: center;
-            border-bottom: 1px solid #888;
-            font-weight: bold;
-            font-family: Roboto, Arial, Helvetica, sans-serif;
-            background-color: rgb(248, 249, 250);
-        }
-        #apps {
-            width: 50%;
-            margin: 0 auto;
-            margin-top: 100px;
-        }
-        #title a,
-        #apps a {
-            color: black;
-            text-decoration: none;
-        }
-        .app {
-            width: 200px;
-            height: 200px;
-            border: 1px solid #888;
-            border-radius: 5px;
-            float: left;
-            margin-right: 20px;
-            background-color: #FFF;
-        }
-        .app:hover {
-            background-color: rgb(248, 249, 250);
-        }
-        .app.disabled {
-            cursor: default;
-            opacity: 0.5;
-        }
-        .app .icon {
-            width: 150px;
-            height: 150px;
-            margin-left: 24px;
-            margin-top: 10px;
-            border: 1px solid #333;
-            background-color: #FFF;
-        }
-        .app .title {
-            text-align: center;
-            font-size: 26px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" />
+    
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="./dist/external/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
+    <script src="./dist/external/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <!-- GridStack -->
+    <script src="./dist/external/gridstack-all.js"></script>
+    <link rel="stylesheet" href="./dist/external/gridstack.min.css" />
+
+    <!-- D3 -->
+    <script src="./dist/external/d3.v7.min.js"></script>
+    
+    <!-- Application -->
+    <script type="module" src="./dist/js/index.js"></script>
+    <link rel="stylesheet" href="./dist/css/index.css" />
+
+    <!-- Templates -->
+    <template id="confirm-form-template">
+        <form id="confirm-form" class="container-fluid form small-form">
+            <div class="row">
+                <div id="confirm-message" class="container"></div>
+            </div>
+            <div class="row">
+                <div class="container">
+                    <button type="submit" data-action="save" class="btn btn-danger">Confirm</button>
+                    <button type="button" data-action="cancel" class="btn btn-primary">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
+    <template id="traverser-node-template">
+        <div class="traverser-node">
+            <div>
+                <span class="name"></span>
+                <a class="dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="./dist/external/octicons/gear.svg" width="16" style="filter: invert(1);" />
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" role="button" data-action="edit">Edit</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="all-x-auto-y">All X Auto Y</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="auto-y">Auto Y</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="auto-x">Auto X</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="auto-x-y">Auto X & Y</a></li>
+                    <li><a class="dropdown-item" role="button" data-action="refresh-panel">Refresh</a></li>
+                    <li><hr /></li>
+                    <li><a class="dropdown-item warn" role="button" data-action="remove">Delete</a></li>
+                </ul>
+            </div>
+            <div class="members"></div>
+            <div class="children"></div>
+        </div>
+    </template>
+
+    <template id="traverser-open-form-template">
+        <form id="traverser-open-form" class="form small-form">
+            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <div class="row mb-3">
+                <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="traverser-tree" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="traverser-shot" class="col-sm-2 col-form-label">Shot</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="traverser-shot" type="text" />
+                </div>
+            </div>
+            <!--
+            <div class="row mb-3">
+                <label for="traverser-mode" class="col-sm-2 col-form-label">Mode</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="traverser-mode" type="text" />
+                </div>
+            </div>
+            -->
+            <div class="row">
+                <div class="container-fluid">
+                    <input type="submit" data-action="save" class="btn btn-primary" value="Open" />
+                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
+    <template id="traverser-reveal-form-template">
+        <form id="traverser-reveal-form" class="form small-form">
+            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <div class="row mb-3">
+                <label for="reveal-node" class="col-sm-2 col-form-label">Node</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="reveal-node" type="text" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="container-fluid">
+                    <input type="submit" data-action="save" class="btn btn-primary" value="Open" />
+                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
+    <template id="panel-template">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <div class="navbar-nav">
+                    <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="./dist/external/octicons/gear.svg" />
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" role="button" data-action="edit">Edit</a></li>
+                        <li><a class="dropdown-item" role="button" data-action="all-x-auto-y">All X Auto Y</a></li>
+                        <li><a class="dropdown-item" role="button" data-action="auto-y">Auto Y</a></li>
+                        <li><a class="dropdown-item" role="button" data-action="auto-x">Auto X</a></li>
+                        <li><a class="dropdown-item" role="button" data-action="auto-x-y">Auto X & Y</a></li>
+                        <li><a class="dropdown-item" role="button" data-action="refresh-panel">Refresh</a></li>
+                        <li><hr /></li>
+                        <li><a class="dropdown-item warn" role="button" data-action="remove">Delete</a></li>
+                    </ul>
+                </div>
+                <div class="navbar-brand title handle"></div>
+            </div>
+        </nav>
+        <div class="plot">Loading...</div>
+    </template>
+
+    <template id="panel-form-template">
+        <div id="panel-form" class="container-fluid form">
+            <div class="row">
+                <div class="col-4">
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input id="panel-title_expr-default" type="checkbox">
+                        </div>
+                        <label for="panel-title_expr" class="col-sm-2 col-form-label">Title</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" id="panel-title_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input id="panel-y_min_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-y_min_expr" class="col-sm-2 col-form-label">Y Min</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" id="panel-y_min_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input id="panel-y_max_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-y_max_expr" class="col-sm-2 col-form-label">Y Max</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" id="panel-y_max_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input id="panel-x_min_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-x_min_expr" class="col-sm-2 col-form-label">X Min</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" id="panel-x_min_expr" type="text" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <input id="panel-x_max_expr-default" type="checkbox" />
+                        </div>
+                        <label for="panel-x_max_expr" class="col-sm-2 col-form-label">X Max</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" id="panel-x_max_expr" type="text" />
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <ul class="nav nav-tabs" id="trace-form-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link" data-action="add-trace" ><img src="./dist/external/octicons/diff-added.svg"  /></a>
+                            </li>
+                            <li class="nav-item">
+
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div id="trace-forms" class="col-sm-12"></div>
+                    </div>
+                    <div class="row">
+                        <div class="container-fluid">
+                            <button type="button" data-action="save" class="btn btn-primary">Save</button>
+                            <button type="button" data-action="apply" class="btn btn btn-secondary">Apply</button>
+                            <button type="button" data-action="reset" class="btn btn btn-secondary">Reset</button>
+                            <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="panel-preview" class="col-8">
+                    Loading...
+                </div>
+            </div>
+            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+        </div>
+    </template>
+
+    <template id="trace-form-template">
+        <li class="trace-form">
+            <div class="row mb-3">
+                <div class="container-fluid">
+                    <button type="button", class="btn btn-secondary" data-action="reveal-trace-in-traverser">Reveal in Traverser</button>
+                    <button type="button", data-action="remove-trace-form" class="btn btn-danger" id="remove-button">Remove</button>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-y_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-y_expr" class="col-sm-2 col-form-label">Y Axis</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-y_expr" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-x_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-x_expr" class="col-sm-2 col-form-label">X Axis</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-x_expr" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-tree-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-tree" class="col-sm-2 col-form-label">Tree</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-tree" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-shot_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-shot_expr" class="col-sm-2 col-form-label">Shot</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-shot_expr" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-1">
+                    <input id="trace-default_node_expr-default" type="checkbox" /> <br />
+                </div>
+                <label for="trace-default_node_expr" class="col-sm-2 col-form-label">Default Node</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-default_node_expr" type="text" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-1"></div>
+                <label for="trace-trace_color" class="col-sm-2 col-form-label">Trace Color</label>
+                <div class="col-sm-9">
+                    <input class="form-control" id="trace-trace_color" type="text" />
+                </div>
+            </div>
+        </li>
+    </template>
+
+    <template id="settings-form-template">
+        <div id="settings-form" class="container-fluid form">
+            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <legend for="settings-form-form">Settings</legend>
+            <fieldset id="settings-form" class="col-sm-11">
+                <div class="row mb-3">
+                    <label for="scope-title_expr" class="col-sm-3 col-form-label">Title:</label>
+                    <div class="col-sm-9">
+                        <input id="scope-title_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="scope-resample" class="col-sm-3 col-form-label">Resample:</label>
+                    <div class="col-sm-9">
+                        <input id="scope-resample" type="checkbox" />
+                    </div>
+                </div>
+            </fieldset>
+            <legend for="panel-default-form">Global Panel Defaults</legend>
+            <fieldset id="panel-default-form" class="col-sm-11">
+                <div class="row mb-3">
+                    <label for="global-defaults-title_expr" class="col-sm-3 col-form-label">Title:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-title_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-y-min"  class="col-sm-3 col-form-label">Y Min:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-y-min" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-y-max"  class="col-sm-3 col-form-label">Y Max:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-y-max" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-x-min"  class="col-sm-3 col-form-label">X Min:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-x-min" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-x-max"  class="col-sm-3 col-form-label">X Max:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-x-max" class="form-control" type="text" />
+                    </div>
+                </div>
+            </fieldset>
+            <legend for="trace-default-form">Global Trace Defaults</legend>
+            <fieldset id="trace-default-form" class="col-sm-11">
+                <div class="row mb-3">
+                    <label for="global-defaults-y_expr"  class="col-sm-3 col-form-label">Y Axis:</label>
+
+                    <div class="col-sm-9">
+                        <input id="global-defaults-y_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-x_expr"  class="col-sm-3 col-form-label">X Axis:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-x_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-tree"  class="col-sm-3 col-form-label">Tree:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-tree" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-shot_expr"  class="col-sm-3 col-form-label">Shot:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-shot_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="global-defaults-default_node_expr"  class="col-sm-3 col-form-label">Default Node:</label>
+                    <div class="col-sm-9">
+                        <input id="global-defaults-default_node_expr"  class="form-control" type="text" />
+                    </div>
+            </fieldset>
+            <div class="row">
+                <div class="container-fluid">
+                    <button type="button" data-action="save" class="btn btn-primary">Save</button>
+                    <button type="button" data-action="reset" class="btn btn-primary">Reset</button>
+                    <button type="button" data-action="cancel" class="btn btn-primary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
 </head>
 <body>
-    <div id="title">
-        <a href="https://mdsplus.org">
-            <span style="color: rgb(227, 148, 0)">MDS</span><span style="color: rgb(0, 136, 255)">plus</span>
-        </a>
-    </div>
-    <div id="apps">
-        <a class="app" href="./scope/">
-            <img class="icon" src="scope.png">
-            <div class="title">Scope</div>
-        </a>
-        <a class="app disabled" href="./traverser/" onclick="return false;">
-            <div class="icon">
-                <div style="text-align: center; font-size: 30px; rotate: -10deg; margin-top: 30px">Coming Soon</div>
+    <nav class="navbar navbar-expand-lg py-0 justify-content-between page-header">
+        <div class="container-fluid">
+            <a href="https://mdsplus.org" target="_blank" class="navbar-brand logo">
+                <span style="color: rgb(227, 148, 0); font-weight: bold;">MDS</span><span style="color: rgb(0, 136, 255)">plus</span>
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="#scope" class="nav-link active"><!-- TODO: Mark the correct "page" as active -->
+                            Scope
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link" title="Coming Soon!">
+                            Traverser
+                        </span>
+                    </li>
+                </ul>
             </div>
-            <div class="title">Traverser</div>
-        </a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="https://mdsplus.readthedocs.io" target="_blank" class="nav-link">
+                        Documentation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://www.github.com/MDSplus/mdsplus" target="_blank" class="nav-link">
+                        <img src="./dist/external/octicons/github-octocat.svg" width="28" height="28" />
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid pb-5">
+        <div class="row flex-nowrap">
+            <div id="traverser-panel" class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark hidden">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <div id="traverser-minimized" data-action="traverser-expand" role="button">
+                        <img id="traverser-expand" src="./dist/external/octicons/move-to-end.svg" style="filter: invert(1);" />
+                        <div class="traverser-title">Traverser</div>
+                    </div>
+                    <div id="traverser-content">
+                        <a id="traverser-collapse" data-action="traverser-collapse" role="button">
+                            <img src="./dist/external/octicons/move-to-start.svg" style="filter: invert(1);" />
+                        </a>
+                        <div class="traverser-title">Traverser</div>
+                        <div id="traverser-tabs d-flex">
+                            <select id="traverser-select">
+                                <option value="0" disabled="disabled" selected="selected">----------</option>
+                                <option value="-1">Open New Traverser</option>
+                            </select>
+                            <a data-bs-toggle="dropdown" role="button" title="traverser menu" style="filter: invert(1);">
+                                <img src="./dist/external/octicons/three-bars.svg" />
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-middle">
+                                <li><a class="dropdown-item" role="button" data-action="traverser-open-new">Open</a></li>
+                                <li><a class="dropdown-item" role="button" data-action="traverser-reveal">Reveal Node</a></li>
+                                <li><hr /></li>
+                                <li><a class="dropdown-item text-danger" role="button" data-action="traverser-close">Close</a></li>
+                            </ul>
+                        </div>
+                        <div id="traversers">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col scope">
+                <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                    <div class="container-fluid">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <button class="btn btn-primary" type="button" data-action="prev-shot">
+                                    -1
+                                </button>
+                            </li>
+                            <li>
+                                <div id="current-shot" title="Current Global Default Shot">No Current</div>
+                            </li>
+                            <li class="nav-item">
+                                <button class="btn btn-primary" type="button" data-action="next-shot">
+                                    +1
+                                </button>
+                                <button class="btn btn-primary" type="button" data-action="reset-shot">
+                                    Reset
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="navbar-brand window-title">Window Title</div>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <button class="btn btn-primary" type="button" data-action="add-panel">
+                                    Add Panel
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-action="refresh" role="button">
+                                    <img src="./dist/external/octicons/sync.svg" />
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="./dist/external/octicons/three-bars.svg" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="export">Export</a></li>
+                                    <li><a class="dropdown-item nav-link" role="button" data-action="settings">Settings</a></li>
+                                    <li><hr /></li>
+                                    <li><a class="dropdown-item nav-link text-danger" role="button" data-action="reset">Reset</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <div id="panels" class="grid-stack"></div>
+            </div>
+        </div>
     </div>
+
+    <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
+        <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-0 border-top  mt-0 px-2"> 
+            <div id="username" class="col-md-4">Connected as unknown</div>
+            <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
+            <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
+        </footer>
+    </div>
+
+    <div id="traverser-preview">
+        <div class="plot"></div>
+        <div class="description"></div>
+    </div>
+
 </body>
 </html>

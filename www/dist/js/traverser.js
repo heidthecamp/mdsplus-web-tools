@@ -1,9 +1,10 @@
 
-import { Connection } from "./connection.js";
-import { Trace } from "./trace.js";
 import { Bounds } from "./bounds.js";
+import { Connection } from "./connection.js";
+import { D3Renderer } from "./d3-renderer.js";
+import { Trace } from "./trace.js";
+
 import * as Utils from "./utils.js";
-import { D3Renderer } from "./d3Renderer.js";
 
 let NextId = 1;
 

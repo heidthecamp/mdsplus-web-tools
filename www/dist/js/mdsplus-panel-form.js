@@ -1,11 +1,12 @@
 
-import { D3Renderer } from "../common/d3Renderer.js";
-import { Form, ConfirmForm } from "../common/form.js";
-import { MDSplusTrace } from "./mdsplusTrace.js";
+import { ConfirmForm } from "./confirm-form.js";
+import { D3Renderer } from "./d3-renderer.js";
+import { Form } from "./form.js";
+import { MDSplusTrace } from "./mdsplus-trace.js";
 import { Scope } from "./scope.js";
-import { TraverserSidebar } from "./traverserSidebar.js";
+import { TraverserSidebar } from "./traverser-sidebar.js";
 
-import * as Utils from "../common/utils.js";
+import * as Utils from "./utils.js";
 
 export class MDSplusPanelForm extends Form
 {

@@ -1,8 +1,9 @@
 
-import { Bounds } from "../common/bounds.js";
-import { Trace } from "../common/trace.js";
-import * as Utils from "../common/utils.js";
+import { Bounds } from "./bounds.js";
 import { Scope } from "./scope.js";
+import { Trace } from "./trace.js";
+
+import * as Utils from "./utils.js";
 
 export class MDSplusTrace extends Trace
 {

@@ -1,14 +1,12 @@
 
+import { Bounds } from "./bounds.js";
+import { Connection } from "./connection.js";
+import { Form } from "./form.js";
+import { MDSplusPanelForm } from "./mdsplus-panel-form.js";
 import { Panel } from "./panel.js";
-import { MDSplusTrace } from "./mdsplusTrace.js";
-import { Connection } from "../common/connection.js";
-import { Bounds } from "../common/bounds.js";
 import { Scope } from "./scope.js";
-import * as Utils from "../common/utils.js";
-import { D3Renderer } from "../common/d3Renderer.js";
-import { TraverserSidebar } from "./traverserSidebar.js";
-import { Form } from "../common/form.js";
-import { MDSplusPanelForm } from "./mdsplusPanelForm.js";
+
+import * as Utils from "./utils.js";
 
 export class MDSplusPanel extends Panel
 {

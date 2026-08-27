@@ -1,13 +1,14 @@
-import "../resources/d3.v7.min.js";
-window.d3 = d3; // TODO: Investigate
+
+import { Scope } from "./scope.js";
+import { Connection } from "./connection.js";
+import { MDSplusTrace } from "./mdsplus-trace.js";
+import { MDSplusPanel } from "./mdsplus-panel.js";
 
 import * as Import from "./import.js";
 import * as Export from "./export.js";
 
-import { Scope } from "./scope.js";
-import { Connection } from "../common/connection.js";
-import { MDSplusTrace } from "./mdsplusTrace.js";
-import { MDSplusPanel } from "./mdsplusPanel.js";
+import "../external/d3.v7.min.js";
+window.d3 = d3; // TODO: Investigate
 
 // TODO: Have better handling (helper functions?) for null and '' from input values
 

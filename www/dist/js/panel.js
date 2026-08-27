@@ -1,12 +1,13 @@
 
-import { Bounds } from "../common/bounds.js";
-import { Position } from "../common/position.js";
-import { D3Renderer } from "../common/d3Renderer.js";
-import * as Utils from "../common/utils.js";
-
+import { Bounds } from "./bounds.js";
+import { ConfirmForm } from "./confirm-form.js";
+import { D3Renderer } from "./d3-renderer.js";
+import { Form } from "./form.js";
+import { Position } from "./position.js";
 import { Scope } from "./scope.js";
-import { Trace } from "../common/trace.js";
-import { ConfirmForm, Form } from "../common/form.js";
+import { Trace } from "./trace.js";
+
+import * as Utils from "./utils.js";
 
 let NextId = 1;
 

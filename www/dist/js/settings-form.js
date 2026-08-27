@@ -1,7 +1,5 @@
 
-import { Form } from "../common/form.js";
-
-import * as Utils from "../common/utils.js";
+import { Form } from "./form.js";
 import { Scope } from "./scope.js";
 
 export class SettingsForm extends Form

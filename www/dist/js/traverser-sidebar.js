@@ -1,13 +1,13 @@
 
-import { Connection } from "../common/connection.js";
-import { ConfirmForm, Form } from "../common/form.js";
-import { Traverser } from "../common/traverser.js";
+import { ConfirmForm } from "./confirm-form.js";
+import { Connection } from "./connection.js";
+import { Form } from "./form.js";
+import { MDSplusPanel } from "./mdsplus-panel.js";
+import { MDSplusTrace } from "./mdsplus-trace.js";
 import { Scope } from "./scope.js";
+import { Traverser } from "./traverser.js";
 
-import * as Utils from "../common/utils.js";
-import { MDSplusPanel } from "./mdsplusPanel.js";
-import { MDSplusTrace } from "./mdsplusTrace.js";
-
+import * as Utils from "./utils.js";
 
 class TraverserRevealForm extends Form
 {

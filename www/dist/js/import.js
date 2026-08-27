@@ -1,7 +1,7 @@
 
 import { Scope } from "./scope.js";
-import { MDSplusTrace } from "./mdsplusTrace.js";
-import { MDSplusPanel } from "./mdsplusPanel.js";
+import { MDSplusTrace } from "./mdsplus-trace.js";
+import { MDSplusPanel } from "./mdsplus-panel.js";
 
 var GlobalDefaultMask = {
     update: (1 << 0),
