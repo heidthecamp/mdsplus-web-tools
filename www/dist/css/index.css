@@ -326,3 +326,25 @@ input[readonly]:focus {
 .page-header .active {
     text-decoration: underline;
 }
+
+.drag * {
+    /* Why is this in CSS and not JavaScript? */
+    pointer-events: none;
+}
+
+.drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    display: none;
+}
+
+.drag .drop-overlay {
+    display: block;
+}

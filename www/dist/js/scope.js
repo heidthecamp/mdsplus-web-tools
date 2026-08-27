@@ -162,7 +162,69 @@ export class Scope
             .addEventListener('click', (e) => {
                 Scope.edit();
             });
+
+        let scopePage = document.querySelector('#scope-page');
     
+        scopePage.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            
+            scopePage.classList.remove('drag');
+
+            const file = e.dataTransfer.items[0].getAsFile();
+            if (file === null) {
+                return;
+            }
+
+            // TODO: Additional filtering
+
+            for (var i = 0; i < Scope.panels.length; ++i) {
+                Scope.panels[i].removeElement();
+            }
+            document.getElementById('panels').innerHTML = ''; // HACK:
+
+            await Import.importFile(file);
+
+            Scope.queueAutosave();
+        });
+
+        scopePage.addEventListener('dragenter', (e) => {
+            console.log('enter', e.target);
+
+            scopePage.classList.add('drag');
+        });
+
+        scopePage.addEventListener('dragleave', (e) => {
+            console.log('leave', e.target);
+
+            if (e.target == scopePage) {
+                scopePage.classList.remove('drag');
+            }
+        });
+
+        scopePage.addEventListener('dragover', (e) => {
+            // Allow us to handle 'drop' events
+            e.preventDefault();
+        });
+
+        function finishResize() {
+            Scope.panels.forEach(panel => {
+                panel.render();
+            });
+        }
+
+        let previousWindowWidth = window.innerWidth;
+
+        window.addEventListener('resize', (e) => {
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(finishResize, 100);
+
+            if (window.innerWidth > previousWindowWidth) {
+                clearTimeout(window.updateTimeout);
+                window.updateTimeout = setTimeout(Scope.refresh, 1000);
+            }
+            previousWindowWidth = window.innerWidth;
+        })
+
         // document.querySelector('#parallel')
         //     .addEventListener('change', (e) => { setParallel(e.target.checked); });
     
