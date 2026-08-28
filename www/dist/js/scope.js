@@ -379,7 +379,8 @@ export class Scope
         }
 
         if (Scope.defaults.shot_expr !== null && Scope.defaults.shot_expr !== '') {
-            request.push(['shot', Scope.defaults.shot_expr + '+' + Scope.shot_expr_offset]);
+            request.push(['shot', Scope.defaults.shot_expr]);
+            request.push(['shot_with_offset', Scope.defaults.shot_expr + '+' + Scope.shot_expr_offset]);
         }
 
         if (request.length > 0) {
@@ -403,7 +404,17 @@ export class Scope
                     }
 
                     if (response.hasValue('shot')) {
-                        document.querySelector('#current-shot').innerText = response.getValue('shot');
+                        let current_shot = document.querySelector('#current-shot');
+                        current_shot.innerText = response.getValue('shot_with_offset');
+
+                        let shot_expr = response.getValue('shot').toString();
+                        if (Scope.shot_expr_offset > 0) {
+                            shot_expr += '+' + Scope.shot_expr_offset;
+                        }
+                        else if (Scope.shot_expr_offset < 0) {
+                            shot_expr += Scope.shot_expr_offset;
+                        }
+                        current_shot.title = shot_expr;
                     }
                 });
             }
