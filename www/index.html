@@ -4,6 +4,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.ico" />
     
+    <!-- Popper -->
+    <script src="./dist/external/popper.min.js"></script>
+
     <!-- Bootstrap -->
     <link rel="stylesheet" href="./dist/external/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
     <script src="./dist/external/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
@@ -37,7 +40,11 @@
     <template id="traverser-node-template">
         <div class="node">
             <div class="item">
-                <div class="handle">
+                <div class="handle"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top" 
+                    data-bs-html="true"
+                >
                     <div class="expand-icon inverted"></div>
                     <span class="name"></span>
                 </div>
@@ -514,11 +521,6 @@
             <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
             <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
         </footer>
-    </div>
-
-    <div id="traverser-preview">
-        <div class="plot"></div>
-        <div class="description"></div>
     </div>
 
 </body>

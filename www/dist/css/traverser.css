@@ -80,37 +80,38 @@
     display: block;
 }
 
-/* Traverser Preview */
-
-#traverser-preview {
-    position: fixed;
-    display: none;
-    background-color: white;
-    max-width: 400px;
-    border: 1px solid black;
+:root {
+    --traverser-preview-plot-width: 250px;
 }
 
-#traverser-preview .description {
+/* Traverser Preview */
+.traverser-tooltip {
+    margin-left: 24px !important;
+    margin-right: 24px !important;
+}
+
+.traverser-tooltip .tooltip-inner {
+    max-width: calc(var(--traverser-preview-plot-width) + (var(--bs-tooltip-padding-x) * 2)) !important;
+}
+
+.traverser-tooltip .description {
+    text-align: left !important;
     word-wrap: break-word;
     padding: 5px;
 }
 
-#traverser-preview .description .expression {
+.traverser-tooltip .description .expression {
     font-family: 'Courier New', Courier, monospace;
     font-size: 80%;
 }
 
-#traverser-preview.plot-shown .description {
+.traverser-tooltip.plot-shown .description {
     border-top: 1px solid black;
 }
 
-#traverser-preview.shown {
-    display: block;
-}
-
-#traverser-preview.plot-shown .plot {
-    width: 400px;
-    height: 200px;
+.traverser-tooltip.plot-shown .plot {
+    width: var(--traverser-preview-plot-width);
+    height: 150px;
     padding-right: 20px;
 }
 

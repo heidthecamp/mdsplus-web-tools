@@ -14,6 +14,8 @@ export class PreviewTrace extends Trace
     constructor(y_data, x_data) {
         super();
 
+        this.trace_color = 'white';
+
         if (y_data.length != x_data.length) {
             console.error('array length mismatch');
         }
@@ -55,8 +57,6 @@ export class Traverser
         this.on_double_click = on_double_click;
 
         this.timeout = null;
-
-        this.renderer = new D3Renderer(document.querySelector('#traverser-preview .plot'));
 
         this.setConnection(Connection.current);
 
@@ -195,119 +195,105 @@ export class Traverser
             }
         });
 
-        $handle.addEventListener('mouseenter', (e) => {
-            this.timeout = setTimeout(async (e) => {
-                let description = $node.getAttribute('data-description');
+        let classes = `tooltip-${nid} traverser-tooltip`;
+        let title = '<div class="description">Loading...</div>';
+        if (usage == 'SIGNAL') {
+            title = '<div class="plot"></div>' + title;
+            classes += ' plot-shown';
+        }
 
-                let $traverserPreview = document.querySelector('#traverser-preview');
-                $traverserPreview.classList.add('shown');
-                $traverserPreview.style.top = `${e.clientY}px`;
-                $traverserPreview.style.left = `${e.clientX + 20}px`;
-
-                let request = [
-                    ['open', `TreeOpen("${this.tree}",${this.shot})`],
-                ];
-
-                if (description == null) { // TODO:
-                    request = request.concat([
-                        ['name', `trim(getnci(${nid}, "NODE_NAME"))`],
-                        ['status', `getnci(${nid}, "STATUS")`],
-                        ['flags', `getnci(${nid}, "GET_FLAGS")`],
-                        ['decompile', `TreeDecompileRecord(${nid})`],
-                        ['tags', `TreeFindAllNodeTags(${nid})`]
-                    ]);
-
-                    document.querySelector('#traverser-preview .description').innerText = 'Loading...';
-                }
-                else {
-                    document.querySelector('#traverser-preview .description').innerHTML = description;
-                }
-
-                if (usage == 'SIGNAL') {
-                    request = request.concat([
-                        ['y', `TreeGetRecord(${nid}, _wssig), _wssig=toms510(_wssig)`],
-                        ['x', `dim_of(_wssig)`],
-                    ]);
-                }
-
-                if (request.length > 1) {
-                    try {
-                        await this.connection.getMany(request)
-                        .then((response) => {
-                            try {
-                                response.checkForErrors();
-                            }
-                            catch (e) {
-                                if (!e.message.startsWith('%TDI')) {
-                                    throw e;
-                                }
-                            }
-    
-                            if (description == null) {
-                                let onOff = (response.getValue('status') == 0 ? 'On' : 'Off');
-                                description = `<b>${response.getValue('name')}</b> (${onOff})<br>`;
-
-                                if (usage == 'SIGNAL') {
-                                    description += 'Double click to add scope panel<br>';
-                                }
-                                
-                                description += `<b>Usage:</b> ${usage}<br>`;
-    
-                                let tags = response.getValue('tags');
-                                if (tags !== null) {
-                                    for (var i = 0; i < tags.length; ++i) {
-                                        tags[i] = '\\' + tags[i];
-                                    }
-                                    description += `<b>Tags:</b> ${tags.join(', ')}<br>`;
-                                }
-    
-                                // TODO: Truncate when really long
-                                let expression = response.getValue('decompile');
-                                if (expression != '*') {
-                                    if (expression.length < 200) {
-                                        if (expression.length > 20) {
-                                            description += `<b>Expression:</b><div class="expression">${expression}</div>`;
-                                        }
-                                        else {
-                                            description += `<b>Expression:</b> <span class="expression">${expression}</span>`;
-                                        }
-                                    }
-                                    else {
-                                        description += `<b>Expression:</b> <span class="expression">...</span>`;
-                                    }
-                                }
-                                
-                                $node.dataset.description = description;
-                                document.querySelector('#traverser-preview .description').innerHTML = description;
-                            }
-    
-                            if (response.hasValue('y') && response.hasValue('x')) {
-                                document.querySelector('#traverser-preview').classList.add('plot-shown');
-    
-                                let trace = new PreviewTrace(response.getValue('y'), response.getValue('x'));
-                                this.renderer.render([trace]);
-                            }
-
-                            // Move the preview up onto the screen
-                            let previewBottom = $traverserPreview.getBoundingClientRect().bottom;
-                            let screenBottom = window.innerHeight;
-                            let footerHeight = document.querySelector('footer').getBoundingClientRect().height;
-                            if (previewBottom > (screenBottom - footerHeight)) {
-                                $traverserPreview.style.top = e.clientY - (previewBottom - screenBottom) - footerHeight;
-                            }
-                        });
-                    }
-                    catch (e) {
-                        Utils.showErrorMessage(e.message);
-                    }
-                }
-            }, 500, e);
+        let tooltip = bootstrap.Tooltip.getOrCreateInstance($handle, {
+            customClass: classes,
+            title: title,
+            html: true,
+            delay: { 
+                show: 1000,
+                hide: 100
+            },
         });
 
-        $handle.addEventListener('mouseleave', (e) => {
-            clearTimeout(this.timeout);
-            document.querySelector('#traverser-preview .plot').innerHTML = '';
-            document.querySelector('#traverser-preview').classList.remove('shown', 'plot-shown');
+        $handle.addEventListener('show.bs.tooltip', (e) => {
+            let hasDescription = $node.getAttribute('data-has-description');
+
+            let request = [
+                ['open', `TreeOpen("${this.tree}",${this.shot})`],
+            ];
+
+            if (!hasDescription) {
+                request = request.concat([
+                    ['name', `trim(getnci(${nid}, "NODE_NAME"))`],
+                    ['status', `getnci(${nid}, "STATUS")`],
+                    ['flags', `getnci(${nid}, "GET_FLAGS")`],
+                    ['decompile', `TreeDecompileRecord(${nid})`],
+                    ['tags', `TreeFindAllNodeTags(${nid})`],
+                ]);
+            }
+
+            if (usage == 'SIGNAL') {
+                request = request.concat([
+                    ['y', `TreeGetRecord(${nid}, _wssig), _wssig=toms510(_wssig)`],
+                    ['x', `dim_of(_wssig)`],
+                ]);
+            }
+
+            if (request.length > 1) {
+                try {
+                    this.connection.getMany(request)
+                    .then((response) => {
+                        try {
+                            response.checkForErrors();
+                        }
+                        catch (e) {
+                            if (!e.message.startsWith('%TDI')) {
+                                throw e;
+                            }
+                        }
+
+                        if (!hasDescription) {
+                            let onOff = (response.getValue('status') == 0 ? 'On' : 'Off');
+                            let html = `<b>${response.getValue('name')}</b> (${onOff})<br>`;
+                            
+                            html += `<b>Usage:</b> ${usage}<br>`;
+
+                            let tags = response.getValue('tags');
+                            if (tags !== null) {
+                                for (var i = 0; i < tags.length; ++i) {
+                                    tags[i] = '\\' + tags[i];
+                                }
+                                html += `<b>Tags:</b> ${tags.join(', ')}<br>`;
+                            }
+
+                            // TODO: Truncate when really long
+                            let expression = response.getValue('decompile');
+                            if (expression != '*') {
+                                if (expression.length < 200) {
+                                    if (expression.length > 20) {
+                                        html += `<b>Expression:</b><div class="expression">${expression}</div>`;
+                                    }
+                                    else {
+                                        html += `<b>Expression:</b> <span class="expression">${expression}</span>`;
+                                    }
+                                }
+                                // else {
+                                //     html += `<b>Expression:</b> <span class="expression">...</span>`;
+                                // }
+                            }
+
+                            tooltip.setContent({ '.description': html });
+                            $node.setAttribute('data-has-description', true);
+                        }
+
+                        if (response.hasValue('y') && response.hasValue('x')) {
+                            let trace = new PreviewTrace(response.getValue('y'), response.getValue('x'));
+                            let renderer = new D3Renderer(document.querySelector(`.tooltip-${nid} .plot`));
+                            renderer.render([trace]);
+                        }
+                    });
+                }
+                catch (e) {
+                    Utils.showErrorMessage(e.message);
+                }
+            }
         });
 
         if (usage == 'SIGNAL') {
