@@ -64,27 +64,54 @@
     margin-left: 2px;
 }
 
-.traverser .only-edit {
-    display: none;
-}
-
+.traverser .only-write,
+.traverser .only-edit,
 .traverser .only-signal {
     display: none;
 }
 
-.traverser .signal > .item .only-signal {
+.traverser.write .only-write {
     display: block;
 }
 
-.traverser .edit > .item .only-edit {
+.traverser.edit .only-edit {
     display: block;
 }
+
+.traverser .node.signal > .item .only-signal {
+    display: block;
+}
+
+/* Traverser Node Edit Form */
+
+#traverser-node-edit-form .only-read {
+    display: block;
+}
+
+#traverser-node-edit-form .only-write,
+#traverser-node-edit-form .only-edit {
+    display: none;
+}
+
+#traverser-node-edit-form.write .only-write {
+    display: block;
+}
+
+#traverser-node-edit-form.edit .only-edit {
+    display: block;
+}
+
+#traverser-node-edit-form.write .only-read,
+#traverser-node-edit-form.edit .only-read {
+    display: none;
+}
+
+/* Traverser Preview */
 
 :root {
     --traverser-preview-plot-width: 250px;
 }
 
-/* Traverser Preview */
 .traverser-tooltip {
     margin-left: 24px !important;
     margin-right: 24px !important;

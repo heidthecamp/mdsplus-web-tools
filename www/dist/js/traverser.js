@@ -2,11 +2,33 @@
 import { Bounds } from "./bounds.js";
 import { Connection } from "./connection.js";
 import { D3Renderer } from "./d3-renderer.js";
+import { Form } from "./form.js";
 import { Trace } from "./trace.js";
 
 import * as Utils from "./utils.js";
 
 let NextId = 1;
+
+const NciM = {
+    STATE: 0x00000001,
+    PARENT_STATE: 0x00000002,
+    ESSENTIAL: 0x00000004,
+    CACHED: 0x00000008,
+    VERSIONS: 0x00000010,
+    SEGMENTED: 0x00000020,
+    SETUP_INFORMATION: 0x00000040,
+    WRITE_ONCE: 0x00000080,
+    COMPRESSIBLE: 0x00000100,
+    DO_NOT_COMPRESS: 0x00000200,
+    COMPRESS_ON_PUT: 0x00000400,
+    NO_WRITE_MODEL: 0x00000800,
+    NO_WRITE_SHOT: 0x00001000,
+    PATH_REFERENCE: 0x00002000,
+    NID_REFERENCE: 0x00004000,
+    INCLUDE_IN_PULSE: 0x00008000,
+    COMPRESS_SEGMENTS: 0x00010000,
+};
+
 
 // HACK: Replace with modifications to MDSplusTrace
 export class PreviewTrace extends Trace
@@ -49,12 +71,95 @@ export class PreviewTrace extends Trace
     }
 }
 
+class NodeEditForm extends Form
+{
+    constructor(traverser, nid, readonly=true)
+    {
+        super('traverser-node-edit-form-template');
+
+        this.traverser = traverser;
+        this.nid = nid;
+        this.readonly = readonly;
+
+        if (!this.readonly && !this.traverser.open_for_write) {
+            this.readonly = true;
+        }
+
+        if (this.readonly) {
+            this.$element.classList.add('read');
+            
+            this.$element.querySelectorAll('input')
+                .forEach((input) => input.disabled = true);
+
+            this.$element.querySelectorAll('select')
+                .forEach((select) => select.disabled = true);
+
+            this.$element.querySelectorAll('textarea')
+                .forEach((textarea) => textarea.disabled = true);
+        }
+        else if (this.traverser.open_for_write) {
+            this.$element.classList.add('write');
+
+            if (this.traverser.open_for_edit) {
+                this.$element.classList.add('edit');
+            }
+        }
+
+        this.reset();
+    }
+
+    reset() {
+        this.traverser.connection.getMany([
+            ['path', `getnci(${this.nid}, "PATH")`],
+            ['flags', `getnci(${this.nid}, "GET_FLAGS")`],
+            ['usage', `getnci(${this.nid}, "USAGE_STR")`],
+            ['decompile', `TreeDecompileRecord(${this.nid})`],
+        ])
+        .then((response) => {
+            let path = response.getValue('path');
+            this.$element.querySelector('#traverser-node-form-path').innerText = `Editing ${path} in ${this.traverser.tree} shot ${this.traverser.shot}`;
+
+            let flags = response.getValue('flags');
+            this.$element.querySelector('#traverser-flag-state').checked = ((flags & NciM.STATE) > 0);
+            this.$element.querySelector('#traverser-flag-parent_state').checked = ((flags & NciM.PARENT_STATE) > 0);
+            this.$element.querySelector('#traverser-flag-essential').checked = ((flags & NciM.ESSENTIAL) > 0);
+            this.$element.querySelector('#traverser-flag-cached').checked = ((flags & NciM.CACHED) > 0);
+            this.$element.querySelector('#traverser-flag-versions').checked = ((flags & NciM.VERSIONS) > 0);
+            this.$element.querySelector('#traverser-flag-segmented').checked = ((flags & NciM.SEGMENTED) > 0);
+            this.$element.querySelector('#traverser-flag-setup_information').checked = ((flags & NciM.SETUP_INFORMATION) > 0);
+            this.$element.querySelector('#traverser-flag-write_once').checked = ((flags & NciM.WRITE_ONCE) > 0);
+            this.$element.querySelector('#traverser-flag-compressible').checked = ((flags & NciM.COMPRESSIBLE) > 0);
+            this.$element.querySelector('#traverser-flag-do_not_compress').checked = ((flags & NciM.DO_NOT_COMPRESS) > 0);
+            this.$element.querySelector('#traverser-flag-compress_on_put').checked = ((flags & NciM.COMPRESS_ON_PUT) > 0);
+            this.$element.querySelector('#traverser-flag-no_write_model').checked = ((flags & NciM.NO_WRITE_MODEL) > 0);
+            this.$element.querySelector('#traverser-flag-no_write_shot').checked = ((flags & NciM.NO_WRITE_SHOT) > 0);
+            this.$element.querySelector('#traverser-flag-path_reference').checked = ((flags & NciM.PATH_REFERENCE) > 0);
+            this.$element.querySelector('#traverser-flag-nid_reference').checked = ((flags & NciM.NID_REFERENCE) > 0);
+            this.$element.querySelector('#traverser-flag-include_in_pulse').checked = ((flags & NciM.INCLUDE_IN_PULSE) > 0);
+            this.$element.querySelector('#traverser-flag-compress_segments').checked = ((flags & NciM.COMPRESS_SEGMENTS) > 0);
+
+            let usage = response.getValue('usage').split('TreeUSAGE_').at(-1);
+            this.$element.querySelector('#traverser-node-usage').value = usage;
+
+            this.$element.querySelector('#traverser-node-form-data').value = response.getValue('decompile');
+        });
+    }
+
+    apply() {
+        if (this.readonly) {
+            return;
+        }
+    }
+};
+
 export class Traverser
 {
     constructor(tree, shot_expr, on_double_click = null)
     {
         this.id = NextId++;
         this.on_double_click = on_double_click;
+        this.open_for_write = false;
+        this.open_for_edit = false;
 
         this.timeout = null;
 
@@ -195,13 +300,27 @@ export class Traverser
             }
         });
 
+        $node.querySelectorAll('*[data-action="traverser-display"')
+            .forEach((button) => {
+                button.addEventListener('click', () => {
+                    Form.show(new NodeEditForm(this, nid, true));
+                });
+            });
+
+        $node.querySelectorAll('*[data-action="traverser-modify"')
+            .forEach((button) => {
+                button.addEventListener('click', () => {
+                    Form.show(new NodeEditForm(this, nid, false));
+                });
+            });
+
         let classes = `tooltip-${nid} traverser-tooltip`;
         let title = '<div class="description">Loading...</div>';
         if (usage == 'SIGNAL') {
             title = '<div class="plot"></div>' + title;
             classes += ' plot-shown';
         }
-
+        
         let tooltip = bootstrap.Tooltip.getOrCreateInstance($handle, {
             customClass: classes,
             title: title,

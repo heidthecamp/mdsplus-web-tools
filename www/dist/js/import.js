@@ -3,7 +3,7 @@ import { Scope } from "./scope.js";
 import { MDSplusTrace } from "./mdsplus-trace.js";
 import { MDSplusPanel } from "./mdsplus-panel.js";
 
-var GlobalDefaultMask = {
+const GlobalDefaultMask = {
     update: (1 << 0),
     experiment: (1 << 7),
     shot: (1 << 8),

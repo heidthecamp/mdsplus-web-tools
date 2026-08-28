@@ -134,6 +134,12 @@ h1 {
 #settings-form {
     width: 80%;
 }
+
+/* TODO: */
+#traverser-node-edit-form {
+    width: 50%;
+}
+
 #panel-form input[type="checkbox"] {
     margin-top: 13px;
 }

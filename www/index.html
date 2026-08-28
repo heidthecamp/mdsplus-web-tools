@@ -37,6 +37,219 @@
         </form>
     </template>
 
+    <template id="traverser-node-edit-form-template">
+        <form id="traverser-node-edit-form" class="container-fluid form">
+            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <div class="row mb-2">
+                <h1 id="traverser-node-form-path"></h1>
+            </div>
+            <div class="row mb-3">
+                <div class="accordion" id="traverser-node-edit-accordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#traverser-node-edit-collapse-data" aria-expanded="true" aria-controls="traverser-node-edit-collapse-data">
+                                Data
+                            </button>
+                        </h2>
+                        <div id="traverser-node-edit-collapse-data" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <select class="form-control" id="traverser-data-type" value="expression">
+                                            <option value="expression">Expression</option>
+                                            <option value="text">Text</option>
+                                            <option value="signal">Signal</option>
+                                            <option value="array">Array</option>
+                                            <option value="action">Action</option>
+                                            <option value="dispatch">Dispatch</option>
+                                            <option value="window">Window</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row container-fluid mb-3">
+                                    <textarea id="traverser-node-form-data" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#traverser-node-edit-collapse-flags" aria-expanded="false" aria-controls="traverser-node-edit-collapse-flags">
+                                Usage & Status Flags
+                            </button>
+                        </h2>
+                        <div id="traverser-node-edit-collapse-flags" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="row mb-3">
+                                    <label for="traverser-node-usage" class="col-sm-2 col-form-label">Usage</label>
+                                    <div class="col-sm-4">
+                                        <select class="form-control" id="traverser-node-usage">
+                                            <option value="ANY">Any</option>
+                                            <option value="STRUCTURE">Structure</option>
+                                            <option value="ACTION">Action</option>
+                                            <option value="DEVICE">Device</option>
+                                            <option value="DISPATCH">Dispatch</option>
+                                            <option value="NUMERIC">Numeric</option>
+                                            <option value="SIGNAL">Signal</option>
+                                            <option value="TASK" disabled="disabled">Task</option>
+                                            <option value="TEXT">Text</option>
+                                            <option value="WINDOW">Window</option>
+                                            <option value="AXIS">Axis</option>
+                                            <option value="SUBTREE">Subtree</option>
+                                            <option value="COMPOUND_DATA">Compound Data</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-state" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-state" class="col-form-label">STATE</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-parent_state" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-parent_state" class="col-form-label">PARENT_STATE</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-essential" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-essential" class="col-form-label">ESSENTIAL</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-cached" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-cached" class="col-form-label">CACHED</label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-versions" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-versions" class="col-form-label">VERSIONS</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-segmented" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-segmented" class="col-form-label">SEGMENTED</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-setup_information" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-setup_information" class="col-form-label">SETUP_INFORMATION</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-write_once" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-write_once" class="col-form-label">WRITE_ONCE</label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-compressible" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-compressible" class="col-form-label">COMPRESSIBLE</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-do_not_compress" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-do_not_compress" class="col-form-label">DO_NOT_COMPRESS</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-compress_on_put" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-compress_on_put" class="col-form-label">COMPRESS_ON_PUT</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-no_write_model" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-no_write_model" class="col-form-label">NO_WRITE_MODEL</label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-no_write_shot" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-no_write_shot" class="col-form-label">NO_WRITE_SHOT</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-path_reference" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-path_reference" class="col-form-label">PATH_REFERENCE</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-nid_reference" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-nid_reference" class="col-form-label">NID_REFERENCE</label>
+                                    </div>
+
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-include_in_pulse" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-include_in_pulse" class="col-form-label">INCLUDE_IN_PULSE</label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <input id="traverser-flag-compress_segments" type="checkbox" class="me-1" />
+                                        <label for="traverser-flag-compress_segments" class="col-form-label">COMPRESS_SEGMENTS</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#traverser-node-edit-collapse-xnci" aria-expanded="false" aria-controls="traverser-node-edit-collapse-xnci">
+                                Extended Metadata (XNCI)
+                            </button>
+                        </h2>
+                        <div id="traverser-node-edit-collapse-xnci" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="row mb-3">
+                                    <div class="col-sm-5">
+                                        Name
+                                    </div>
+                                    <div class="col-sm-5">
+                                        Value
+                                    </div>
+                                    <div class="col-sm-2 only-write">
+                                        <button class="btn btn-primary">Add</button>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-5">
+                                        <input class="form-control" type="text" value="MdsResample" />
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <input class="form-control" type="text" value="MinMax" />
+                                    </div>
+                                    <div class="col-sm-2 only-write">
+                                        <button class="btn btn-danger">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 only-write">
+                                    <div class="col-sm-5">
+                                        <input class="form-control" type="text" placeholder="Name" />
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <input class="form-control" type="text" placeholder="Value" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="container-fluid only-write">
+                    <button type="button" data-action="save" class="btn btn-primary">Save</button>
+                    <button type="button" data-action="apply" class="btn btn btn-secondary">Apply</button>
+                    <button type="button" data-action="reset" class="btn btn btn-secondary">Reset</button>
+                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Cancel</button>
+                </div>
+                <div class="container-fluid only-read">
+                    <button type="button" data-action="cancel" class="btn btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
     <template id="traverser-node-template">
         <div class="node">
             <div class="item">
@@ -53,18 +266,35 @@
                 </a>
                 <ul class="dropdown-menu dropright">
                     <!-- <li class="only-signal"><a class="dropdown-item" role="button" data-action="">Preview</a></li> -->
-                    <li class="only-signal"><a class="dropdown-item" role="button" data-action="traverser-add-to-dashboard">Add to Dashboard</a></li>
+                    <li class="only-signal">
+                        <a class="dropdown-item" role="button" data-action="traverser-add-to-dashboard">Add to Dashboard</a>
+                    </li>
                     <li class="only-signal"><hr /></li>
-                    <!-- TODO: Think about what should go here -->
-                    <li><a class="dropdown-item" role="button" data-action="">Display Data</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="">Modify Data</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="">Display Flags</a></li>
-                    <li><a class="dropdown-item" role="button" data-action="">Modify Flags</a></li>
+
+                    <li class="only-write">
+                        <a class="dropdown-item" role="button" data-action="traverser-toggle-on-off">Toggle On/Off</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" role="button" data-action="traverser-display">Display</a>
+                    </li>
+                    <li class="only-write">
+                        <a class="dropdown-item" role="button" data-action="traverser-modify">Modify</a>
+                    </li>
+
                     <!-- Only when open for edit-->
                     <li class="only-edit"><hr /></li>
-                    <li class="only-edit"><a class="dropdown-item" role="button" data-action="">Add Member</a></li>
-                    <li class="only-edit"><a class="dropdown-item" role="button" data-action="">Add Child</a></li>
-                    <li class="only-edit"><a class="dropdown-item warn" role="button" data-action="">Remove</a></li>
+                    <li class="only-edit">
+                        <a class="dropdown-item" role="button" data-action="">Add Member</a>
+                    </li>
+                    <li class="only-edit">
+                        <a class="dropdown-item" role="button" data-action="">Add Child</a>
+                    </li>
+                    <li class="only-edit">
+                        <a class="dropdown-item warn" role="button" data-action="">Rename</a>
+                    </li>
+                    <li class="only-edit">
+                        <a class="dropdown-item warn" role="button" data-action="">Remove</a>
+                    </li>
                 </ul>
             </div>
             <div class="members"></div>
@@ -514,7 +744,7 @@
             <img src="./dist/external/octicons/upload.svg" width="200" height="200" style="filter: invert(1);" />
         </div>
     </div>
-
+    
     <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-0 border-top  mt-0 px-2"> 
             <div id="username" class="col-md-4">Connected as unknown</div>
