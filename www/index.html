@@ -23,6 +23,15 @@
     <link rel="stylesheet" href="./dist/css/index.css" />
 
     <!-- Templates -->
+    <template id="toast-error-template">
+        <div class="toast align-items-center text-bg-danger border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </template>
+    
     <template id="confirm-form-template">
         <form class="confirm-form form small-form container-fluid">
             <div class="row">
@@ -639,145 +648,152 @@
 
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg py-0 justify-content-between page-header">
-        <div class="container-fluid">
-            <a href="https://mdsplus.org" target="_blank" class="navbar-brand logo">
-                <span style="color: rgb(227, 148, 0); font-weight: bold;">MDS</span><span style="color: rgb(0, 136, 255)">plus</span>
-            </a>
-            <div class="collapse navbar-collapse">
+
+    <div class="page">
+        <nav class="header navbar navbar-expand-lg py-0 justify-content-between">
+            <div class="container-fluid">
+                <a href="https://mdsplus.org" target="_blank" class="navbar-brand logo">
+                    <span style="color: rgb(227, 148, 0); font-weight: bold;">MDS</span><span style="color: rgb(0, 136, 255)">plus</span>
+                </a>
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="#scope" class="nav-link active"><!-- TODO: Mark the correct "page" as active -->
+                                Scope
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link" title="Coming Soon!">
+                                Traverser
+                            </span>
+                        </li>
+                    </ul>
+                </div>
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a href="#scope" class="nav-link active"><!-- TODO: Mark the correct "page" as active -->
-                            Scope
+                        <a href="https://mdsplus.readthedocs.io" target="_blank" class="nav-link">
+                            Documentation
                         </a>
                     </li>
                     <li class="nav-item">
-                        <span class="nav-link" title="Coming Soon!">
-                            Traverser
-                        </span>
+                        <a class="nav-link" data-action="toggle-theme">
+                            <img class="icon only-light" src="./dist/external/octicons/moon.svg" />
+                            <img class="icon only-dark" src="./dist/external/octicons/sun.svg" />
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="https://www.github.com/MDSplus/mdsplus" target="_blank" class="nav-link">
+                            <img class="icon" src="./dist/external/octicons/github-octocat.svg" />
+                        </a>
                     </li>
                 </ul>
             </div>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a href="https://mdsplus.readthedocs.io" target="_blank" class="nav-link">
-                        Documentation
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-action="toggle-theme">
-                        <img class="icon only-light" src="./dist/external/octicons/moon.svg" />
-                        <img class="icon only-dark" src="./dist/external/octicons/sun.svg" />
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="https://www.github.com/MDSplus/mdsplus" target="_blank" class="nav-link">
-                        <img class="icon" src="./dist/external/octicons/github-octocat.svg" />
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+        </nav>
 
-    <div id="scope-page" class="container-fluid position-relative pb-5">
-        <div class="row flex-nowrap">
-            <div id="traverser-sidebar" class="hidden col-auto col-md-3 col-xl-2 px-sm-2 px-0 position-relative bg-body-tertiary">
-                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100">
-                    <div class="header" data-action="traverser-sidebar-toggle">
-                        <img class="icon open-sidebar-icon" src="./dist/external/octicons/move-to-end.svg" />
-                        <img class="icon close-sidebar-icon" src="./dist/external/octicons/move-to-start.svg" />
-                        <div class="title">Traverser</div>
-                    </div>
-                    <div class="content">
-                        <div class="d-flex">
-                            <select id="traverser-select" class="flex-grow-1">
-                                <option value="0" disabled="disabled" selected="selected">----------</option>
-                                <option value="-1">Open New Traverser</option>
-                            </select>
-                            <a class="flex-shrink-0 ps-2" data-bs-toggle="dropdown" role="button" title="traverser menu">
-                                <img class="icon" src="./dist/external/octicons/three-bars.svg" />
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-middle">
-                                <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-open-tree">Open</a></li>
-                                <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-reveal">Reveal Node</a></li>
-                                <li><hr /></li>
-                                <li><a class="dropdown-item text-danger" role="button" data-action="traverser-sidebar-close">Close</a></li>
-                            </ul>
+        <div id="scope" class="container-fluid position-relative">
+            <div class="row flex-nowrap">
+                <div id="traverser-sidebar" class="hidden col-auto col-md-3 col-xl-2 px-sm-2 px-0 position-relative bg-body-tertiary">
+                    <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100">
+                        <div class="header" data-action="traverser-sidebar-toggle">
+                            <img class="icon open-sidebar-icon" src="./dist/external/octicons/move-to-end.svg" />
+                            <img class="icon close-sidebar-icon" src="./dist/external/octicons/move-to-start.svg" />
+                            <div class="title">Traverser</div>
                         </div>
-                        <div id="traversers"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col scope">
-                <nav class="navbar navbar-expand-lg bg-body-tertiary">
-                    <div class="shot-scrubber container-fluid">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <img class="icon me-2" src="./dist/external/octicons/info.svg"
-                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="Quickly offset the current trace default shot" /> <!-- TODO: Improve -->
-                                <button class="btn btn-primary" type="button" data-action="prev-shot">
-                                    -1
-                                </button>
-                            </li>
-                            <li>
-                                <div class="current-shot" data-display="current-shot">No Current</div>
-                            </li>
-                            <li class="nav-item">
-                                <button class="btn btn-primary" type="button" data-action="next-shot">
-                                    +1
-                                </button>
-                                <button class="btn btn-primary" type="button" data-action="reset-shot" disabled="disabled">
-                                    Reset
-                                </button>
-                            </li>
-                        </ul>
-                        <div class="navbar-brand window-title">Window Title</div>
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <button class="btn btn-primary" type="button" data-action="add-panel">
-                                    Add Panel
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-action="refresh" role="button">
-                                    <img class="icon" src="./dist/external/octicons/sync.svg" />
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="content">
+                            <div class="d-flex">
+                                <select id="traverser-select" class="flex-grow-1">
+                                    <option value="0" disabled="disabled" selected="selected">----------</option>
+                                    <option value="-1">Open New Traverser</option>
+                                </select>
+                                <a class="flex-shrink-0 ps-2" data-bs-toggle="dropdown" role="button" title="traverser menu">
                                     <img class="icon" src="./dist/external/octicons/three-bars.svg" />
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>
-                                    <li><a class="dropdown-item nav-link" role="button" data-action="export">Export</a></li>
-                                    <li><a class="dropdown-item nav-link" role="button" data-action="settings">Settings</a></li>
+                                <ul class="dropdown-menu dropdown-menu-middle">
+                                    <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-open-tree">Open</a></li>
+                                    <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-reveal">Reveal Node</a></li>
                                     <li><hr /></li>
-                                    <li><a class="dropdown-item nav-link text-danger" role="button" data-action="reset">Reset</a></li>
+                                    <li><a class="dropdown-item text-danger" role="button" data-action="traverser-sidebar-close">Close</a></li>
                                 </ul>
-                            </li>
-                        </ul>
+                            </div>
+                            <div id="traversers"></div>
+                        </div>
                     </div>
-                </nav>
-                <div id="panels" class="grid-stack"></div>
+                </div>
+                <div class="col scope">
+                    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                        <div class="shot-scrubber container-fluid">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <img class="icon me-2" src="./dist/external/octicons/info.svg"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        title="Quickly offset the current trace default shot" /> <!-- TODO: Improve -->
+                                    <button class="btn btn-primary" type="button" data-action="prev-shot">
+                                        -1
+                                    </button>
+                                </li>
+                                <li>
+                                    <div class="current-shot" data-display="current-shot">No Current</div>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="btn btn-primary" type="button" data-action="next-shot">
+                                        +1
+                                    </button>
+                                    <button class="btn btn-primary" type="button" data-action="reset-shot" disabled="disabled">
+                                        Reset
+                                    </button>
+                                </li>
+                            </ul>
+                            <div class="navbar-brand window-title">Window Title</div>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <button class="btn btn-primary" type="button" data-action="add-panel">
+                                        Add Panel
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-action="refresh" role="button">
+                                        <img class="icon" src="./dist/external/octicons/sync.svg" />
+                                    </a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <img class="icon" src="./dist/external/octicons/three-bars.svg" />
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>
+                                        <li><a class="dropdown-item nav-link" role="button" data-action="export">Export</a></li>
+                                        <li><a class="dropdown-item nav-link" role="button" data-action="settings">Settings</a></li>
+                                        <li><hr /></li>
+                                        <li><a class="dropdown-item nav-link text-danger" role="button" data-action="reset">Reset</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <div id="panels" class="grid-stack"></div>
+                </div>
+            </div>
+            <div class="drop-overlay">
+                <br />
+                <br />
+                <br />
+                Drop a .dat, .jscp, or .json file here to import
+                <br />
+                <img src="./dist/external/octicons/upload.svg" width="200" height="200" style="filter: invert(1);" />
             </div>
         </div>
-        <div class="drop-overlay">
-            <br />
-            <br />
-            <br />
-            Drop a .dat, .jscp, or .json file here to import
-            <br />
-            <img src="./dist/external/octicons/upload.svg" width="200" height="200" style="filter: invert(1);" />
-        </div>
-    </div>
     
-    <div class="container-fluid my-0 mx-0 px-0 fixed-bottom">    
-        <footer class="d-flex flex-wrap justify-content-between align-items-center px-2 py-1 my-0 border-top bg-body-tertiary"> 
-            <div id="username" class="col-md-4">Connected as unknown</div>
-            <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
-            <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
-        </footer>
+        <div class="footer container-fluid my-0 mx-0 px-0 fixed-bottom">    
+            <footer class="d-flex flex-wrap justify-content-between align-items-center px-2 py-1 my-0 border-top bg-body-tertiary"> 
+                <div id="username" class="col-md-4">Connected as unknown</div>
+                <div id="error-message" class="col-md-4 d-flex align-items-center text-danger justify-content-start mb-3 mb-md-0 me-md-auto"></div>
+                <div id="status" class="col-md-4 text-body-secondary justify-content-center text-center"></div>
+            </footer>
+        </div>
+        
+        <div class="toast-wrapper">
+            <div class="toast-stack"></div>
+        </div>
     </div>
 
 </body>

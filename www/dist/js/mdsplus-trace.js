@@ -1,5 +1,6 @@
 
 import { Bounds } from "./bounds.js";
+import { Form } from "./form.js";
 import { Scope } from "./scope.js";
 import { Trace } from "./trace.js";
 
@@ -143,7 +144,9 @@ export class MDSplusTrace extends Trace
             .then((response) => {
                 // TODO: Improve, For errors from Resample()
                 if (typeof response.getValue('y') === 'string') {
-                    throw Error(response.getValue('y'));
+                    let error = Error(response.getValue('y'));
+                    error.field = 'y_expr';
+                    throw error;
                 }
 
                 response.checkForErrors();
@@ -195,7 +198,26 @@ export class MDSplusTrace extends Trace
         }
         catch (e) {
             this.data = [[]];
-            Utils.showErrorMessage(e.message);
+            Utils.showErrorMessage(e.message, () => {
+                this.panel.edit();
+
+                // TODO: Cleanup
+                const Mapping = {
+                    open: ['tree', 'shot_expr'],
+                    default_node: ['default_node_expr'],
+                    y: ['y_expr'],
+                    x: ['x_expr'],
+                }
+
+                let index = this.panel.traces.indexOf(this);
+                Form.activeForm.showTraceForm(index);
+
+                let fields = Mapping[e.field];
+                for (var field of fields) {
+                    let input = Form.activeForm.getInput(field, index);
+                    Utils.focusElement(input);
+                }
+            });
             throw e;
         }
     }

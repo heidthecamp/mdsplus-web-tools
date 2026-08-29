@@ -94,7 +94,13 @@ export class MDSplusPanel extends Panel
             }
         }
         catch (e) {
-            Utils.showErrorMessage(e.message);
+            Utils.showErrorMessage(e.message, () => {
+                this.edit();
+
+                // TODO: Cleanup
+                let input = Form.activeForm.getInput(e.field);
+                Utils.focusElement(input);
+            });
             bounds = null;
         }
 
@@ -185,7 +191,13 @@ export class MDSplusPanel extends Panel
                 });
             }
             catch (e) {
-                Utils.showErrorMessage(e.message);
+                Utils.showErrorMessage(e.message, () => {
+                    this.edit();
+                    
+                    // TODO: Cleanup
+                    let input = Form.activeForm.getInput('title_expr');
+                    Utils.focusElement(input);
+                });
             }
     
             title.innerText = this.title;

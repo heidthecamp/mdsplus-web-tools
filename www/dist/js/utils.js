@@ -1,12 +1,38 @@
 
-export function showErrorMessage(message) {
+export function showErrorMessage(message, goToProblem=null) {
     if (message === null) {
-        document.querySelector('#error-message').innerText = '';
+        // document.querySelector('#error-message').innerText = '';
+        document.querySelectorAll('.toast')
+            .forEach((element) => element.remove());
         return;
     }
 
     console.error(message);
-    document.querySelector('#error-message').innerText = message;
+
+    const toastStack = document.querySelector('.toast-stack');
+    const toastTemplate = document.querySelector('#toast-error-template');
+
+    let element = inflateTemplate(toastTemplate);
+    element.querySelector('.toast-body').innerText = message;
+    toastStack.append(element);
+
+    if (goToProblem !== null) {
+        element.style.cursor = 'pointer';
+        element.addEventListener('click', goToProblem);
+    }
+    
+    let toast = new bootstrap.Toast(element, {
+        animate: false,
+        delay: 5000,
+    });
+
+    element.addEventListener('hidden.bs.toast', () => {
+        element.remove();
+    });
+
+    toast.show();
+
+    // document.querySelector('#error-message').innerText = message;
 }
 
 export function showStatusMessage(message) {
@@ -16,6 +42,15 @@ export function showStatusMessage(message) {
     }
 
     document.querySelector('#status').innerText = message;
+}
+
+export function focusElement(element, timeout=1000) {
+    element.classList.add('focused');
+    setTimeout(() => {
+        element.classList.remove('focused');
+    }, timeout);
+
+    element.focus();
 }
 
 export function inflateTemplate(template) {

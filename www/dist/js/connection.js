@@ -25,7 +25,10 @@ export class Response
 
         for (let key in this.data) {
             if (this.data[key].hasOwnProperty('error')) {
-                throw Error(this.data[key].error);
+                // TODO: Custom error class?
+                let error = Error(this.data[key].error);
+                error.field = key;
+                throw error;
             }
         }
     }

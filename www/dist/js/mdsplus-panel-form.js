@@ -271,10 +271,7 @@ export class MDSplusPanelForm extends Form
         this.showTraceForm(id);
 
         let traceTab = document.querySelector(`#trace-tab-${id}`);
-        traceTab.classList.add('focused');
-        setTimeout(() => {
-            traceTab.classList.remove('focused');
-        }, 2000);
+        Utils.focusElement(traceTab);
     }
 
     showTraceForm(id)

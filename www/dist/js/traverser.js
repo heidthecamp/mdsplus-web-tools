@@ -273,9 +273,8 @@ export class Traverser
                     await this.dir(used.join(':'));
                 }
 
-                let focused_node = this.element.querySelector(`*[data-nid="${response.getValue('nid')}"]`);
-                focused_node.classList.add('focused');
-                setTimeout(() => focused_node.classList.remove('focused'), 2000);
+                let focusedName = this.element.querySelector(`[data-nid="${response.getValue('nid')}"] > .item .name`);
+                Utils.focusElement(focusedName);
             });
         }
         catch (e) {

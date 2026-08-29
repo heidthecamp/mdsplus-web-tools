@@ -203,12 +203,12 @@ export class Scope
     
         Utils.bindActions('settings', () => Scope.edit());
 
-        let scopePage = document.querySelector('#scope-page');
+        let root = document.querySelector('#scope');
     
-        scopePage.addEventListener('drop', async (e) => {
+        root.addEventListener('drop', async (e) => {
             e.preventDefault();
             
-            scopePage.classList.remove('drag');
+            root.classList.remove('drag');
 
             const file = e.dataTransfer.items[0].getAsFile();
             if (file === null) {
@@ -227,17 +227,17 @@ export class Scope
             Scope.queueAutosave();
         });
 
-        scopePage.addEventListener('dragenter', (e) => {
-            scopePage.classList.add('drag');
+        root.addEventListener('dragenter', (e) => {
+            root.classList.add('drag');
         });
 
-        scopePage.addEventListener('dragleave', (e) => {
-            if (e.target == scopePage) {
-                scopePage.classList.remove('drag');
+        root.addEventListener('dragleave', (e) => {
+            if (e.target == root) {
+                root.classList.remove('drag');
             }
         });
 
-        scopePage.addEventListener('dragover', (e) => {
+        root.addEventListener('dragover', (e) => {
             // Allow us to handle 'drop' events
             e.preventDefault();
         });
@@ -451,9 +451,13 @@ export class Scope
                 });
             }
             catch (e) {
-                if (!e.message.startsWith('%TREE-W-NOT_OPEN')) {
-                    Utils.showErrorMessage(e.message);
-                }
+                // if (!e.message.startsWith('%TREE-W-NOT_OPEN')) {
+                    Utils.showErrorMessage(e.message, () => {
+                        Scope.edit()
+                        
+                        // TODO: Highlight problematic field
+                    });
+                // }
             }
         }
     }
