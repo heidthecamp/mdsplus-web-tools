@@ -62,7 +62,7 @@ export class Panel
         Utils.showStatusMessage(`Panel refresh took ${duration.toFixed(1)}s`);
     }
 
-    update() {
+    async update() {
         // virtual
     }
 
@@ -84,10 +84,10 @@ export class Panel
         // For every trace...
         for (let i = 0; i < this.traces.length; i++){
             // For every line...
-            for (let j = 0; j < this.traces[i].initial_data.length; ++j) {
+            for (let j = 0; j < this.traces[i].initialData.length; ++j) {
                 // For every point...
-                for (let k = 0; k < this.traces[i].initial_data[j].length; ++k){
-                    let val = this.traces[i].initial_data[j][k];
+                for (let k = 0; k < this.traces[i].initialData[j].length; ++k){
+                    let val = this.traces[i].initialData[j][k];
                     b.extend(val[0], NaN);
                 }
             }
@@ -131,10 +131,10 @@ export class Panel
         // For every trace...
         for (let i = 0; i < this.traces.length; i++){
             // For every line...
-            for (let j = 0; j < this.traces[i].initial_data.length; ++j) {
+            for (let j = 0; j < this.traces[i].initialData.length; ++j) {
                 // For every point...
-                for (let k = 0; k < this.traces[i].initial_data[j].length; ++k){
-                    let val = this.traces[i].initial_data[j][k];
+                for (let k = 0; k < this.traces[i].initialData[j].length; ++k){
+                    let val = this.traces[i].initialData[j][k];
                     b.extend(val[0], val[1]);
                 }
             }
@@ -219,76 +219,50 @@ export class Panel
             content: document.getElementById('panel-template').innerHTML,
         });
 
-        this.widget.querySelectorAll('*[data-action="refresh-panel"]')
-            .forEach((node) => {
-                node.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    await this.refresh();
-                });
-            });
+        Utils.bindActions('panel-refresh', () => this.refresh(),
+            { element: this.widget });
 
-        this.widget.querySelectorAll('*[data-action="edit"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.edit();
-                });
-            });
+        Utils.bindActions('panel-edit', () => this.edit(),
+            { element: this.widget });
 
-        this.widget.querySelectorAll('*[data-action="remove"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    ConfirmForm.ask("Delete panel?",
-                        () => {
-                            this.removeElement()
-                        }
-                    );
-                });
-            });
+        Utils.bindActions('panel-remove',
+            () => ConfirmForm.ask("Delete panel?", () => this.removeElement),
+            { element: this.widget });
+
+        Utils.bindActions('panel-all-x-auto-y',
+            async () => {
+                let viewport = this.viewport();
+                for (var panel of Scope.panels) {
+                    panel.setViewport(panel.autoY(viewport));
+                    await panel.update();
+                    panel.render();
+                }
+            },
+            { element: this.widget });
             
-        this.widget.querySelectorAll('*[data-action="auto-x-y"]')
-            .forEach((node) => {
-                node.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    this.setViewport(this.autoXY(this.viewport()));
-                    await this.update();
-                    this.render();
-                })
-            });
-
-        this.widget.querySelectorAll('*[data-action="auto-x"]')
-            .forEach((node) => {
-                node.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    this.setViewport(this.autoX(this.viewport()));
-                    await this.update();
-                    this.render();
-                })
-            });
-
-        this.widget.querySelectorAll('*[data-action="auto-y"]')
-            .forEach((node) => {
-                node.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    this.setViewport(this.autoY(this.viewport()));
-                    // await this.update(); // TODO: Is this needed?
-                    this.render();
-                })
-            });
-
-        this.widget.querySelectorAll('*[data-action="all-x-auto-y"]')
-            .forEach((node) => {
-                node.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    let v = this.viewport();
-                    for(let i = 0; i < Scope.panels.length; ++i) {
-                        Scope.panels[i].setViewport(Scope.panels[i].autoY(v));
-                        await Scope.panels[i].update();
-                        Scope.panels[i].render();
-                    }
-                })
-            });
+        Utils.bindActions('panel-auto-xy',
+            () => {
+                this.setViewport(this.autoXY(this.viewport()));
+                this.update()
+                    .then(() => this.render());
+            },
+            { element: this.widget });
+        
+        Utils.bindActions('panel-auto-x',
+            () => {
+                this.setViewport(this.autoX(this.viewport()));
+                this.update()
+                    .then(() => this.render());
+            },
+            { element: this.widget });
+        
+        Utils.bindActions('panel-auto-y',
+            () => {
+                this.setViewport(this.autoY(this.viewport()));
+                // await this.update(); // TODO: Is this needed?
+                this.render();
+            },
+            { element: this.widget });
 
         this.renderer = new D3Renderer(
             this.widget.querySelector('.plot'),

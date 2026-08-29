@@ -9,12 +9,12 @@ const DefaultMargin = {
 export class Renderer
 {
     constructor(
-        $element,
+        element,
         onZoomIn = null,
         onZoomOut = null,
         margin = DefaultMargin,
     ) {
-        this.$element = $element;
+        this.element = element;
         this.onZoomIn = onZoomIn;
         this.onZoomOut = onZoomOut;
         this.margin = margin;

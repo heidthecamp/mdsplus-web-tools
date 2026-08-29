@@ -5,9 +5,9 @@ export class CanvasRenderer extends Renderer
 {
     render(traces)
     {
-        this.$element.innerHTML = '';
+        this.element.innerHTML = '';
 
-        let plotRect = this.$element.getBoundingClientRect();
+        let plotRect = this.element.getBoundingClientRect();
         
         let dataWidth = plotRect.width - this.margin.left - this.margin.right;
         let dataHeight = plotRect.height - this.margin.top - this.margin.bottom;
@@ -28,7 +28,7 @@ export class CanvasRenderer extends Renderer
         let canvas = document.createElement('canvas');
         canvas.width = plotRect.width;
         canvas.height = plotRect.height;
-        this.$element.append(canvas);
+        this.element.append(canvas);
 
         /** @{CanvasRenderingContext2D} */
         let ctx = canvas.getContext('2d');

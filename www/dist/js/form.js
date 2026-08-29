@@ -3,50 +3,40 @@ import * as Utils from "./utils.js";
 
 export class Form
 {
-    static active_form = null;
+    static activeForm = null;
 
     static show(form) {
         Form.close();
-        Form.active_form = form;
+        Form.activeForm = form;
     }
 
     static close() {
-        if (Form.active_form !== null) {
-            Form.active_form.close();
+        if (Form.activeForm !== null) {
+            Form.activeForm.close();
         }
     }
 
     constructor(templateId) {
-        this.$overlay = Utils.showOverlay(() => this.close());
-        this.$element = Utils.inflateTemplate(document.getElementById(templateId));
-        this.$overlay.append(this.$element);
+        this.overlay = Utils.showOverlay(() => this.close());
+        this.element = Utils.inflateTemplate(document.getElementById(templateId));
+        this.overlay.append(this.element);
 
-        this.$element.querySelectorAll('*[data-action="close"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => this.close());
-            });
+        Utils.bindActions('close', () => this.close(),
+            { element: this.element });
 
-        this.$element.querySelectorAll('*[data-action="save"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => this.save());
-            });
+        Utils.bindActions('save', () => this.save(),
+            { element: this.element });
 
-        this.$element.querySelectorAll('*[data-action="apply"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => this.apply());
-            });
+        Utils.bindActions('apply', () => this.apply(),
+            { element: this.element });
 
-        this.$element.querySelectorAll('*[data-action="reset"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => this.reset());
-            });
+        Utils.bindActions('reset', () => this.reset(),
+            { element: this.element });
 
-        this.$element.querySelectorAll('*[data-action="cancel"]')
-            .forEach((node) => {
-                node.addEventListener('click', (e) => this.cancel());
-            });
+        Utils.bindActions('cancel', () => this.cancel(),
+            { element: this.element });
 
-        this.$element.addEventListener('submit',
+        this.element.addEventListener('submit',
             (e) => {
                 this.save();
                 e.preventDefault();
@@ -54,10 +44,9 @@ export class Form
     }
 
     close() {
-        console.log('Form close');
-        Utils.hideOverlay(this.$overlay);
-        if (Form.active_form === this) {
-            Form.active_form = null;
+        Utils.hideOverlay(this.overlay);
+        if (Form.activeForm === this) {
+            Form.activeForm = null;
         }
     }
 
@@ -67,7 +56,6 @@ export class Form
     }
 
     save() {
-        console.log('Saving')
         if (this.apply()) {
             this.close();
         }

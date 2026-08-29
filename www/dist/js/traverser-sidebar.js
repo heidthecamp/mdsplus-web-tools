@@ -153,7 +153,7 @@ export class TraverserSidebar
         document.querySelectorAll('.traverser')
             .forEach((node) => node.classList.remove('active'));
 
-        traverser.$element.classList.add('active');
+        traverser.element.classList.add('active');
 
         document.querySelector('#traverser-select').value = traverser.id;
 
@@ -193,7 +193,7 @@ export class TraverserSidebar
                 }
     
                 if (!found) {
-                    traverser = new Traverser(tree, shot, TraverserSidebar.onDoubleClick);
+                    traverser = new Traverser(tree, shot);
                     TraverserSidebar.traversers.push(traverser);
 
                     await traverser.open_promise;
@@ -218,20 +218,6 @@ export class TraverserSidebar
         }
 
         return traverser;
-    }
-
-    // TODO: Rename
-    static async onDoubleClick(tree, shot, name, path) {
-        let panel = Scope.addPanel(
-            new MDSplusPanel(`"${name}"`),
-            { width: 6, height: 6 },
-            true
-        );
-        panel.addTrace(
-            new MDSplusTrace(tree, shot, null, path)
-        );
-
-        panel.edit();
     }
 
     static close(traverser)
@@ -290,7 +276,6 @@ export class TraverserSidebar
             let info = JSON.parse(localStorage.getItem('ws-traversers'));
     
             for (var traverser of info) {
-                console.log(traverser);
                 TraverserSidebar.findOrOpen(traverser.tree, traverser.shot);
             }
         }

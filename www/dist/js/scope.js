@@ -45,16 +45,56 @@ export class Scope
     static panels = [];
     static updating = [];
 
-    static autosave_timeout = null;
+    static autosaveTimeout = null;
 
     static queueAutosave() {
-        clearTimeout(Scope.autosave_timeout);
-        Scope.autosave_timeout = setTimeout(Scope.autosave, 1000);
+        clearTimeout(Scope.autosaveTimeout);
+        Scope.autosaveTimeout = setTimeout(Scope.autosave, 1000);
     }
 
     static autosave() {
         console.info('Autosave at', performance.now().toFixed(2));
         localStorage.setItem("ws-autosave", Export.exportJSON());
+    }
+
+    static load() {
+        try {
+            Import.importJSON(localStorage.getItem("ws-autosave"));
+        }
+        catch (e) {
+            localStorage.removeItem("ws-autosave");
+            
+            let sin = Scope.addPanel(
+                new MDSplusPanel(
+                    "'Sample Data with ' // size(_data1) + size(_data2) + size(_data3) // ' points'",
+                    -1, 1, null, null,
+                ),
+                { x: 0, y: 0, width: 12, height: 6 }
+            );
+            sin.addTrace(new MDSplusTrace(
+                null, null, null,
+                "_data1 = sin(0 : 50 : 0.05) * 0.9",
+                null,
+                null,
+                "red"
+            ));
+            sin.addTrace(new MDSplusTrace(
+                null, null, null,
+                "_data2 = cos(0 : 50 : 0.05) * 0.8",
+                null,
+                null,
+                "blue"
+            ));
+            sin.addTrace(new MDSplusTrace(
+                null, null, null,
+                "_data3 = sin((0 : 50 : 0.05) - $PI) * 0.7",
+                null,
+                null,
+                "green"
+            ));
+        
+            Scope.setTitle("if_error($SHOT,'No Shot Open') // ' - Running as ' // whoami()");
+        }
     }
 
     static init()
@@ -63,7 +103,7 @@ export class Scope
         
         document.querySelector('*[data-action="add-panel"]')
             .addEventListener('click', (e) => {
-                Scope.addPanel(new MDSplusPanel(), null, true).edit();
+                Scope.addPanel(new MDSplusPanel(), { width: 6, height: 6 }, true).edit();
             });
     
         document.querySelector('*[data-action="prev-shot"]')
@@ -200,14 +240,10 @@ export class Scope
         });
 
         scopePage.addEventListener('dragenter', (e) => {
-            console.log('enter', e.target);
-
             scopePage.classList.add('drag');
         });
 
         scopePage.addEventListener('dragleave', (e) => {
-            console.log('leave', e.target);
-
             if (e.target == scopePage) {
                 scopePage.classList.remove('drag');
             }
@@ -243,6 +279,8 @@ export class Scope
         TraverserSidebar.init();
         
         Scope.initGrid();
+
+        Scope.load();
     }
 
     static initGrid() {

@@ -15,7 +15,7 @@ export class Trace
         this.point_color = point_color;
 
         this.bounds = new Bounds();
-        this.initial_data = null; // for auto**
+        this.initialData = null; // for auto**
         this.data = []; // an array of arrays of [x,y] points :(
     }
 

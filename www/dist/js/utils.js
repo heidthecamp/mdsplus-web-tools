@@ -24,17 +24,17 @@ export function inflateTemplate(template) {
 
 export function showOverlay(onClose=null)
 {
-    let $overlay = document.createElement('div');
-    $overlay.classList.add('overlay');
-    document.body.append($overlay);
+    let overlay = document.createElement('div');
+    overlay.classList.add('overlay');
+    document.body.append(overlay);
 
-    $overlay.addEventListener('mousedown', (e) => {
-        if (e.target == $overlay) {            
+    overlay.addEventListener('mousedown', (e) => {
+        if (e.target == overlay) {            
             if (onClose !== null) {
-                onClose($overlay);
+                onClose(overlay);
             }
             else {
-                hideOverlay($overlay);
+                hideOverlay(overlay);
             }
         }
     });
@@ -46,13 +46,13 @@ export function showOverlay(onClose=null)
     //     }
     // });
 
-    return $overlay;
+    return overlay;
 }
 
-export function hideOverlay($overlay)
+export function hideOverlay(overlay)
 {
-    if ($overlay) {
-        $overlay.remove();
+    if (overlay) {
+        overlay.remove();
     }
 }
 
@@ -69,4 +69,27 @@ export function cloneArray(arr) {
 
 export function cloneObject(obj) {
     return { ...obj };
+}
+
+export function bindTooltips(element) {
+    let triggers = [...element.querySelectorAll('[data-bs-toggle="tooltip"]')];
+    return triggers.map((trigger) => {
+        new bootstrap.Tooltip(trigger);
+    });
+}
+
+export function bindActions(action, listener, options = {})
+{
+    if (!('event' in options)) {
+        options.event = 'click';
+    }
+
+    if (!('element' in options)) {
+        options.element = document;
+    }
+
+    options.element.querySelectorAll(`[data-action="${action}"]`)
+        .forEach((trigger) => {
+            trigger.addEventListener(options.event, listener);
+        });
 }

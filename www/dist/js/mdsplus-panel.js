@@ -127,9 +127,9 @@ export class MDSplusPanel extends Panel
 
         // TODO: Fix conflit with preview
         this.widget.style.opacity = 0.2;
-        let $error = this.widget.querySelector('.error');
-        if ($error != null) {
-            $error.remove();
+        let error = this.widget.querySelector('.error');
+        if (error != null) {
+            error.remove();
         }
 
         // TODO: Improve?
@@ -146,7 +146,7 @@ export class MDSplusPanel extends Panel
         for (var i = 0; i < this.traces.length; ++i) {
             try {
                 if (initialZoom) {
-                    this.traces[i].initial_data = null; // HACK:
+                    this.traces[i].initialData = null; // HACK:
                 }
                 await this.traces[i].update(this.connection, bounds, count);
             }
@@ -174,7 +174,7 @@ export class MDSplusPanel extends Panel
             request.push([ 'title', Scope.defaults.title_expr ]);
         }
 
-        let $title = this.widget.querySelector('.title');
+        let title = this.widget.querySelector('.title');
         if (request.length > 0) {
             try {
                 await this.connection.getMany(request)
@@ -188,10 +188,10 @@ export class MDSplusPanel extends Panel
                 Utils.showErrorMessage(e.message);
             }
     
-            $title.innerText = this.title;
+            title.innerText = this.title;
         }
         else {
-            $title.innerText = '';
+            title.innerText = '';
         }
 
     }
@@ -209,9 +209,6 @@ export class MDSplusPanel extends Panel
         if (this.traces.length == 0) {
             return;
         }
-
-        let $plot = this.widget.querySelector('.plot');
-        $plot.innerHTML = '';
         
         this.renderer.render(this.traces);
 

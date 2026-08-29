@@ -1,7 +1,8 @@
 
 import { Scope } from "./scope.js";
 
-export function exportJSON() {
+export function exportJSON()
+{
     let clean = (object) => {
         let newObject = {};
         for (const [name, value] of Object.entries(object)) {
@@ -70,7 +71,8 @@ export function exportJSON() {
     return JSON.stringify(data);
 }
 
-export async function exportFile(type) {
+export async function exportFile(type)
+{
     // TODO: Implement when the functionality is available
     // if (Window.showSaveFilePicker) {
     //     let fileInfo = await Window.showSaveFilePicker({

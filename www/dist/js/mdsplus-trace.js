@@ -188,8 +188,8 @@ export class MDSplusTrace extends Trace
                     this.data.pop();
                 }
 
-                if (this.initial_data == null) {
-                    this.initial_data = this.data;
+                if (this.initialData == null) {
+                    this.initialData = this.data;
                 }
             });
         }

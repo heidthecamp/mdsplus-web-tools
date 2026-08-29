@@ -5,13 +5,12 @@ import { Renderer } from "./renderer.js";
 // HACK:
 let NextId = 1;
 
-
 export class D3Renderer extends Renderer
 {
     render(traces)
     {
-        let plotRect = this.$element.getBoundingClientRect();
-        this.$element.innerHTML = ''; // Before?
+        let plotRect = this.element.getBoundingClientRect();
+        this.element.innerHTML = ''; // Before?
 
         if ((plotRect.width + plotRect.height) == 0) {
             return;
@@ -36,7 +35,7 @@ export class D3Renderer extends Renderer
         // TODO: Improve
         let id = NextId++;
 
-        const svg = d3.select(this.$element)
+        const svg = d3.select(this.element)
             .html(null)
             .append('svg')
                 .attr('width', plotRect.width)

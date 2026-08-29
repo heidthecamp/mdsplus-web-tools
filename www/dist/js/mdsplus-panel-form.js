@@ -14,17 +14,18 @@ export class MDSplusPanelForm extends Form
     {
         super('panel-form-template')
         this.panel = panel;
-        this.preview_renderer = null;
+        this.previewRenderer = null;
 
-        this.next_trace_id = 0;
-        this.trace_form_ids = [];
+        this.nextTraceID = 0;
+        this.traceFormIDs = [];
 
         this.reset();
 
         // TODO: Needs to happen after reset()
-        this.preview_renderer = new D3Renderer(document.querySelector('#panel-preview'));
-        this.preview_renderer.render(this.panel.traces);
+        this.previewRenderer = new D3Renderer(document.querySelector('#panel-preview'));
+        this.previewRenderer.render(this.panel.traces);
 
+        // TODO: Call after addTraceForm?
         document.querySelectorAll('#panel-form input')
             .forEach((input) => {
                 input.addEventListener('keyup', (e) => {
@@ -33,13 +34,12 @@ export class MDSplusPanelForm extends Form
                 });
             });
 
-        document.querySelectorAll('#panel-form *[data-action="add-trace"]')
-            .forEach((button) => {
-                button.addEventListener('click', (e) => {
-                    let id = this.addTraceForm();
-                    this.showTraceForm(id);
-                })
-            });
+        Utils.bindActions('add-trace',
+            () => {
+                let id = this.addTraceForm();
+                this.showTraceForm(id);
+            },
+            { element: this.element });
     }
 
     cancel() {
@@ -48,7 +48,6 @@ export class MDSplusPanelForm extends Form
     }
 
     close() {
-        console.log('MDSplusPanelForm close');
         if (this.unsaved) {
             ConfirmForm.ask(
                 'You have unsaved changes, are you sure you want to close?',
@@ -63,8 +62,8 @@ export class MDSplusPanelForm extends Form
     }
 
     reset() {
-        if (this.preview_renderer !== null) {
-            this.preview_renderer.render(this.panel.traces);
+        if (this.previewRenderer !== null) {
+            this.previewRenderer.render(this.panel.traces);
         }
 
         this.setupGlobalDefaults('title_expr');
@@ -79,12 +78,12 @@ export class MDSplusPanelForm extends Form
         this.getInput('x_min_expr').value = this.valueOr(this.panel.x_min_expr, '');
         this.getInput('x_max_expr').value = this.valueOr(this.panel.x_max_expr, '');
 
-        while (this.trace_form_ids.length > 0) {
-            this.removeTraceForm(this.trace_form_ids.at(-1));
+        while (this.traceFormIDs.length > 0) {
+            this.removeTraceForm(this.traceFormIDs.at(-1));
         }
 
-        this.next_trace_id = 0;
-        this.trace_form_ids = [];
+        this.nextTraceID = 0;
+        this.traceFormIDs = [];
 
         if (this.panel.traces.length > 0) {
             for (let i = 0; i < this.panel.traces.length; ++i) {
@@ -113,126 +112,118 @@ export class MDSplusPanelForm extends Form
         document.getElementById(`trace-form-${id}`).remove();
         document.getElementById(`trace-tab-${id}`).remove();
 
-        let index = this.trace_form_ids.indexOf(id);
-        this.trace_form_ids.splice(index, 1);
+        let index = this.traceFormIDs.indexOf(id);
+        this.traceFormIDs.splice(index, 1);
     }
 
     addTraceForm(trace=null)
     {
-        let id = this.next_trace_id++;
-        this.trace_form_ids.push(id);
+        let id = this.nextTraceID++;
+        this.traceFormIDs.push(id);
 
-        let $trace_form = Utils.inflateTemplate(document.getElementById('trace-form-template'));
-        $trace_form.id = `trace-form-${id}`;
-        $trace_form.dataset.id = id;
+        let traceForm = Utils.inflateTemplate(document.getElementById('trace-form-template'));
+        traceForm.id = `trace-form-${id}`;
+        traceForm.dataset.id = id;
 
         // Append the trace ID to the input IDs
-        $trace_form.querySelectorAll('input').forEach(node => {
-            node.id += `-${id}`;
-        });
+        traceForm.querySelectorAll('input')
+            .forEach(node => {
+                node.id += `-${id}`;
+            });
 
         // Update the labels to match the new input IDs
-        $trace_form.querySelectorAll('label').forEach(node => {
-            node.htmlFor += `-${id}`;
-        });
-
-        $trace_form.querySelectorAll('*[data-action="duplicate-trace"]')
-            .forEach((button) => {
-                button.addEventListener('click', (e) => {
-                    this.cloneTraceForm(id);
-                });
+        traceForm.querySelectorAll('label')
+            .forEach(node => {
+                node.htmlFor += `-${id}`;
             });
 
-        $trace_form.querySelectorAll('*[data-action="reveal-trace-in-traverser"]')
-            .forEach((button) => {
-                button.addEventListener('click', async (e) => {
-                    let tree = this.getInput('tree', id).value;
-                    if (this.getInput('tree-default', id).checked) {
-                        tree = Scope.defaults.tree;
+        Utils.bindTooltips(traceForm);
+
+        Utils.bindActions('duplicate-trace', () => this.cloneTraceForm(id),
+            { element: traceForm });
+
+        Utils.bindActions('reveal-trace-in-traverser',
+            async () => {
+                let tree = this.getInput('tree', id).value;
+                if (this.getInput('tree-default', id).checked) {
+                    tree = Scope.defaults.tree;
+                }
+
+                let shot_expr = this.getInput('shot_expr', id).value;
+                if (this.getInput('shot_expr-default', id).checked) {
+                    shot_expr = Scope.defaults.shot_expr;
+                }
+
+                let traverser = await TraverserSidebar.findOrOpen(tree, shot_expr);
+
+                let node = this.getInput('y_expr', id).value;
+                if (this.getInput('y_expr-default', id).checked) {
+                    node = Scope.defaults.y_expr;
+                }
+
+                if (node !== null) {
+                    // Filter out functions
+                    node = node.replaceAll(/([a-zA-Z_]+\()/g, '');
+
+                    // Filter out variables
+                    node = node.replaceAll(/([\s;,]_[a-zA-Z_]+)/g, '');
+
+                    // Filter out scientific notation
+                    node = node.replaceAll(/([0-9]e[0-9]+)/g, '');
+
+                    // Find first thing that looks like a node
+                    let matches = node.match(/(\\?\\?[a-zA-Z][a-zA-Z0-9_:\.]+)/);
+                    node = matches[0];
+
+                    let default_node_expr = this.valueOr(this.getInput('default_node_expr', id).value);
+                    if (this.getInput('default_node_expr-default', id).checked) {
+                        default_node_expr = Scope.defaults.default_node_expr;
                     }
 
-                    let shot_expr = this.getInput('shot_expr', id).value;
-                    if (this.getInput('shot_expr-default', id).checked) {
-                        shot_expr = Scope.defaults.shot_expr;
-                    }
+                    traverser.reveal(node, default_node_expr);
 
-                    let traverser = await TraverserSidebar.findOrOpen(tree, shot_expr);
+                    // HACK: Effectively "cancel"
+                    this.close();
+                }
+            },
+        { element: traceForm });
 
-                    let node = this.getInput('y_expr', id).value;
-                    if (this.getInput('y_expr-default', id).checked) {
-                        node = Scope.defaults.y_expr;
-                    }
+        Utils.bindActions('remove-trace-form',
+            () => {
+                ConfirmForm.ask(
+                    `Remove Trace #${id + 1}?`,
+                    () => {
+                        this.removeTraceForm(id);
 
-                    if (node !== null) {
-                        // Filter out functions
-                        node = node.replaceAll(/([a-zA-Z_]+\()/g, '');
-
-                        // Filter out variables
-                        node = node.replaceAll(/(_[a-zA-Z_]+)/g, '');
-
-                        // Filter out scientific notation
-                        node = node.replaceAll(/([0-9]e[0-9]+)/g, '');
-
-                        // Find first thing that looks like a node
-                        let matches = node.match(/(\\?\\?[a-zA-Z][a-zA-Z0-9_:\.]+)/);
-                        node = matches[0];
-
-                        let default_node_expr = this.getInput('default_node_expr', id).value;
-                        if (this.getInput('default_node_expr-default', id).checked) {
-                            default_node_expr = Scope.defaults.default_node_expr;
+                        // HACK:
+                        if (this.traceFormIDs.length > 0) {
+                            this.showTraceForm(this.traceFormIDs[0]);
                         }
-
-                        traverser.reveal(node, default_node_expr);
-
-                        // HACK: Effectively "cancel"
-                        this.close();
                     }
-
-                });
-            });
-
-        $trace_form.querySelectorAll('*[data-action="remove-trace-form"]')
-            .forEach((button) => {
-                button.addEventListener('click', (e) => {
-                    ConfirmForm.ask(
-                        `Remove Trace #${id + 1}?`,
-                        () => {
-                            this.removeTraceForm(id);
-
-                            // HACK:
-                            if (this.trace_form_ids.length > 0) {
-                                this.showTraceForm(this.trace_form_ids[0]);
-                            }
-                        }
-                    );
-                })
-            });
-
-        $trace_form.querySelectorAll('[data-bs-toggle="tooltip"]')
-            .forEach((element) => {
-                new bootstrap.Tooltip(element);
-            });
+                );
+            },
+            { element: traceForm });
 
         // TODO: Improve
-        document.querySelector('#trace-forms').append($trace_form);
+        document.querySelector('#trace-forms').append(traceForm);
 
         // Add a tab for the trace
-        let $trace_tab = document.createElement('li');
-        $trace_tab.id = `trace-tab-${id}`;
-        $trace_tab.classList.add('trace-tab', 'nav-item');
+        let traceTab = document.createElement('li');
+        traceTab.id = `trace-tab-${id}`;
+        traceTab.classList.add('trace-tab', 'nav-item');
 
         // Loop and update trace link names upon adding/removing
         
-        let $trace_link = document.createElement('a');
-        $trace_link.classList.add('nav-link');
-        $trace_link.innerText = `Trace #${id + 1}`;
-        $trace_link.role = 'button';
-        $trace_tab.append($trace_link);
+        let traceLink = document.createElement('a');
+        traceLink.classList.add('nav-link');
+        traceLink.innerText = `Trace #${id + 1}`;
+        traceLink.role = 'button';
+        traceTab.append(traceLink);
 
         // TODO: Improve
-        document.querySelector('#trace-form-tabs').append($trace_tab);
+        document.querySelector('#trace-form-tabs').append(traceTab);
 
-        $trace_tab.addEventListener('click', (e) => {
+        traceTab.addEventListener('click', (e) => {
             this.showTraceForm(id);
         });
 
@@ -302,25 +293,25 @@ export class MDSplusPanelForm extends Form
 
         let needUpdate = initialEdit;
 
-        while (this.panel.traces.length > this.trace_form_ids.length) {
+        while (this.panel.traces.length > this.traceFormIDs.length) {
             this.panel.removeTrace(-1);
         }
-        while (this.panel.traces.length < this.trace_form_ids.length) {
+        while (this.panel.traces.length < this.traceFormIDs.length) {
             this.panel.addTrace(new MDSplusTrace());
         }
 
         let updateValue = (name, index=null) => {
             let id = null;
             if (index !== null) {
-                id = this.trace_form_ids[index];
+                id = this.traceFormIDs[index];
             }
 
-            let $input = this.getInput(name, id);
-            let $checkbox = this.getInput(`${name}-default`, id);
+            let input = this.getInput(name, id);
+            let checkbox = this.getInput(`${name}-default`, id);
 
-            let value = $input.value.trim();
-            if ($checkbox !== null) {
-                if ($checkbox.checked) {
+            let value = input.value.trim();
+            if (checkbox !== null) {
+                if (checkbox.checked) {
                     value = null;
                 }
             }
@@ -346,7 +337,7 @@ export class MDSplusPanelForm extends Form
         updateValue('x_min_expr');
         updateValue('x_max_expr');
 
-        for (var i = 0; i < this.trace_form_ids.length; ++i) {
+        for (var i = 0; i < this.traceFormIDs.length; ++i) {
             updateValue('tree', i);
             updateValue('shot_expr', i);
             updateValue('default_node_expr', i);
@@ -357,7 +348,7 @@ export class MDSplusPanelForm extends Form
 
         if (needUpdate) {
             this.panel.refresh()
-                .then(() => this.preview_renderer.render(this.panel.traces));
+                .then(() => this.previewRenderer.render(this.panel.traces));
         }
 
         Scope.queueAutosave();
@@ -367,41 +358,43 @@ export class MDSplusPanelForm extends Form
     }
 
     copyTraceInput(name, trace_id, old_trace_id) {
-        let $input = this.getInput(name, trace_id);
-        let $checkbox = this.getInput(`${name}-default`, trace_id);
+        let input = this.getInput(name, trace_id);
+        let checkbox = this.getInput(`${name}-default`, trace_id);
 
-        $input.value = this.getInput(name, old_trace_id).value;
-        if ($checkbox !== null) { // TODO: Remove if everything has a global default
-            $checkbox.checked = this.getInput(`${name}-default`, old_trace_id).checked;
+        input.value = this.getInput(name, old_trace_id).value;
+        if (checkbox !== null) { // TODO: Remove if everything has a global default
+            checkbox.checked = this.getInput(`${name}-default`, old_trace_id).checked;
 
-            if ($checkbox.checked) {
-                $input.setAttribute('readonly', 'readonly');
+            if (checkbox.checked) {
+                input.setAttribute('readonly', 'readonly');
             }
             else {
-                $input.removeAttribute('readonly');
+                input.removeAttribute('readonly');
             }
         }
     }
 
     setupGlobalDefaults(name, trace=null, trace_id=null)
     {
-        let $input = this.getInput(name, trace_id);
-        let $checkbox = this.getInput(`${name}-default`, trace_id);
+        let input = this.getInput(name, trace_id);
+        let checkbox = this.getInput(`${name}-default`, trace_id);
 
-        $input.addEventListener('dblclick', (e) => {
-            console.log(e);
-            $checkbox.checked = false;
-            $input.removeAttribute('readonly');
+        input.addEventListener('dblclick', (e) => {
+            checkbox.checked = false;
+            input.removeAttribute('readonly');
+            
+            input.value = input.getAttribute('placeholder');
+            input.removeAttribute('placeholder');
         });
         
-        $checkbox.addEventListener('change', (e) => {
+        checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
-                $input.setAttribute('readonly', 'readonly');
-                $input.placeholder = Scope.defaults[name] ? Scope.defaults[name] : '';
+                input.setAttribute('readonly', 'readonly');
+                input.placeholder = Scope.defaults[name] ? Scope.defaults[name] : '';
             }
             else {
-                $input.removeAttribute('readonly');
-                $input.placeholder = '';
+                input.removeAttribute('readonly');
+                input.placeholder = '';
             }
         });
 
@@ -420,17 +413,17 @@ export class MDSplusPanelForm extends Form
                 }
             }
 
-            $checkbox.checked = (value === null);
+            checkbox.checked = (value === null);
             
         } catch(e) {
             console.error(e);
-            $checkbox.checked = true;
+            checkbox.checked = true;
         }
 
         // TODO: Remove, this should be automatic when onchange is called
-        if ($checkbox.checked) {
-            $input.setAttribute('readonly', 'readonly');
-            $input.placeholder = Scope.defaults[name] ? Scope.defaults[name] : '';
+        if (checkbox.checked) {
+            input.setAttribute('readonly', 'readonly');
+            input.placeholder = Scope.defaults[name] ? Scope.defaults[name] : '';
         }
     }
 

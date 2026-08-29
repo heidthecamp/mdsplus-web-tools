@@ -18,7 +18,8 @@ const GlobalDefaultMask = {
     event: (1 << 17),
 };
 
-export function importJSON(text) {
+export function importJSON(text)
+{
     let valueOrNull = (object, key) => {
         return object.hasOwnProperty(key) ? object[key] : null;
     };
@@ -74,7 +75,8 @@ export function importJSON(text) {
     }
 }
 
-export async function importFile(file) {
+export async function importFile(file)
+{
     if (!file.name.endsWith("dat") && !file.name.endsWith("jscp") && !file.name.endsWith("json")) {
         console.error("Unsupported file type")
     }
@@ -110,7 +112,7 @@ export async function importFile(file) {
                 plots: [],
             };
 
-            let rows_in_column = [];
+            let rowsInColumn = [];
             var lines = reader.result.split('\n');
 
             for (var i = 0; i < lines.length; ++i) {
@@ -132,7 +134,7 @@ export async function importFile(file) {
 
                 if (key.startsWith('rows_in_column_')) {
                     // TODO: Parse the column index
-                    rows_in_column.push(parseInt(value));
+                    rowsInColumn.push(parseInt(value));
                 }
                 else if (key.startsWith('plot_')) {
                     var [plotIndex, plotKey] = key.split('.', 2);
@@ -140,7 +142,7 @@ export async function importFile(file) {
                     let row = parseInt(rowString) - 1;
                     let col = parseInt(colString) - 1;
 
-                    var offset = rows_in_column.slice(0, col).reduce((sum, x) => sum + x, 0);
+                    var offset = rowsInColumn.slice(0, col).reduce((sum, x) => sum + x, 0);
                     var index = offset + row;
 
                     while (data['plots'].length <= index) {
@@ -292,7 +294,7 @@ export async function importFile(file) {
                 let plot = data['plots'][i];
                 let mask = plot.global_defaults;
 
-                let rowHeight = Math.ceil(Math.max(1, 16 / rows_in_column[column]) * 2);
+                let rowHeight = Math.ceil(Math.max(1, 16 / rowsInColumn[column]) * 2);
 
                 // if (((mask & GlobalDefaultMask.update) > 0)) {
                 //     plot.update = null;
@@ -401,7 +403,7 @@ export async function importFile(file) {
                 panels.push(panel);
 
                 ++row;
-                if (row >= rows_in_column[column]) {
+                if (row >= rowsInColumn[column]) {
                     row = 0;
                     ++column;
                 }

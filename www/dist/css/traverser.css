@@ -82,7 +82,7 @@
             }
         }
 
-        &.signal > .item .only-signal {
+        &.usage-signal > .item .only-signal {
             display: block;
         }
     }

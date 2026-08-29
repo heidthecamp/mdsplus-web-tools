@@ -7,7 +7,6 @@ export class SettingsForm extends Form
     constructor()
     {
         super('settings-form-template');
-        // this.scope = scope;
 
         this.reset();
     }
@@ -28,8 +27,7 @@ export class SettingsForm extends Form
     }
 
     apply() {
-        console.log("Applying Changes")
-
+        // TODO: null variables on empty string
         Scope.title_expr = document.getElementById('scope-title_expr').value;
         Scope.resample = document.getElementById('scope-resample').checked;
         Scope.defaults.title_expr = document.getElementById('global-defaults-title_expr').value;
