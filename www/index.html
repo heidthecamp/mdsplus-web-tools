@@ -24,9 +24,9 @@
 
     <!-- Templates -->
     <template id="confirm-form-template">
-        <form id="confirm-form" class="container-fluid form small-form">
+        <form class="confirm-form form small-form container-fluid">
             <div class="row">
-                <div id="confirm-message" class="container"></div>
+                <div id="message" class="container"></div>
             </div>
             <div class="row">
                 <div class="container">
@@ -37,21 +37,29 @@
         </form>
     </template>
 
-    <template id="traverser-node-edit-form-template">
-        <form class="form traverser-node-edit-form container-fluid">
+    <template id="node-edit-form-template">
+        <form class="form node-edit-form container-fluid">
             <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
             <div class="row mb-2">
-                <h1 id="traverser-node-form-path"></h1>
+                <div class="title">
+                    <span data-display="verb"></span>
+                    <span data-display="path"></span>
+                </div>
+                <div class="subtitle">
+                    <span data-display="tree"></span>
+                    shot
+                    <span data-display="shot"></span>
+                </div>
             </div>
             <div class="row mb-3">
-                <div class="accordion" id="traverser-node-edit-accordion">
+                <div class="accordion" id="node-edit-accordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#traverser-node-edit-collapse-data" aria-expanded="true" aria-controls="traverser-node-edit-collapse-data">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#node-edit-collapse-data" aria-expanded="true" aria-controls="node-edit-collapse-data">
                                 Data
                             </button>
                         </h2>
-                        <div id="traverser-node-edit-collapse-data" class="accordion-collapse collapse show">
+                        <div id="node-edit-collapse-data" class="accordion-collapse collapse show">
                             <div class="accordion-body">
                                 <div class="row mb-3">
                                     <div class="col-sm-4">
@@ -67,23 +75,23 @@
                                     </div>
                                 </div>
                                 <div class="row container-fluid mb-3">
-                                    <textarea id="traverser-node-form-data" class="form-control"></textarea>
+                                    <textarea id="node-edit-form-data" class="form-control"></textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#traverser-node-edit-collapse-flags" aria-expanded="false" aria-controls="traverser-node-edit-collapse-flags">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#node-edit-collapse-flags" aria-expanded="false" aria-controls="node-edit-collapse-flags">
                                 Usage & Status Flags
                             </button>
                         </h2>
-                        <div id="traverser-node-edit-collapse-flags" class="accordion-collapse collapse">
+                        <div id="node-edit-collapse-flags" class="accordion-collapse collapse">
                             <div class="accordion-body">
                                 <div class="row mb-3">
-                                    <label for="traverser-node-usage" class="col-sm-2 col-form-label">Usage</label>
+                                    <label for="node-edit-form-usage" class="col-sm-2 col-form-label">Usage</label>
                                     <div class="col-sm-4">
-                                        <select class="form-control" id="traverser-node-usage">
+                                        <select class="form-control" id="node-edit-form-usage">
                                             <option value="ANY">Any</option>
                                             <option value="STRUCTURE">Structure</option>
                                             <option value="ACTION">Action</option>
@@ -102,92 +110,92 @@
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-state" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-state" class="col-form-label">STATE</label>
+                                        <input id="node-edit-form-state" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-state" class="col-form-label">STATE</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-parent_state" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-parent_state" class="col-form-label">PARENT_STATE</label>
+                                        <input id="node-edit-form-parent_state" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-parent_state" class="col-form-label">PARENT_STATE</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-essential" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-essential" class="col-form-label">ESSENTIAL</label>
+                                        <input id="node-edit-form-essential" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-essential" class="col-form-label">ESSENTIAL</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-cached" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-cached" class="col-form-label">CACHED</label>
+                                        <input id="node-edit-form-cached" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-cached" class="col-form-label">CACHED</label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-versions" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-versions" class="col-form-label">VERSIONS</label>
+                                        <input id="node-edit-form-versions" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-versions" class="col-form-label">VERSIONS</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-segmented" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-segmented" class="col-form-label">SEGMENTED</label>
+                                        <input id="node-edit-form-segmented" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-segmented" class="col-form-label">SEGMENTED</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-setup_information" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-setup_information" class="col-form-label">SETUP_INFORMATION</label>
+                                        <input id="node-edit-form-setup_information" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-setup_information" class="col-form-label">SETUP_INFORMATION</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-write_once" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-write_once" class="col-form-label">WRITE_ONCE</label>
+                                        <input id="node-edit-form-write_once" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-write_once" class="col-form-label">WRITE_ONCE</label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-compressible" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-compressible" class="col-form-label">COMPRESSIBLE</label>
+                                        <input id="node-edit-form-compressible" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-compressible" class="col-form-label">COMPRESSIBLE</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-do_not_compress" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-do_not_compress" class="col-form-label">DO_NOT_COMPRESS</label>
+                                        <input id="node-edit-form-do_not_compress" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-do_not_compress" class="col-form-label">DO_NOT_COMPRESS</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-compress_on_put" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-compress_on_put" class="col-form-label">COMPRESS_ON_PUT</label>
+                                        <input id="node-edit-form-compress_on_put" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-compress_on_put" class="col-form-label">COMPRESS_ON_PUT</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-no_write_model" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-no_write_model" class="col-form-label">NO_WRITE_MODEL</label>
+                                        <input id="node-edit-form-no_write_model" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-no_write_model" class="col-form-label">NO_WRITE_MODEL</label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-no_write_shot" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-no_write_shot" class="col-form-label">NO_WRITE_SHOT</label>
+                                        <input id="node-edit-form-no_write_shot" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-no_write_shot" class="col-form-label">NO_WRITE_SHOT</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-path_reference" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-path_reference" class="col-form-label">PATH_REFERENCE</label>
+                                        <input id="node-edit-form-path_reference" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-path_reference" class="col-form-label">PATH_REFERENCE</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-nid_reference" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-nid_reference" class="col-form-label">NID_REFERENCE</label>
+                                        <input id="node-edit-form-nid_reference" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-nid_reference" class="col-form-label">NID_REFERENCE</label>
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-include_in_pulse" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-include_in_pulse" class="col-form-label">INCLUDE_IN_PULSE</label>
+                                        <input id="node-edit-form-include_in_pulse" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-include_in_pulse" class="col-form-label">INCLUDE_IN_PULSE</label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-sm-3">
-                                        <input id="traverser-flag-compress_segments" type="checkbox" class="me-1" />
-                                        <label for="traverser-flag-compress_segments" class="col-form-label">COMPRESS_SEGMENTS</label>
+                                        <input id="node-edit-form-compress_segments" type="checkbox" class="me-1" />
+                                        <label for="node-edit-form-compress_segments" class="col-form-label">COMPRESS_SEGMENTS</label>
                                     </div>
                                 </div>
                             </div>
@@ -195,11 +203,11 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#traverser-node-edit-collapse-xnci" aria-expanded="false" aria-controls="traverser-node-edit-collapse-xnci">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#node-edit-collapse-xnci" aria-expanded="false" aria-controls="node-edit-collapse-xnci">
                                 Extended Metadata (XNCI)
                             </button>
                         </h2>
-                        <div id="traverser-node-edit-collapse-xnci" class="accordion-collapse collapse">
+                        <div id="node-edit-collapse-xnci" class="accordion-collapse collapse">
                             <div class="accordion-body">
                                 <div class="row mb-3">
                                     <div class="col-sm-5">
@@ -286,10 +294,10 @@
                         <a class="dropdown-item" role="button" data-action="">Add Child</a>
                     </li>
                     <li class="only-edit">
-                        <a class="dropdown-item warn" role="button" data-action="">Rename</a>
+                        <a class="dropdown-item text-danger" role="button" data-action="">Rename</a>
                     </li>
                     <li class="only-edit">
-                        <a class="dropdown-item warn" role="button" data-action="">Remove</a>
+                        <a class="dropdown-item text-danger" role="button" data-action="">Remove</a>
                     </li>
                 </ul>
             </div>
@@ -363,7 +371,7 @@
                         <li><a class="dropdown-item" role="button" data-action="panel-auto-xy">Auto X & Y</a></li>
                         <li><a class="dropdown-item" role="button" data-action="panel-refresh">Refresh</a></li>
                         <li><hr /></li>
-                        <li><a class="dropdown-item warn" role="button" data-action="panel-remove">Delete</a></li>
+                        <li><a class="dropdown-item text-danger" role="button" data-action="panel-remove">Delete</a></li>
                     </ul>
                 </div>
                 <div class="navbar-brand title handle"></div>
@@ -373,52 +381,52 @@
     </template>
 
     <template id="panel-form-template">
-        <div id="panel-form" class="container-fluid form">
+        <div class="panel-form form container-fluid">
             <div class="row">
                 <div class="col-4">
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input id="panel-title_expr-default" type="checkbox">
+                            <input id="panel-form-title_expr-default" type="checkbox">
                         </div>
-                        <label for="panel-title_expr" class="col-sm-2 col-form-label">Title</label>
+                        <label for="panel-form-title_expr" class="col-sm-2 col-form-label">Title</label>
                         <div class="col-sm-9">
-                            <input class="form-control" id="panel-title_expr" type="text" />
+                            <input class="form-control" id="panel-form-title_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input id="panel-y_min_expr-default" type="checkbox" />
+                            <input id="panel-form-y_min_expr-default" type="checkbox" />
                         </div>
-                        <label for="panel-y_min_expr" class="col-sm-2 col-form-label">Y Min</label>
+                        <label for="panel-form-y_min_expr" class="col-sm-2 col-form-label">Y Min</label>
                         <div class="col-sm-9">
-                            <input class="form-control" id="panel-y_min_expr" type="text" />
+                            <input class="form-control" id="panel-form-y_min_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input id="panel-y_max_expr-default" type="checkbox" />
+                            <input id="panel-form-y_max_expr-default" type="checkbox" />
                         </div>
-                        <label for="panel-y_max_expr" class="col-sm-2 col-form-label">Y Max</label>
+                        <label for="panel-form-y_max_expr" class="col-sm-2 col-form-label">Y Max</label>
                         <div class="col-sm-9">
-                            <input class="form-control" id="panel-y_max_expr" type="text" />
+                            <input class="form-control" id="panel-form-y_max_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input id="panel-x_min_expr-default" type="checkbox" />
+                            <input id="panel-form-x_min_expr-default" type="checkbox" />
                         </div>
-                        <label for="panel-x_min_expr" class="col-sm-2 col-form-label">X Min</label>
+                        <label for="panel-form-x_min_expr" class="col-sm-2 col-form-label">X Min</label>
                         <div class="col-sm-9">
-                            <input class="form-control" id="panel-x_min_expr" type="text" />
+                            <input class="form-control" id="panel-form-x_min_expr" type="text" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-1">
-                            <input id="panel-x_max_expr-default" type="checkbox" />
+                            <input id="panel-form-x_max_expr-default" type="checkbox" />
                         </div>
-                        <label for="panel-x_max_expr" class="col-sm-2 col-form-label">X Max</label>
+                        <label for="panel-form-x_max_expr" class="col-sm-2 col-form-label">X Max</label>
                         <div class="col-sm-9">
-                            <input class="form-control" id="panel-x_max_expr" type="text" />
+                            <input class="form-control" id="panel-form-x_max_expr" type="text" />
                         </div>
                     </div>
                     
@@ -447,7 +455,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="panel-preview" class="col-8">
+                <div class="preview col-8">
                     Loading...
                 </div>
             </div>
@@ -460,64 +468,64 @@
             <div class="row mb-3">
                 <div class="container-fluid d-flex">
                     <div class="flex-grow-1">
-                        <button type="button", class="btn btn-primary" data-action="duplicate-trace">Duplicate Trace</button>
-                        <button type="button", class="btn btn-secondary" data-action="reveal-trace-in-traverser">Reveal in Traverser</button>
+                        <button type="button", class="btn btn-primary" data-action="trace-duplicate">Duplicate Trace</button>
+                        <button type="button", class="btn btn-secondary" data-action="trace-reveal">Reveal in Traverser</button>
                     </div>
                     <div class="flex-shrink-0">
-                        <button type="button", data-action="remove-trace-form" class="btn btn-danger" id="remove-button">Remove</button>
+                        <button type="button", data-action="trace-remove" class="btn btn-danger">Remove</button>
                     </div>
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1">
-                    <input id="trace-y_expr-default" type="checkbox" /> <br />
+                    <input id="trace-form-y_expr-default" type="checkbox" /> <br />
                 </div>
-                <label for="trace-y_expr" class="col-sm-2 col-form-label">Y Axis</label>
+                <label for="trace-form-y_expr" class="col-sm-2 col-form-label">Y Axis</label>
                 <div class="col-sm-9">
-                    <input class="form-control" id="trace-y_expr" type="text" />
+                    <input class="form-control" id="trace-form-y_expr" type="text" />
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1">
-                    <input id="trace-x_expr-default" type="checkbox" /> <br />
+                    <input id="trace-form-x_expr-default" type="checkbox" /> <br />
                 </div>
-                <label for="trace-x_expr" class="col-sm-2 col-form-label">X Axis</label>
+                <label for="trace-form-x_expr" class="col-sm-2 col-form-label">X Axis</label>
                 <div class="col-sm-9">
-                    <input class="form-control" id="trace-x_expr" type="text" />
+                    <input class="form-control" id="trace-form-x_expr" type="text" />
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1">
-                    <input id="trace-tree-default" type="checkbox" /> <br />
+                    <input id="trace-form-tree-default" type="checkbox" /> <br />
                 </div>
-                <label for="trace-tree" class="col-sm-2 col-form-label">Tree</label>
+                <label for="trace-form-tree" class="col-sm-2 col-form-label">Tree</label>
                 <div class="col-sm-9">
-                    <input class="form-control" id="trace-tree" type="text" />
+                    <input class="form-control" id="trace-form-tree" type="text" />
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1">
-                    <input id="trace-shot_expr-default" type="checkbox" /> <br />
+                    <input id="trace-form-shot_expr-default" type="checkbox" /> <br />
                 </div>
-                <label for="trace-shot_expr" class="col-sm-2 col-form-label">Shot</label>
+                <label for="trace-form-shot_expr" class="col-sm-2 col-form-label">Shot</label>
                 <div class="col-sm-9">
-                    <input class="form-control" id="trace-shot_expr" type="text" />
+                    <input class="form-control" id="trace-form-shot_expr" type="text" />
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1">
-                    <input id="trace-default_node_expr-default" type="checkbox" /> <br />
+                    <input id="trace-form-default_node_expr-default" type="checkbox" /> <br />
                 </div>
-                <label for="trace-default_node_expr" class="col-sm-2 col-form-label">Default Node</label>
+                <label for="trace-form-default_node_expr" class="col-sm-2 col-form-label">Default Node</label>
                 <div class="col-sm-9">
-                    <input class="form-control" id="trace-default_node_expr" type="text" />
+                    <input class="form-control" id="trace-form-default_node_expr" type="text" />
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-sm-1"></div>
-                <label for="trace-trace_color" class="col-sm-2 col-form-label">Trace Color</label>
+                <label for="trace-form-trace_color" class="col-sm-2 col-form-label">Trace Color</label>
                 <div class="col-sm-8">
-                    <input class="form-control" id="trace-trace_color" type="text" />
+                    <input class="form-control" id="trace-form-trace_color" type="text" />
                 </div>
                 <div class="col-sm-1">
                     <img class="icon" src="./dist/external/octicons/info.svg"
@@ -529,87 +537,87 @@
     </template>
 
     <template id="settings-form-template">
-        <div id="settings-form" class="container-fluid form">
+        <div class="settings-form form container-fluid">
             <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
             <legend for="settings-form-form">Settings</legend>
-            <fieldset id="settings-form" class="col-sm-11">
+            <fieldset id="settings-form-form" class="col-sm-11">
                 <div class="row mb-3">
-                    <label for="scope-title_expr" class="col-sm-3 col-form-label">Title:</label>
+                    <label for="settings-form-title_expr" class="col-sm-3 col-form-label">Title:</label>
                     <div class="col-sm-9">
-                        <input id="scope-title_expr" class="form-control" type="text" />
+                        <input id="settings-form-title_expr" class="form-control" type="text" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="scope-resample" class="col-sm-3 col-form-label">Resample:</label>
+                    <label for="settings-form-resample" class="col-sm-3 col-form-label">Resample:</label>
                     <div class="col-sm-9">
-                        <input id="scope-resample" type="checkbox" />
-                    </div>
-                </div>
-            </fieldset>
-            <legend for="panel-default-form">Global Panel Defaults</legend>
-            <fieldset id="panel-default-form" class="col-sm-11">
-                <div class="row mb-3">
-                    <label for="global-defaults-title_expr" class="col-sm-3 col-form-label">Title:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-title_expr" class="form-control" type="text" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-y-min"  class="col-sm-3 col-form-label">Y Min:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-y-min" class="form-control" type="text" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-y-max"  class="col-sm-3 col-form-label">Y Max:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-y-max" class="form-control" type="text" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-x-min"  class="col-sm-3 col-form-label">X Min:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-x-min" class="form-control" type="text" />
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="global-defaults-x-max"  class="col-sm-3 col-form-label">X Max:</label>
-                    <div class="col-sm-9">
-                        <input id="global-defaults-x-max" class="form-control" type="text" />
+                        <input id="settings-form-resample" type="checkbox" />
                     </div>
                 </div>
             </fieldset>
-            <legend for="trace-default-form">Global Trace Defaults</legend>
-            <fieldset id="trace-default-form" class="col-sm-11">
+            <legend for="panel-defaults-form">Global Panel Defaults</legend>
+            <fieldset id="panel-defaults-form" class="col-sm-11">
                 <div class="row mb-3">
-                    <label for="global-defaults-y_expr"  class="col-sm-3 col-form-label">Y Axis:</label>
+                    <label for="panel-defaults-form-title_expr" class="col-sm-3 col-form-label">Title:</label>
+                    <div class="col-sm-9">
+                        <input id="panel-defaults-form-title_expr" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="panel-defaults-form-y-min"  class="col-sm-3 col-form-label">Y Min:</label>
+                    <div class="col-sm-9">
+                        <input id="panel-defaults-form-y-min" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="panel-defaults-form-y-max"  class="col-sm-3 col-form-label">Y Max:</label>
+                    <div class="col-sm-9">
+                        <input id="panel-defaults-form-y-max" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="panel-defaults-form-x-min"  class="col-sm-3 col-form-label">X Min:</label>
+                    <div class="col-sm-9">
+                        <input id="panel-defaults-form-x-min" class="form-control" type="text" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="panel-defaults-form-x-max"  class="col-sm-3 col-form-label">X Max:</label>
+                    <div class="col-sm-9">
+                        <input id="panel-defaults-form-x-max" class="form-control" type="text" />
+                    </div>
+                </div>
+            </fieldset>
+            <legend for="trace-defaults-form">Global Trace Defaults</legend>
+            <fieldset id="trace-defaults-form" class="col-sm-11">
+                <div class="row mb-3">
+                    <label for="trace-defaults-form-y_expr"  class="col-sm-3 col-form-label">Y Axis:</label>
 
                     <div class="col-sm-9">
-                        <input id="global-defaults-y_expr" class="form-control" type="text" />
+                        <input id="trace-defaults-form-y_expr" class="form-control" type="text" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-x_expr"  class="col-sm-3 col-form-label">X Axis:</label>
+                    <label for="trace-defaults-form-x_expr"  class="col-sm-3 col-form-label">X Axis:</label>
                     <div class="col-sm-9">
-                        <input id="global-defaults-x_expr" class="form-control" type="text" />
+                        <input id="trace-defaults-form-x_expr" class="form-control" type="text" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-tree"  class="col-sm-3 col-form-label">Tree:</label>
+                    <label for="trace-defaults-form-tree"  class="col-sm-3 col-form-label">Tree:</label>
                     <div class="col-sm-9">
-                        <input id="global-defaults-tree" class="form-control" type="text" />
+                        <input id="trace-defaults-form-tree" class="form-control" type="text" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-shot_expr"  class="col-sm-3 col-form-label">Shot:</label>
+                    <label for="trace-defaults-form-shot_expr"  class="col-sm-3 col-form-label">Shot:</label>
                     <div class="col-sm-9">
-                        <input id="global-defaults-shot_expr" class="form-control" type="text" />
+                        <input id="trace-defaults-form-shot_expr" class="form-control" type="text" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="global-defaults-default_node_expr"  class="col-sm-3 col-form-label">Default Node:</label>
+                    <label for="trace-defaults-form-default_node_expr"  class="col-sm-3 col-form-label">Default Node:</label>
                     <div class="col-sm-9">
-                        <input id="global-defaults-default_node_expr"  class="form-control" type="text" />
+                        <input id="trace-defaults-form-default_node_expr"  class="form-control" type="text" />
                     </div>
             </fieldset>
             <div class="row">

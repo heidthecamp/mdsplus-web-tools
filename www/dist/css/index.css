@@ -58,6 +58,10 @@ input[readonly]:focus {
     background-color: var(--bs-tertiary-bg);
 }
 
+.dropdown-item:hover {
+    font-weight: bold;
+}
+
 .overlay {
     position: fixed;
     padding-bottom: 100px;
@@ -68,6 +72,34 @@ input[readonly]:focus {
     background-color: rgba(0, 0, 0, 0.4);
     z-index: 1000;
     overflow: scroll;
+}
+
+.drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    display: none;
+}
+
+.drag * {
+    /* Why is this in CSS and not JavaScript? */
+    pointer-events: none;
+    
+    .drop-overlay {
+        display: block;
+    }
+}
+
+.exit-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
 }
 
 .form {
@@ -86,111 +118,13 @@ input[readonly]:focus {
     max-width: 400px;
 }
 
-
-
-
-h1 {
-    margin-top: 0;
-    margin-bottom: 5px;
-    font-size: 20px;
-}
-.scope {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    overflow-x: hidden !important;
-}
-.grid-stack-item-content {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--bs-tertiary-color);
-    overflow: visible !important;
-}
-/* .panel {
-} */
-.panel .plot {
-    flex: 1;
-    height: 100%;
-}
-.panel .navbar {
-    flex: none;
-    padding: 0;
-}
-.panel .title {
-    overflow-x: hidden;
-}
-.navbar-nav {
-    flex-direction: row;
-}
-.panel .handle {
-    flex: 1;
-    height: 40px; /* HACK: Improve */
-    cursor: pointer;
-    min-width: 10px;
+.settings-form {
+    max-width: 1000px;
 }
 
-
-#confirm-message {
+.confirm-form .message {
     font-size: 20px;
     text-align: center;
-}
-#panel-form,
-#settings-form {
-    width: 80%;
-}
-
-#panel-form input[type="checkbox"] {
-    margin-top: 13px;
-}
-#panel-preview {
-    float: right;
-}
-.panel-defaults input[type="checkbox"] {
-    margin-top: 25px !important; /* HACK: Align properly */
-}
-.trace-form {
-    display: none;
-}
-.trace-form.shown {
-    display: block;
-}
-.column {
-    flex-direction: column;
-}
-/* .nav-link:hover {
-    background-color: #CCC;
-    opacity: 0.5; 
-} */
-.error {
-    text-align: center;
-    color: red;
-    font-size: 20px;
-    margin-top: 20px;
-}
-
-.warn {
-    color: #A22 !important;
-}
-.warn:hover {
-    color: red !important;
-}
-.dropdown-item:hover {
-    font-weight: bold;
-}
-
-#current-shot {
-    font-family: monospace;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    font-size: 20px;
-    width: 150px;
-    text-align: center;
-}
-
-.exit-icon {
-    position: absolute;
-    top: 8px;
-    right: 8px;
 }
 
 .page-header {
@@ -209,36 +143,12 @@ h1 {
 
 }
 
-.drag * {
-    /* Why is this in CSS and not JavaScript? */
-    pointer-events: none;
-}
-
-.drop-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+#current-shot {
+    font-family: monospace;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    font-size: 20px;
+    width: 150px;
     text-align: center;
-    font-size: 40px;
-    color: white;
-    display: none;
-}
-
-.drag .drop-overlay {
-    display: block;
-}
-
-
-
-.trace-tab.focused {
-    animation: blinker 1s linear infinite;
-}
-
-@keyframes blinker {
-    50% {
-        opacity: 0;
-    }
 }

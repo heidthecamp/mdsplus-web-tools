@@ -78,7 +78,7 @@ class NodeEditForm extends Form
 {
     constructor(traverser, nid, readonly=true)
     {
-        super('traverser-node-edit-form-template');
+        super('node-edit-form-template');
 
         this.traverser = traverser;
         this.nid = nid;
@@ -119,33 +119,33 @@ class NodeEditForm extends Form
             ['decompile', `TreeDecompileRecord(${this.nid})`],
         ])
         .then((response) => {
-            let path = response.getValue('path');
-            this.element.querySelector('#traverser-node-form-path').innerText = 
-                `${this.readonly ? 'Viewing' : 'Editing'} ${path} in ${this.traverser.tree} shot ${this.traverser.shot}`;
+            Utils.displayValue('verb', this.readonly ? 'Viewing' : 'Editing');
+            Utils.displayValue('path', response.getValue('path'), { element: this.element });
+            Utils.displayValue('shot', this.traverser.shot, { element: this.element });
+            Utils.displayValue('tree', this.traverser.tree, { element: this.element });
 
             let flags = response.getValue('flags');
-            this.element.querySelector('#traverser-flag-state').checked = ((flags & NciM.STATE) > 0);
-            this.element.querySelector('#traverser-flag-parent_state').checked = ((flags & NciM.PARENT_STATE) > 0);
-            this.element.querySelector('#traverser-flag-essential').checked = ((flags & NciM.ESSENTIAL) > 0);
-            this.element.querySelector('#traverser-flag-cached').checked = ((flags & NciM.CACHED) > 0);
-            this.element.querySelector('#traverser-flag-versions').checked = ((flags & NciM.VERSIONS) > 0);
-            this.element.querySelector('#traverser-flag-segmented').checked = ((flags & NciM.SEGMENTED) > 0);
-            this.element.querySelector('#traverser-flag-setup_information').checked = ((flags & NciM.SETUP_INFORMATION) > 0);
-            this.element.querySelector('#traverser-flag-write_once').checked = ((flags & NciM.WRITE_ONCE) > 0);
-            this.element.querySelector('#traverser-flag-compressible').checked = ((flags & NciM.COMPRESSIBLE) > 0);
-            this.element.querySelector('#traverser-flag-do_not_compress').checked = ((flags & NciM.DO_NOT_COMPRESS) > 0);
-            this.element.querySelector('#traverser-flag-compress_on_put').checked = ((flags & NciM.COMPRESS_ON_PUT) > 0);
-            this.element.querySelector('#traverser-flag-no_write_model').checked = ((flags & NciM.NO_WRITE_MODEL) > 0);
-            this.element.querySelector('#traverser-flag-no_write_shot').checked = ((flags & NciM.NO_WRITE_SHOT) > 0);
-            this.element.querySelector('#traverser-flag-path_reference').checked = ((flags & NciM.PATH_REFERENCE) > 0);
-            this.element.querySelector('#traverser-flag-nid_reference').checked = ((flags & NciM.NID_REFERENCE) > 0);
-            this.element.querySelector('#traverser-flag-include_in_pulse').checked = ((flags & NciM.INCLUDE_IN_PULSE) > 0);
-            this.element.querySelector('#traverser-flag-compress_segments').checked = ((flags & NciM.COMPRESS_SEGMENTS) > 0);
+            this.getInput('state').checked = ((flags & NciM.STATE) > 0);
+            this.getInput('parent_state').checked = ((flags & NciM.PARENT_STATE) > 0);
+            this.getInput('essential').checked = ((flags & NciM.ESSENTIAL) > 0);
+            this.getInput('cached').checked = ((flags & NciM.CACHED) > 0);
+            this.getInput('versions').checked = ((flags & NciM.VERSIONS) > 0);
+            this.getInput('segmented').checked = ((flags & NciM.SEGMENTED) > 0);
+            this.getInput('setup_information').checked = ((flags & NciM.SETUP_INFORMATION) > 0);
+            this.getInput('write_once').checked = ((flags & NciM.WRITE_ONCE) > 0);
+            this.getInput('compressible').checked = ((flags & NciM.COMPRESSIBLE) > 0);
+            this.getInput('do_not_compress').checked = ((flags & NciM.DO_NOT_COMPRESS) > 0);
+            this.getInput('compress_on_put').checked = ((flags & NciM.COMPRESS_ON_PUT) > 0);
+            this.getInput('no_write_model').checked = ((flags & NciM.NO_WRITE_MODEL) > 0);
+            this.getInput('no_write_shot').checked = ((flags & NciM.NO_WRITE_SHOT) > 0);
+            this.getInput('path_reference').checked = ((flags & NciM.PATH_REFERENCE) > 0);
+            this.getInput('nid_reference').checked = ((flags & NciM.NID_REFERENCE) > 0);
+            this.getInput('include_in_pulse').checked = ((flags & NciM.INCLUDE_IN_PULSE) > 0);
+            this.getInput('compress_segments').checked = ((flags & NciM.COMPRESS_SEGMENTS) > 0);
 
             let usage = response.getValue('usage').split('TreeUSAGE_').at(-1);
-            this.element.querySelector('#traverser-node-usage').value = usage;
-
-            this.element.querySelector('#traverser-node-form-data').value = response.getValue('decompile');
+            this.getInput('usage').value = usage;
+            this.getInput('data').value = response.getValue('decompile');
         });
     }
 
@@ -153,6 +153,10 @@ class NodeEditForm extends Form
         if (this.readonly) {
             return;
         }
+    }
+
+    getInput(name) {
+        return this.element.querySelector(`#node-edit-form-${name}`);
     }
 };
 

@@ -6,7 +6,7 @@ export class ConfirmForm extends Form
     // TODO: Change below a certain screen threshold or on mobile?
     static useBuiltIn = true;
 
-    static ask(text, onAccept, onReject) {
+    static ask(text, onAccept=null, onReject=null) {
         if (ConfirmForm.useBuiltIn) {
             if (confirm(text)) {
                 if (onAccept !== null) {

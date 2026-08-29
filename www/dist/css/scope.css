@@ -1,0 +1,74 @@
+
+.scope {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+
+    .grid-stack-item-content {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--bs-tertiary-color);
+        overflow: visible !important;
+    }
+
+    .panel {
+
+        .handle {
+            flex: 1;
+            height: 40px; /* HACK: Improve */
+            cursor: pointer;
+            min-width: 10px;
+        }
+
+        .title {
+            overflow-x: hidden;
+        }
+
+        .plot {
+            flex: 1;
+            height: 100%;
+        }
+
+        .navbar {
+            flex: none;
+            padding: 0;
+        }
+
+        .navbar-nav {
+            flex-direction: row;
+        }
+
+        .error {
+            text-align: center;
+            color: red;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        
+        .trace-tab.focused {
+            animation: blinker 1s linear infinite;
+        }
+        
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+            }
+        }
+    }
+}
+
+.panel-form {
+    max-width: 2000px;
+
+    .preview {
+        float: right;
+    }
+
+    .trace-form {
+        display: none;
+
+        &.shown {
+            display: block;
+        }
+    }
+}

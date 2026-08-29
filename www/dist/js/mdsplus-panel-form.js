@@ -22,8 +22,16 @@ export class MDSplusPanelForm extends Form
         this.reset();
 
         // TODO: Needs to happen after reset()
-        this.previewRenderer = new D3Renderer(document.querySelector('#panel-preview'));
+        this.previewRenderer = new D3Renderer(this.element.querySelector('.preview'));
         this.previewRenderer.render(this.panel.traces);
+
+        let resizeTimeout = null;
+        window.addEventListener('resize', (e) => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.previewRenderer.render(this.panel.traces);
+            }, 100);
+        });
 
         // TODO: Call after addTraceForm?
         document.querySelectorAll('#panel-form input')
@@ -98,13 +106,12 @@ export class MDSplusPanelForm extends Form
         this.unsaved = false;
     }
 
-    getInput(name, trace_id=null)
-    {
+    getInput(name, trace_id=null) {
         if (trace_id === null) {
-            return document.getElementById(`panel-${name}`);
+            return this.element.querySelector(`#panel-form-${name}`);
         }
         else {
-            return document.getElementById(`trace-${name}-${trace_id}`);
+            return this.element.querySelector(`#trace-form-${name}-${trace_id}`);
         }
     }
 
@@ -139,10 +146,10 @@ export class MDSplusPanelForm extends Form
 
         Utils.bindTooltips(traceForm);
 
-        Utils.bindActions('duplicate-trace', () => this.cloneTraceForm(id),
+        Utils.bindActions('trace-duplicate', () => this.cloneTraceForm(id),
             { element: traceForm });
 
-        Utils.bindActions('reveal-trace-in-traverser',
+        Utils.bindActions('trace-reveal',
             async () => {
                 let tree = this.getInput('tree', id).value;
                 if (this.getInput('tree-default', id).checked) {
@@ -188,7 +195,7 @@ export class MDSplusPanelForm extends Form
             },
         { element: traceForm });
 
-        Utils.bindActions('remove-trace-form',
+        Utils.bindActions('trace-remove',
             () => {
                 ConfirmForm.ask(
                     `Remove Trace #${id + 1}?`,

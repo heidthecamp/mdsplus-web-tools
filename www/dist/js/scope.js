@@ -254,24 +254,20 @@ export class Scope
             e.preventDefault();
         });
 
-        function finishResize() {
-            Scope.panels.forEach(panel => {
-                panel.render();
-            });
-        }
 
+        let resizeTimeout = null;
+        let updateTimeout = null;
         let previousWindowWidth = window.innerWidth;
-
         window.addEventListener('resize', (e) => {
-            clearTimeout(window.resizeTimeout);
-            window.resizeTimeout = setTimeout(finishResize, 100);
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(Scope.render, 100);
 
             if (window.innerWidth > previousWindowWidth) {
-                clearTimeout(window.updateTimeout);
-                window.updateTimeout = setTimeout(Scope.refresh, 1000);
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(Scope.refresh, 1000);
             }
             previousWindowWidth = window.innerWidth;
-        })
+        });
 
         // document.querySelector('#parallel')
         //     .addEventListener('change', (e) => { setParallel(e.target.checked); });

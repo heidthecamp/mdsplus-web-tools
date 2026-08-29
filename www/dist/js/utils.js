@@ -93,3 +93,31 @@ export function bindActions(action, listener, options = {})
             trigger.addEventListener(options.event, listener);
         });
 }
+
+export function displayValue(name, value, options = {})
+{
+    if (!('element' in options)) {
+        options.element = document;
+    }
+
+    if (!('html' in options)) {
+        options.html = false;
+    }
+
+    options.element.querySelectorAll(`[data-display="${name}"]`)
+        .forEach((element) => {
+            if (element instanceof HTMLInputElement ||
+                element instanceof HTMLTextAreaElement ||
+                element instanceof HTMLSelectElement) {
+                element.value = value;
+            }
+            else {
+                if (options.html) {
+                    element.innerHTML = value;
+                }
+                else {
+                    element.innerText = value;
+                }
+            }
+        });
+}
