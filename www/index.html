@@ -39,7 +39,7 @@
 
     <template id="traverser-node-edit-form-template">
         <form id="traverser-node-edit-form" class="container-fluid form">
-            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
             <div class="row mb-2">
                 <h1 id="traverser-node-form-path"></h1>
             </div>
@@ -253,16 +253,12 @@
     <template id="traverser-node-template">
         <div class="node">
             <div class="item">
-                <div class="handle"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top" 
-                    data-bs-html="true"
-                >
-                    <div class="expand-icon inverted"></div>
+                <div class="handle" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">
+                    <div class="icon expand-icon"></div>
                     <span class="name"></span>
                 </div>
                 <a class="context-menu dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img class="inverted" src="./dist/external/octicons/gear.svg" width="16" />
+                    <img class="icon" src="./dist/external/octicons/gear.svg" width="16" />
                 </a>
                 <ul class="dropdown-menu dropright">
                     <!-- <li class="only-signal"><a class="dropdown-item" role="button" data-action="">Preview</a></li> -->
@@ -304,7 +300,7 @@
 
     <template id="traverser-open-form-template">
         <form id="traverser-open-form" class="form small-form">
-            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
             <div class="row mb-3">
                 <label for="traverser-tree" class="col-sm-2 col-form-label">Tree</label>
                 <div class="col-sm-9">
@@ -336,7 +332,7 @@
 
     <template id="traverser-reveal-form-template">
         <form id="traverser-reveal-form" class="form small-form">
-            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
             <div class="row mb-3">
                 <label for="reveal-node" class="col-sm-2 col-form-label">Node</label>
                 <div class="col-sm-9">
@@ -357,7 +353,7 @@
             <div class="container-fluid">
                 <div class="navbar-nav">
                     <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="./dist/external/octicons/gear.svg" />
+                        <img class="icon" src="./dist/external/octicons/gear.svg" />
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" role="button" data-action="edit">Edit</a></li>
@@ -429,10 +425,12 @@
                     <div class="row mb-3">
                         <ul class="nav nav-tabs" id="trace-form-tabs">
                             <li class="nav-item">
-                                <a class="nav-link" data-action="add-trace" ><img src="./dist/external/octicons/diff-added.svg"  /></a>
+                                <a class="nav-link" data-action="add-trace" >
+                                    <img class="icon" src="./dist/external/octicons/diff-added.svg" />
+                                </a>
                             </li>
                             <li class="nav-item">
-
+                                <!-- TODO: Investigate -->
                             </li>
                         </ul>
                     </div>
@@ -453,7 +451,7 @@
                     Loading...
                 </div>
             </div>
-            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
         </div>
     </template>
 
@@ -518,8 +516,13 @@
             <div class="row mb-3">
                 <div class="col-sm-1"></div>
                 <label for="trace-trace_color" class="col-sm-2 col-form-label">Trace Color</label>
-                <div class="col-sm-9">
+                <div class="col-sm-8">
                     <input class="form-control" id="trace-trace_color" type="text" />
+                </div>
+                <div class="col-sm-1">
+                    <img class="icon" src="./dist/external/octicons/info.svg"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Colors will be inverted when using the dark theme" />
                 </div>
             </div>
         </li>
@@ -527,7 +530,7 @@
 
     <template id="settings-form-template">
         <div id="settings-form" class="container-fluid form">
-            <img src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" class="exit" />
+            <img class="icon exit-icon" src="./dist/external/octicons/x-circle.svg" data-action="close" role="button" />
             <legend for="settings-form-form">Settings</legend>
             <fieldset id="settings-form" class="col-sm-11">
                 <div class="row mb-3">
@@ -647,8 +650,14 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" data-action="toggle-theme">
+                        <img class="icon only-light" src="./dist/external/octicons/moon.svg" />
+                        <img class="icon only-dark" src="./dist/external/octicons/sun.svg" />
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="https://www.github.com/MDSplus/mdsplus" target="_blank" class="nav-link">
-                        <img src="./dist/external/octicons/github-octocat.svg" width="28" height="28" />
+                        <img class="icon" src="./dist/external/octicons/github-octocat.svg" />
                     </a>
                 </li>
             </ul>
@@ -657,11 +666,11 @@
 
     <div id="scope-page" class="container-fluid position-relative pb-5">
         <div class="row flex-nowrap">
-            <div id="traverser-sidebar" class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 position-relative bg-dark hidden">
-                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+            <div id="traverser-sidebar" class="hidden col-auto col-md-3 col-xl-2 px-sm-2 px-0 position-relative bg-body-tertiary">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100">
                     <div class="header" data-action="traverser-sidebar-toggle">
-                        <img class="open-sidebar-icon inverted" src="./dist/external/octicons/move-to-end.svg" />
-                        <img class="close-sidebar-icon inverted" src="./dist/external/octicons/move-to-start.svg" />
+                        <img class="icon open-sidebar-icon" src="./dist/external/octicons/move-to-end.svg" />
+                        <img class="icon close-sidebar-icon" src="./dist/external/octicons/move-to-start.svg" />
                         <div class="title">Traverser</div>
                     </div>
                     <div class="content">
@@ -670,8 +679,8 @@
                                 <option value="0" disabled="disabled" selected="selected">----------</option>
                                 <option value="-1">Open New Traverser</option>
                             </select>
-                            <a class="flex-shrink-0 ps-2 inverted" data-bs-toggle="dropdown" role="button" title="traverser menu">
-                                <img src="./dist/external/octicons/three-bars.svg" />
+                            <a class="flex-shrink-0 ps-2" data-bs-toggle="dropdown" role="button" title="traverser menu">
+                                <img class="icon" src="./dist/external/octicons/three-bars.svg" />
                             </a>
                             <ul class="dropdown-menu dropdown-menu-middle">
                                 <li><a class="dropdown-item" role="button" data-action="traverser-sidebar-open-tree">Open</a></li>
@@ -714,12 +723,12 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-action="refresh" role="button">
-                                    <img src="./dist/external/octicons/sync.svg" />
+                                    <img class="icon" src="./dist/external/octicons/sync.svg" />
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle active" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="./dist/external/octicons/three-bars.svg" />
+                                    <img class="icon" src="./dist/external/octicons/three-bars.svg" />
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item nav-link" role="button" data-action="import">Import</a></li>

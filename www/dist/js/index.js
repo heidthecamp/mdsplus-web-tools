@@ -10,9 +10,31 @@ import * as Export from "./export.js";
 import "../external/d3.v7.min.js";
 window.d3 = d3; // TODO: Investigate
 
-// TODO: Have better handling (helper functions?) for null and '' from input values
+function initTheme() {
+    let theme = localStorage.getItem('ws-theme') ?? 'light';
+    document.documentElement.setAttribute('data-bs-theme', theme);
+
+    document.querySelectorAll('[data-action="toggle-theme"]')
+        .forEach((element) => {
+            element.addEventListener('click', () => {
+                let html = document.documentElement;
+                if (html.getAttribute('data-bs-theme') == 'dark') {
+                    html.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('ws-theme', 'light');
+                }
+                else {
+                    html.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('ws-theme', 'dark');
+                }
+
+                Scope.render();
+            });
+        });
+}
 
 window.onload = () => {
+    initTheme();
+
     window.scope = Scope;
     window.connection = Connection.current;
 

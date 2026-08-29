@@ -208,6 +208,11 @@ export class MDSplusPanelForm extends Form
                 })
             });
 
+        $trace_form.querySelectorAll('[data-bs-toggle="tooltip"]')
+            .forEach((element) => {
+                new bootstrap.Tooltip(element);
+            });
+
         // TODO: Improve
         document.querySelector('#trace-forms').append($trace_form);
 
@@ -248,7 +253,7 @@ export class MDSplusPanelForm extends Form
         this.getInput('shot_expr', id).value = this.valueOr(trace.shot_expr, MDSplusTrace.Defaults.shot_expr);
         this.getInput('default_node_expr', id).value = this.valueOr(trace.default_node_expr, MDSplusTrace.Defaults.default_node_expr);
         this.getInput('trace_color', id).value = this.valueOr(trace.trace_color, MDSplusTrace.Defaults.trace_color);
-        
+
         return id;
     }
 

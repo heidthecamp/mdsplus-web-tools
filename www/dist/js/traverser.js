@@ -283,13 +283,13 @@ export class Traverser
         let $node = Utils.inflateTemplate(document.getElementById('traverser-node-template'));
         $node.dataset.nid = nid;
 
-        if (num_descendants > 0) {
-            $node.classList.add('expandable');
-        }
         
         $node.querySelector('.name').innerText = `${prefix}${name}`;
 
         let $handle = $node.querySelector('.handle');
+
+        if (num_descendants > 0) {
+            $node.classList.add('expandable');
 
         $handle.addEventListener('click', (e) => {
             if ($node.classList.contains('expanded')) {
@@ -299,6 +299,7 @@ export class Traverser
                 this.dir(nid);
             }
         });
+        }
 
         $node.querySelectorAll('*[data-action="traverser-display"')
             .forEach((button) => {

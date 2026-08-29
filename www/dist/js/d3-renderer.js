@@ -85,18 +85,20 @@ export class D3Renderer extends Renderer
             for (var j = 0; j < trace.data.length; ++j) {
                 if (trace.data[j].length == 1) {
                     // TODO: Investigate
-                    svg.selectAll("myPoints")
+                    svg.selectAll('myPoints')
+                        .attr('class', 'data-point')
                         .data(trace.data[j])
                         .enter()
                         .append('circle')
-                        .attr("stroke-width", .75)
+                        .attr('stroke-width', .75)
                         .attr('fill', trace.point_color)
-                        .attr("stroke", trace.point_color)
-                        .attr("cx", d => xScale(d[0]))
-                        .attr("cy", d => yScale(d[1]))
-                        .attr("r", .75);
+                        .attr('stroke', trace.point_color)
+                        .attr('cx', d => xScale(d[0]))
+                        .attr('cy', d => yScale(d[1]))
+                        .attr('r', .75);
                 }
                 let line = svg.append('g')
+                    .attr('class', 'data-line')
                     .attr('clip-path', `url(#clip-${id})`)
                     .append('path')
                         .datum(trace.data[j]) // For every point...
@@ -113,86 +115,88 @@ export class D3Renderer extends Renderer
             this.line.push(lines);
         }
 
-        const brush = d3.brush()
-            .extent([[0, 0],[dataWidth, dataHeight]]);
-            // .on('end', zoomChart);
-        
-        var zoom_brush = svg.append('g')
-            .attr('clip-path', `url(#clip-${id})`)
-            .append('g')
-            .attr('class', 'brush')
-            .call(brush);
-
-        let zoomChart = async (e) => {
-            // the selected boundries
-            let extent = e.selection;
+        if (this.onZoomIn) {
+            const brush = d3.brush()
+                .extent([[0, 0],[dataWidth, dataHeight]]);
+                // .on('end', zoomChart);
             
-            if (!extent) {
-                return;
-                // brush.end seems to be called on `call(brush.move, null)`
-                // Setting the domains here will clear zooming.
-            } else {
-                zoom_brush.call(brush.move, null);
+                var zoomBrush = svg.append('g')
+                .attr('clip-path', `url(#clip-${id})`)
+                .append('g')
+                .attr('class', 'brush')
+                .call(brush);
 
-                if (this.onZoomIn !== null) {
-                    let bounds = new Bounds(
-                        xScale.invert(extent[0][0]),
-                        xScale.invert(extent[1][0]),
-                        yScale.invert(extent[1][1]),
-                        yScale.invert(extent[0][1]),
-                    );
+            let zoomChart = async (e) => {
+                // the selected boundries
+                let extent = e.selection;
+                
+                if (!extent) {
+                    return;
+                    // brush.end seems to be called on `call(brush.move, null)`
+                    // Setting the domains here will clear zooming.
+                } else {
+                        zoomBrush.call(brush.move, null);
 
-                    this.onZoomIn(bounds);
+                    if (this.onZoomIn !== null) {
+                        let bounds = new Bounds(
+                            xScale.invert(extent[0][0]),
+                            xScale.invert(extent[1][0]),
+                            yScale.invert(extent[1][1]),
+                            yScale.invert(extent[0][1]),
+                        );
+
+                        this.onZoomIn(bounds);
+                    }
+
                 }
 
+                // svg.selectAll('circle')
+                //     .attr('cx', function(d) { return xScale(d[0])})
+                //     .attr('cy', function(d) { return yScale(d[1])})
+                //     .transition();
+
+                // for (var i = 0; i < traces.length; ++i) {
+                //     for (var j = 0; j < traces[i].data.length; ++j) {
+                //         if (traces[i].data[j].length != 1) {
+                //             this.line[i][j]
+                //                 .transition()
+                //                 .attr('d', d3.line()
+                //                     .x(function (d) { return xScale(d[0])} )
+                //                     .y(function (d) { return yScale(d[1])} )
+                //                 );
+                //         }
+                //     }
+                // }
             }
 
-            // svg.selectAll('circle')
-            //     .attr('cx', function(d) { return xScale(d[0])})
-            //     .attr('cy', function(d) { return yScale(d[1])})
-            //     .transition();
+                svg.on('dblclick', async () => {
+                    zoomBrush.call(brush.move, null);
 
-            // for (var i = 0; i < traces.length; ++i) {
-            //     for (var j = 0; j < traces[i].data.length; ++j) {
-            //         if (traces[i].data[j].length != 1) {
-            //             this.line[i][j]
-            //                 .transition()
-            //                 .attr('d', d3.line()
-            //                     .x(function (d) { return xScale(d[0])} )
-            //                     .y(function (d) { return yScale(d[1])} )
-            //                 );
-            //         }
-            //     }
-            // }
+                if (this.onZoomOut !== null) {
+                    this.onZoomOut();
+                }
+
+                // svg.selectAll('circle')
+                //     .attr('cx', function(d) { return xScale(d[0])})
+                //     .attr('cy', function(d) { return yScale(d[1])})
+                //     .transition();
+
+                // for (var i = 0; i < traces.length; ++i) {
+                //     for (var j = 0; j < traces[i].data.length; ++j) {
+                //         if (traces[i].data[j].length != 1) {
+                //             this.line[i][j]
+                //                 .transition()
+                //                 .attr('d', d3.line()
+                //                     .x(function (d) { return xScale(d[0])} )
+                //                     .y(function (d) { return yScale(d[1])} )
+                //                 );
+                //         }
+                //     }
+                // }
+
+            });
+
+            brush.on('end', zoomChart);
         }
-
-        svg.on("dblclick", async () => {
-            zoom_brush.call(brush.move, null);
-
-            if (this.onZoomOut !== null) {
-                this.onZoomOut();
-            }
-
-            // svg.selectAll('circle')
-            //     .attr('cx', function(d) { return xScale(d[0])})
-            //     .attr('cy', function(d) { return yScale(d[1])})
-            //     .transition();
-
-            // for (var i = 0; i < traces.length; ++i) {
-            //     for (var j = 0; j < traces[i].data.length; ++j) {
-            //         if (traces[i].data[j].length != 1) {
-            //             this.line[i][j]
-            //                 .transition()
-            //                 .attr('d', d3.line()
-            //                     .x(function (d) { return xScale(d[0])} )
-            //                     .y(function (d) { return yScale(d[1])} )
-            //                 );
-            //         }
-            //     }
-            // }
-
-        });
-
-        brush.on('end', zoomChart);
     }
 }

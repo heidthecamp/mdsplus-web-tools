@@ -2,60 +2,53 @@
 @import url("./scope.css");
 @import url("./traverser.css");
 
-.inverted {
-    filter: invert(1);
+.only-light {
+    display: inherit;
+}
+
+.only-dark {
+    display: none;
+}
+
+/* .icon { } */
+
+[data-bs-theme=dark] {
+    .only-light {
+        display: none;
+    }
+
+    .only-dark {
+        display: inherit;
+    }
+
+    .icon {
+        filter: invert(1);
+    }
+    
+    svg .data-line,
+    svg .data-point {
+        filter: invert(1);
+    }
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+
+    --bs-gutter-x: 0.5rem;
+
+    .container {
+        margin: 10px;
+
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0;
+    }
 }
 
 *[data-action] {
     cursor: pointer;
 }
 
-
-.options {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color:lightgray;
-    padding: auto;
-    margin: auto;
-    width: 750px;
-    height: 400px;
-    align-items: center;
-}
-
-.form-element {
-    margin: auto;
-    padding: auto;
-}
-
-.click-off {
-    position: absolute;
-    background-color: #000000AA;
-    width: 100%;
-    height: 100%;
-    top: 0%;
-    left: 0%;
-    z-index: 50;
-}
-
-.dashed{
-    stroke-dasharray: 5,5;
-}
-
-
-
-
-body, html {
-    margin: 0;
-    padding: 0;
-    --bs-gutter-x: 0.5rem;
-    .container {
-        --bs-gutter-x: 0.5rem;
-        --bs-gutter-y: 0;
-        margin: 10px;
-    }
-}
 footer {
     background-color: white;
 }
@@ -119,7 +112,7 @@ h1 {
     padding-right: 40px;
     border: 1px solid black;
     border-radius: 20px;
-    background-color: white;
+    background-color: var(--bs-body-bg);
 }
 
 .small-form {
@@ -203,21 +196,26 @@ input[readonly]:focus {
     text-align: center;
 }
 
-.exit {
+.exit-icon {
     position: absolute;
     top: 8px;
     right: 8px;
-}
-.exit:hover {
-    cursor: pointer;
 }
 
 .page-header {
     border-bottom: 1px solid #CCC;
     font-size: 20px;
-}
-.page-header .active {
-    text-decoration: underline;
+
+    .icon {
+        width: 28px;
+        height: 28px;
+        vertical-align: center; /* TODO: Investigate */
+    }
+
+    & .active {
+        text-decoration: underline;
+    }
+
 }
 
 .drag * {
