@@ -291,14 +291,14 @@ export class Traverser
         if (num_descendants > 0) {
             $node.classList.add('expandable');
 
-        $handle.addEventListener('click', (e) => {
-            if ($node.classList.contains('expanded')) {
-                $node.classList.remove('expanded');
-            }
-            else {
-                this.dir(nid);
-            }
-        });
+            $handle.addEventListener('click', (e) => {
+                if ($node.classList.contains('expanded')) {
+                    $node.classList.remove('expanded');
+                }
+                else {
+                    this.dir(nid);
+                }
+            });
         }
 
         $node.querySelectorAll('*[data-action="traverser-display"')

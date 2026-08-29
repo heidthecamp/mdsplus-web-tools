@@ -291,10 +291,16 @@ export class Scope
             panelsToRemove[i].removeElement();
         }
 
+        TraverserSidebar.reset();
+
         await Scope.closeAllTrees()
-            .then(() => Scope.updateMetadata());
+            .then(() => Scope.updateMetadata(true));
 
         Scope.initGrid();
+
+        for (var traverser of TraverserSidebar.traversers) {
+            TraverserSidebar.close()
+        }
 
         Scope.queueAutosave();
     }
@@ -367,18 +373,18 @@ export class Scope
         this.queueAutosave();
     }
 
-    static async updateMetadata() {
+    static async updateMetadata(force=false) {
         let request = [];
 
-        if (Scope.whoami === null) {
+        if (force || Scope.whoami === null) {
             request.push(['whoami', 'whoami()']);
         }
 
-        if (Scope.title_expr !== null && Scope.title_expr !== '') {
+        if (force || Scope.title_expr !== null && Scope.title_expr !== '') {
             request.push(['title', Scope.title_expr]);
         }
 
-        if (Scope.defaults.shot_expr !== null && Scope.defaults.shot_expr !== '') {
+        if (force || Scope.defaults.shot_expr !== null && Scope.defaults.shot_expr !== '') {
             request.push(['shot', Scope.defaults.shot_expr]);
             request.push(['shot_with_offset', Scope.defaults.shot_expr + '+' + Scope.shot_expr_offset]);
         }

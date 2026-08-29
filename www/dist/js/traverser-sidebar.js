@@ -129,6 +129,8 @@ export class TraverserSidebar
                 }
             }
         });
+
+        TraverserSidebar.load();
     }
 
     static toggle() {
@@ -206,6 +208,8 @@ export class TraverserSidebar
                 }
     
                 TraverserSidebar.expand();
+
+                TraverserSidebar.save();
     
             });
         }
@@ -251,6 +255,46 @@ export class TraverserSidebar
         if (TraverserSidebar.active_traverser !== null) {
             TraverserSidebar.show(TraverserSidebar.active_traverser);
         }
+
+        TraverserSidebar.save();
     }
 
+    static reset() {
+        TraverserSidebar.active_traverser = null;
+
+        for (var traverser of TraverserSidebar.traversers) {
+            traverser.option.remove();
+            traverser.removeElement();
+        }
+        TraverserSidebar.traversers = [];
+
+        TraverserSidebar.save();
+    }
+
+    static save()
+    {
+        let info = [];
+        for (var traverser of TraverserSidebar.traversers) {
+            info.push({
+                tree: traverser.tree,
+                shot: traverser.shot,
+            });
+        }
+
+        localStorage.setItem('ws-traversers', JSON.stringify(info));
+    }
+
+    static load()
+    {
+        try {
+            let info = JSON.parse(localStorage.getItem('ws-traversers'));
+    
+            for (var traverser of info) {
+                console.log(traverser);
+                TraverserSidebar.findOrOpen(traverser.tree, traverser.shot);
+            }
+        }
+        catch (e)
+        { }
+    }
 }
