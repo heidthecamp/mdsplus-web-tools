@@ -101,13 +101,11 @@ export class Scope
     {
         window.location.hash = 'scope';
         
-        document.querySelector('*[data-action="add-panel"]')
-            .addEventListener('click', (e) => {
-                Scope.addPanel(new MDSplusPanel(), { width: 6, height: 6 }, true).edit();
-            });
+        Utils.bindActions('add-panel',
+            () => Scope.addPanel(new MDSplusPanel(), { width: 6, height: 6 }, true).edit());
     
-        document.querySelector('*[data-action="prev-shot"]')
-            .addEventListener('click', async (e) => {
+        Utils.bindActions('prev-shot',
+            async (e) => {
                 --Scope.shot_expr_offset;
 
                 document.querySelectorAll('*[data-action="reset-shot"]')
@@ -116,8 +114,8 @@ export class Scope
                 Scope.refresh();
             });
     
-        document.querySelector('*[data-action="next-shot"]')
-            .addEventListener('click', async (e) => {
+        Utils.bindActions('reset-shot',
+            async (e) => {
                 ++Scope.shot_expr_offset;
 
                 document.querySelectorAll('*[data-action="reset-shot"]')
@@ -126,8 +124,8 @@ export class Scope
                 Scope.refresh();
             });
     
-        document.querySelector('*[data-action="reset-shot"]')
-            .addEventListener('click', async (e) => {
+        Utils.bindActions('reset-shot', 
+            async (e) => {
                 Scope.shot_expr_offset = 0;
 
                 document.querySelectorAll('*[data-action="reset-shot"]')
@@ -136,56 +134,52 @@ export class Scope
                 Scope.refresh();
             });
     
-        document.querySelector('*[data-action="reset"]')
-            .addEventListener('click', async (e) => {
+        Utils.bindActions('reset', 
+            () => {
                 ConfirmForm.ask(
                     'Remove all panels and reset settings?',
-                    () => {
-                        Scope.reset().then(Scope.refresh);
-                    }
+                    () => Scope.reset().then(Scope.refresh)
                 );
-            });
+            }
+        );
     
-        document.querySelector('*[data-action="export"]')
-            .addEventListener('click', async (e) => {
-                Export.exportFile();
-            });
+        Utils.bindActions('export', () => Export.exportFile());
     
-        document.querySelector('*[data-action="import"]')
-            .addEventListener('click', async (e) => {
+        Utils.bindActions('import',
+            async (e) => {
                 // TODO: ????
-                try {
-                    const pickerOpts = {
-                        types: [
-                            {
-                                description: "dwscope",
-                                accept: {
-                                    "*": [".dat"],
-                                },
-                            },
-                            {
-                                description: "jScope",
-                                accept: {
-                                    "*": [".dat", ".jscp"],
-                                },
-                            },
-                            {
-                                description: "Web Scope",
-                                accept: {
-                                    "*": [".json"],
-                                },
-                            },
-                        ],
-                        excludeAcceptAllOption: true,
-                        multiple: false,
-                    }
+                // try {
+                //     const pickerOpts = {
+                //         types: [
+                //             {
+                //                 description: "dwscope",
+                //                 accept: {
+                //                     "*": [".dat"],
+                //                 },
+                //             },
+                //             {
+                //                 description: "jScope",
+                //                 accept: {
+                //                     "*": [".dat", ".jscp"],
+                //                 },
+                //             },
+                //             {
+                //                 description: "Web Scope",
+                //                 accept: {
+                //                     "*": [".json"],
+                //                 },
+                //             },
+                //         ],
+                //         excludeAcceptAllOption: true,
+                //         multiple: false,
+                //     }
     
-                    let fileHandle;
-                    [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+                //     let fileHandle;
+                //     [fileHandle] = await window.showOpenFilePicker(pickerOpts);
                     
-                    // TODO: Investigate
-                }
-                catch {
+                //     // TODO: Investigate
+                // }
+                // catch {
                     let felement = document.createElement('input');
                     felement.setAttribute('type', 'file');
                     felement.setAttribute('accept', '.dat,.jscp,.json'); // only accept scope files
@@ -202,18 +196,12 @@ export class Scope
                     felement.click();
     
                     Scope.queueAutosave();
-                }
-            })
-    
-        document.querySelector('*[data-action="refresh"]')
-            .addEventListener('click', async (e) => {
-                Scope.refresh();
+                // }
             });
     
-        document.querySelector('*[data-action="settings"]')
-            .addEventListener('click', (e) => {
-                Scope.edit();
-            });
+        Utils.bindActions('refresh', () => Scope.refresh());
+    
+        Utils.bindActions('settings', () => Scope.edit());
 
         let scopePage = document.querySelector('#scope-page');
     
