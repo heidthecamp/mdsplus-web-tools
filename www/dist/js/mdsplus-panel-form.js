@@ -48,6 +48,8 @@ export class MDSplusPanelForm extends Form
                 this.showTraceForm(id);
             },
             { element: this.element });
+
+        Utils.bindTooltips(this.element);
     }
 
     cancel() {

@@ -71,7 +71,7 @@ export function cloneObject(obj) {
     return { ...obj };
 }
 
-export function bindTooltips(element) {
+export function bindTooltips(element=document) {
     let triggers = [...element.querySelectorAll('[data-bs-toggle="tooltip"]')];
     return triggers.map((trigger) => {
         new bootstrap.Tooltip(trigger);
@@ -88,10 +88,12 @@ export function bindActions(action, listener, options = {})
         options.element = document;
     }
 
-    options.element.querySelectorAll(`[data-action="${action}"]`)
-        .forEach((trigger) => {
-            trigger.addEventListener(options.event, listener);
-        });
+    let elements = options.element.querySelectorAll(`[data-action="${action}"]`);
+    elements.forEach((trigger) => {
+        trigger.addEventListener(options.event, listener);
+    });
+
+    return elements;
 }
 
 export function displayValue(name, value, options = {})
@@ -104,20 +106,22 @@ export function displayValue(name, value, options = {})
         options.html = false;
     }
 
-    options.element.querySelectorAll(`[data-display="${name}"]`)
-        .forEach((element) => {
-            if (element instanceof HTMLInputElement ||
-                element instanceof HTMLTextAreaElement ||
-                element instanceof HTMLSelectElement) {
-                element.value = value;
+    let elements = options.element.querySelectorAll(`[data-display="${name}"]`);
+    elements.forEach((element) => {
+        if (element instanceof HTMLInputElement ||
+            element instanceof HTMLTextAreaElement ||
+            element instanceof HTMLSelectElement) {
+            element.value = value;
+        }
+        else {
+            if (options.html) {
+                element.innerHTML = value;
             }
             else {
-                if (options.html) {
-                    element.innerHTML = value;
-                }
-                else {
-                    element.innerText = value;
-                }
+                element.innerText = value;
             }
-        });
+        }
+    });
+
+    return elements;
 }

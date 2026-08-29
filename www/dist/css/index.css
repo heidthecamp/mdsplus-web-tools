@@ -142,13 +142,3 @@ input[readonly]:focus {
     }
 
 }
-
-#current-shot {
-    font-family: monospace;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    font-size: 20px;
-    width: 150px;
-    text-align: center;
-}

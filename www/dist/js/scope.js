@@ -277,6 +277,8 @@ export class Scope
         Scope.initGrid();
 
         Scope.load();
+
+        Utils.bindTooltips(); // TODO: Limit to .scope
     }
 
     static initGrid() {
@@ -444,9 +446,6 @@ export class Scope
                     }
 
                     if (response.hasValue('shot')) {
-                        let current_shot = document.querySelector('#current-shot');
-                        current_shot.innerText = response.getValue('shot_with_offset');
-
                         let shot_expr = response.getValue('shot').toString();
                         if (Scope.shot_expr_offset > 0) {
                             shot_expr += '+' + Scope.shot_expr_offset;
@@ -454,7 +453,12 @@ export class Scope
                         else if (Scope.shot_expr_offset < 0) {
                             shot_expr += Scope.shot_expr_offset;
                         }
-                        current_shot.title = shot_expr;
+
+                        Utils.displayValue('current-shot', response.getValue('shot_with_offset'))
+                            .forEach((element) => {
+                                let tooltip = bootstrap.Tooltip.getOrCreateInstance(element);
+                                tooltip.setContent({ '.tooltip-inner': shot_expr });
+                            });
                     }
                 });
             }
