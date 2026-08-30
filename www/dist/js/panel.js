@@ -226,7 +226,7 @@ export class Panel
             { element: this.widget });
 
         Utils.bindActions('panel-remove',
-            () => ConfirmForm.ask("Delete panel?", () => this.removeElement),
+            () => ConfirmForm.ask("Delete panel?", () => this.removeElement()),
             { element: this.widget });
 
         Utils.bindActions('panel-all-x-auto-y',
