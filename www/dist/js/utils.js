@@ -13,12 +13,13 @@ export function showErrorMessage(message, goToProblem=null) {
     const toastTemplate = document.querySelector('#toast-error-template');
 
     let element = inflateTemplate(toastTemplate);
-    element.querySelector('.toast-body').innerText = message;
+    let body = element.querySelector('.toast-body');
+    body.innerText = message;
     toastStack.append(element);
 
     if (goToProblem !== null) {
-        element.style.cursor = 'pointer';
-        element.addEventListener('click', goToProblem);
+        body.style.cursor = 'pointer';
+        body.addEventListener('click', goToProblem);
     }
     
     let toast = new bootstrap.Toast(element, {

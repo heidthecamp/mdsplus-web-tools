@@ -3,6 +3,7 @@ import { ConfirmForm } from "./confirm-form.js";
 import { Connection } from "./connection.js";
 import { Form } from "./form.js";
 import { MDSplusPanel } from "./mdsplus-panel.js";
+import { MDSplusTrace } from "./mdsplus-trace.js";
 import { SettingsForm } from "./settings-form.js";
 import { TraverserSidebar } from "./traverser-sidebar.js";
 
@@ -114,7 +115,7 @@ export class Scope
                 Scope.refresh();
             });
     
-        Utils.bindActions('reset-shot',
+        Utils.bindActions('next-shot',
             async (e) => {
                 ++Scope.shot_expr_offset;
 
@@ -147,39 +148,27 @@ export class Scope
     
         Utils.bindActions('import',
             async (e) => {
-                // TODO: ????
+                console.log(e);
+                // TODO: Use when widely supported
                 // try {
-                //     const pickerOpts = {
-                //         types: [
-                //             {
-                //                 description: "dwscope",
-                //                 accept: {
-                //                     "*": [".dat"],
-                //                 },
-                //             },
-                //             {
-                //                 description: "jScope",
-                //                 accept: {
-                //                     "*": [".dat", ".jscp"],
-                //                 },
-                //             },
-                //             {
-                //                 description: "Web Scope",
-                //                 accept: {
-                //                     "*": [".json"],
-                //                 },
-                //             },
-                //         ],
-                //         excludeAcceptAllOption: true,
-                //         multiple: false,
-                //     }
-    
-                //     let fileHandle;
-                //     [fileHandle] = await window.showOpenFilePicker(pickerOpts);
-                    
-                //     // TODO: Investigate
+                    // let fileHandle;
+                    // [fileHandle] = await window.showOpenFilePicker({
+                    //     types: [
+                    //         {
+                    //             description: "Scope files",
+                    //             accept: {
+                    //                 "text/*": [".dat", ".jscp", ".json"],
+                    //             },
+                    //         },
+                    //     ],
+                    //     excludeAcceptAllOption: true,
+                    //     multiple: false,
+                    // });
+                    // console.log(fileHandle);
                 // }
-                // catch {
+                // catch (err) {
+                    // console.log(err);
+
                     let felement = document.createElement('input');
                     felement.setAttribute('type', 'file');
                     felement.setAttribute('accept', '.dat,.jscp,.json'); // only accept scope files
@@ -203,7 +192,7 @@ export class Scope
     
         Utils.bindActions('settings', () => Scope.edit());
 
-        let root = document.querySelector('#scope');
+        let root = document.querySelector('#scope-root');
     
         root.addEventListener('drop', async (e) => {
             e.preventDefault();
@@ -452,12 +441,13 @@ export class Scope
             }
             catch (e) {
                 // if (!e.message.startsWith('%TREE-W-NOT_OPEN')) {
+                if (e.hasOwnProperty('message')) {
                     Utils.showErrorMessage(e.message, () => {
                         Scope.edit()
                         
                         // TODO: Highlight problematic field
                     });
-                // }
+                }
             }
         }
     }

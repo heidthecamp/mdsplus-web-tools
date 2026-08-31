@@ -34,7 +34,7 @@ export class MDSplusPanelForm extends Form
         });
 
         // TODO: Call after addTraceForm?
-        document.querySelectorAll('#panel-form input')
+        this.element.querySelectorAll('input')
             .forEach((input) => {
                 input.addEventListener('keyup', (e) => {
                     // TODO: Remove event listener after first trigger
