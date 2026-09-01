@@ -19,7 +19,7 @@ class TraverserRevealForm extends Form
     apply() {
         let node = document.querySelector('#reveal-node').value;
         if (node !== null) {
-            TraverserSidebar.active_traverser.reveal(node);
+            TraverserSidebar.activeTraverser.reveal(node);
         }
         this.close();
     }
@@ -50,59 +50,45 @@ export class TraverserSidebar
     static select = null;
 
     static traversers = [];
-    static active_traverser = null;
+    static activeTraverser = null;
 
     static init()
     {
         TraverserSidebar.element = document.querySelector('#traverser-sidebar');
         TraverserSidebar.select = document.querySelector('#traverser-select');
 
-        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-open"]')
-            .forEach((button) => {
-                button.addEventListener('click', () => TraverserSidebar.collapse());
-            });
-    
-        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-close"]')
-            .forEach((button) => {
-                button.addEventListener('click', () => TraverserSidebar.expand());
-            });
-    
-        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-toggle"]')
-            .forEach((button) => {
-                button.addEventListener('click', () => TraverserSidebar.toggle());
-            });
-    
-        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-close"]')
-            .forEach((button) => {
-                button.addEventListener('click', (e) => {
-                    let id = parseInt(document.querySelector('#traverser-select').value);
-            
-                    for (let i = 0; i < TraverserSidebar.traversers.length; ++i) {
-                        let traverser = TraverserSidebar.traversers[i];
-                        if (traverser.id == id) {
-                            ConfirmForm.ask(
-                                `Close Traverser ${traverser.tree}/${traverser.shot}?`,
-                                () => {
-                                    TraverserSidebar.close(traverser);
-                                }
-                            );
-                            break;
-                        }
+        Utils.bindActions('traverser-sidebar-open', () => TraverserSidebar.collapse(),
+            { element: TraverserSidebar.element });
+
+        Utils.bindActions('traverser-sidebar-close', () => TraverserSidebar.expand(),
+            { element: TraverserSidebar.element });
+
+        Utils.bindActions('traverser-sidebar-toggle', () => TraverserSidebar.toggle(),
+            { element: TraverserSidebar.element });
+
+        Utils.bindActions('traverser-sidebar-close', () => TraverserSidebar.toggle(),
+            { element: TraverserSidebar.element });
+
+        Utils.bindActions('traverser-sidebar-close-tree',
+            () => {
+                let traverser = TraverserSidebar.activeTraverser;
+                ConfirmForm.ask(
+                    `Close Traverser ${traverser.tree}/${traverser.shot}?`,
+                    () => {
+                        TraverserSidebar.close(traverser);
                     }
-                });
-            });
+                );
+            },
+            { element: TraverserSidebar.element });
 
-        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-reveal"]')
-            .forEach((button) => {
-                button.addEventListener('click', (e) => Form.show(new TraverserRevealForm()));
-            });
+        Utils.bindActions('traverser-sidebar-reveal', () => Form.show(new TraverserRevealForm()),
+            { element: TraverserSidebar.element });
 
-        TraverserSidebar.element.querySelectorAll('*[data-action="traverser-sidebar-open-tree"]')
-            .forEach((button) => {
-                button.addEventListener('click', (e) => {
-                    Form.show(new TraverserOpenForm());
-                });
-            });
+        Utils.bindActions('traverser-sidebar-open-tree', () => Form.show(new TraverserOpenForm()),
+            { element: TraverserSidebar.element });
+
+        Utils.bindActions('traverser-sidebar-close-all', () => TraverserSidebar.reset(),
+            { element: TraverserSidebar.element });
 
         TraverserSidebar.select.value = 0;
         TraverserSidebar.select.addEventListener('change', (e) => {
@@ -113,8 +99,8 @@ export class TraverserSidebar
 
             if (id == -1) {
                 e.target.value = 0;
-                if (TraverserSidebar.active_traverser !== null) {
-                    TraverserSidebar.show(TraverserSidebar.active_traverser);
+                if (TraverserSidebar.activeTraverser !== null) {
+                    TraverserSidebar.show(TraverserSidebar.activeTraverser);
                 }
 
                 Form.show(new TraverserOpenForm());
@@ -157,7 +143,7 @@ export class TraverserSidebar
 
         document.querySelector('#traverser-select').value = traverser.id;
 
-        TraverserSidebar.active_traverser = traverser;
+        TraverserSidebar.activeTraverser = traverser;
     }
 
     static async findOrOpen(tree, shot_expr)
@@ -228,31 +214,33 @@ export class TraverserSidebar
         let index = TraverserSidebar.traversers.indexOf(traverser);
         TraverserSidebar.traversers.splice(index, 1);
 
-        if (TraverserSidebar.active_traverser == traverser) {
+        if (TraverserSidebar.activeTraverser == traverser) {
             if (TraverserSidebar.traversers.length == 0) {
-                TraverserSidebar.active_traverser = null;
+                TraverserSidebar.activeTraverser = null;
                 TraverserSidebar.select.value = 0;
             }
             else {
-                TraverserSidebar.active_traverser = TraverserSidebar.traversers.at(-1);
+                TraverserSidebar.activeTraverser = TraverserSidebar.traversers.at(-1);
             }
         }
 
-        if (TraverserSidebar.active_traverser !== null) {
-            TraverserSidebar.show(TraverserSidebar.active_traverser);
+        if (TraverserSidebar.activeTraverser !== null) {
+            TraverserSidebar.show(TraverserSidebar.activeTraverser);
         }
 
         TraverserSidebar.save();
     }
 
     static reset() {
-        TraverserSidebar.active_traverser = null;
+        TraverserSidebar.activeTraverser = null;
 
         for (var traverser of TraverserSidebar.traversers) {
             traverser.option.remove();
             traverser.removeElement();
         }
         TraverserSidebar.traversers = [];
+
+        TraverserSidebar.select.value = 0;
 
         TraverserSidebar.save();
     }

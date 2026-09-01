@@ -115,7 +115,7 @@ input[readonly]:focus {
     text-align: center;
 }
 
-.page {
+main {
     --header-height: 40px;
     --footer-height: 40px;
 
@@ -138,7 +138,7 @@ input[readonly]:focus {
         }
     }
     
-    & > .footer {
+    & > footer {
         height: var(--footer-height);
     }
     

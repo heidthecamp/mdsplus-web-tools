@@ -105,32 +105,29 @@ export class Scope
         Utils.bindActions('add-panel',
             () => Scope.addPanel(new MDSplusPanel(), { width: 6, height: 6 }, true).edit());
     
+        let resetShotTriggers = Utils.bindActions('reset-shot', 
+            (e) => {
+                Scope.shot_expr_offset = 0;
+
+                resetShotTriggers.forEach((button) => button.disabled = true);
+
+                Scope.refresh();
+            });
+    
         Utils.bindActions('prev-shot',
-            async (e) => {
+            (e) => {
                 --Scope.shot_expr_offset;
 
-                document.querySelectorAll('*[data-action="reset-shot"]')
-                    .forEach((button) => button.disabled = (Scope.shot_expr_offset == 0));
+                resetShotTriggers.forEach((button) => button.disabled = (Scope.shot_expr_offset == 0));
 
                 Scope.refresh();
             });
     
         Utils.bindActions('next-shot',
-            async (e) => {
+            (e) => {
                 ++Scope.shot_expr_offset;
 
-                document.querySelectorAll('*[data-action="reset-shot"]')
-                    .forEach((button) => button.disabled = (Scope.shot_expr_offset == 0));
-
-                Scope.refresh();
-            });
-    
-        Utils.bindActions('reset-shot', 
-            async (e) => {
-                Scope.shot_expr_offset = 0;
-
-                document.querySelectorAll('*[data-action="reset-shot"]')
-                    .forEach((button) => button.disabled = true);
+                resetShotTriggers.forEach((button) => button.disabled = (Scope.shot_expr_offset == 0));
 
                 Scope.refresh();
             });
@@ -304,16 +301,13 @@ export class Scope
             panelsToRemove[i].removeElement();
         }
 
-        TraverserSidebar.reset();
-
+        // TODO: Should this be here?
         await Scope.closeAllTrees()
             .then(() => Scope.updateMetadata(true));
 
         Scope.initGrid();
 
-        for (var traverser of TraverserSidebar.traversers) {
-            TraverserSidebar.close()
-        }
+        Utils.displayValue('current-shot', 'No Current');
 
         Scope.queueAutosave();
     }
@@ -423,15 +417,23 @@ export class Scope
                     }
 
                     if (response.hasValue('shot')) {
-                        let shot_expr = response.getValue('shot').toString();
-                        if (Scope.shot_expr_offset > 0) {
-                            shot_expr += '+' + Scope.shot_expr_offset;
+                        let shot_expr = response.getValue('shot');
+                        let shot_with_offset = response.getValue('shot_with_offset');
+                        if (shot_expr === null || shot_with_offset === null) {
+                            shot_expr = 'No Current';
+                            shot_with_offset = 'No Current';
                         }
-                        else if (Scope.shot_expr_offset < 0) {
-                            shot_expr += Scope.shot_expr_offset;
+                        else {
+                            shot_expr = shot_expr.toString();
+                            if (Scope.shot_expr_offset > 0) {
+                                shot_expr += '+' + Scope.shot_expr_offset;
+                            }
+                            else if (Scope.shot_expr_offset < 0) {
+                                shot_expr += Scope.shot_expr_offset;
+                            }
                         }
 
-                        Utils.displayValue('current-shot', response.getValue('shot_with_offset'))
+                        Utils.displayValue('current-shot', shot_with_offset)
                             .forEach((element) => {
                                 let tooltip = bootstrap.Tooltip.getOrCreateInstance(element);
                                 tooltip.setContent({ '.tooltip-inner': shot_expr });
@@ -441,7 +443,7 @@ export class Scope
             }
             catch (e) {
                 // if (!e.message.startsWith('%TREE-W-NOT_OPEN')) {
-                if (e.hasOwnProperty('message')) {
+                if (e !== null) {
                     Utils.showErrorMessage(e.message, () => {
                         Scope.edit()
                         
