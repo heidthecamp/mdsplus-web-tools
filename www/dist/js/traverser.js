@@ -184,7 +184,7 @@ export class Traverser
         }
         
         let request = [
-            ['open', `TreeOpen("${tree}",${shot_expr})`],
+            ['open', `getmsg(TreeOpen("${tree}",${shot_expr}))`],
             ['tree', '$EXPT'],
             ['shot', '$SHOT'],
         ];
@@ -193,6 +193,11 @@ export class Traverser
             await this.connection.getMany(request)
             .then((response) => {
                 response.checkForErrors();
+
+                let open = response.getValue('open');
+                if (open.startsWith('%TREE-E')) {
+                    throw Error(open);
+                }
     
                 // TODO: Error handling
                 this.tree = response.getValue('tree');
@@ -252,7 +257,7 @@ export class Traverser
         }
 
         let request = [
-            ['open', `TreeOpen("${this.tree}",${this.shot})`],
+            ['open', `getmsg(TreeOpen("${this.tree}",${this.shot}))`],
             ['default_node', default_node_expr], // TODO: Fix
             ['nid', `_wsnid=getnci((${node}), "NID_NUMBER")`],
             ['path', `getnci(_wsnid, "FULLPATH")`],
@@ -263,6 +268,11 @@ export class Traverser
             .then(async (response) => {
                 response.checkForErrors();
     
+                let open = response.getValue('open');
+                if (open.startsWith('%TREE-E')) {
+                    throw Error(open);
+                }
+
                 let path = response.getValue('path');
                 path = path.split('::')[1];
                 
@@ -352,7 +362,7 @@ export class Traverser
             let hasDescription = node.getAttribute('data-has-description');
 
             let request = [
-                ['open', `TreeOpen("${this.tree}",${this.shot})`],
+                ['open', `getmsg(TreeOpen("${this.tree}",${this.shot}))`],
             ];
 
             if (!hasDescription) {
@@ -383,6 +393,11 @@ export class Traverser
                             if (!e.message.startsWith('%TDI')) {
                                 throw e;
                             }
+                        }
+
+                        let open = response.getValue('open');
+                        if (open.startsWith('%TREE-E')) {
+                            throw Error(open);
                         }
 
                         if (!hasDescription) {
@@ -441,7 +456,7 @@ export class Traverser
 
     async dir(node) {
         let request = [
-            ['open', `TreeOpen("${this.tree}",${this.shot})`],
+            ['open', `getmsg(TreeOpen("${this.tree}",${this.shot}))`],
             ['default_node', 'SetDefaultNid(0)'],
             ['nid', `_wsnid=getnci(${node}, "NID_NUMBER")`],
             ['child_nids', `_wscnids=getnci(getnci(_wsnid,"CHILDREN_NIDS"),"NID_NUMBER")`],
@@ -464,6 +479,11 @@ export class Traverser
                 if (!e.message.startsWith('%TREE-W-NNF')) {
                     throw e;
                 }
+            }
+
+            let open = response.getValue('open');
+            if (open.startsWith('%TREE-E')) {
+                throw Error(open);
             }
 
             let nid = response.getValue('nid');

@@ -68,10 +68,10 @@ export class MDSplusTrace extends Trace
         // TODO: Figure out why !== doesn't work
         if (tree != null) {
             if (shot_expr != null) {
-                request.push(['open', `TreeOpen("${tree}",${shot_expr})`])
+                request.push(['open', `getmsg(TreeOpen("${tree}",${shot_expr}))`])
             }
             else {
-                request.push(['open', `TreeOpen("${tree}",0)`])
+                request.push(['open', `getmsg(TreeOpen("${tree}",0))`])
             }
         }
 
@@ -150,6 +150,13 @@ export class MDSplusTrace extends Trace
                 }
 
                 response.checkForErrors();
+
+                let open = response.getValue('open');
+                if (open.startsWith('%TREE-E')) {
+                    let error = Error(open);
+                    error.field = 'open';
+                    throw error;
+                }
 
                 let y = response.getValue('y');
                 let x = response.getValue('x');

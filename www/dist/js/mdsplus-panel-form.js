@@ -105,6 +105,8 @@ export class MDSplusPanelForm extends Form
         }
 
         this.showTraceForm(0);
+
+        // Has to follow calls to add/removeTraceForm which set unsaved=true
         this.unsaved = false;
     }
 
@@ -123,6 +125,8 @@ export class MDSplusPanelForm extends Form
 
         let index = this.traceFormIDs.indexOf(id);
         this.traceFormIDs.splice(index, 1);
+
+        this.unsaved = true;
     }
 
     addTraceForm(trace=null)
@@ -152,47 +156,56 @@ export class MDSplusPanelForm extends Form
             { element: traceForm });
 
         Utils.bindActions('trace-reveal',
-            async () => {
-                let tree = this.getInput('tree', id).value;
-                if (this.getInput('tree-default', id).checked) {
-                    tree = Scope.defaults.tree;
-                }
-
-                let shot_expr = this.getInput('shot_expr', id).value;
-                if (this.getInput('shot_expr-default', id).checked) {
-                    shot_expr = Scope.defaults.shot_expr;
-                }
-
-                let traverser = await TraverserSidebar.findOrOpen(tree, shot_expr);
-
-                let node = this.getInput('y_expr', id).value;
-                if (this.getInput('y_expr-default', id).checked) {
-                    node = Scope.defaults.y_expr;
-                }
-
-                if (node !== null) {
-                    // Filter out functions
-                    node = node.replaceAll(/([a-zA-Z_]+\()/g, '');
-
-                    // Filter out variables
-                    node = node.replaceAll(/([\s;,]_[a-zA-Z_]+)/g, '');
-
-                    // Filter out scientific notation
-                    node = node.replaceAll(/([0-9]e[0-9]+)/g, '');
-
-                    // Find first thing that looks like a node
-                    let matches = node.match(/(\\?\\?[a-zA-Z][a-zA-Z0-9_:\.]+)/);
-                    node = matches[0];
-
-                    let default_node_expr = this.valueOr(this.getInput('default_node_expr', id).value);
-                    if (this.getInput('default_node_expr-default', id).checked) {
-                        default_node_expr = Scope.defaults.default_node_expr;
+            () => {
+                let doReveal = async () => {
+                    let tree = this.getInput('tree', id).value;
+                    if (this.getInput('tree-default', id).checked) {
+                        tree = Scope.defaults.tree;
                     }
 
-                    traverser.reveal(node, default_node_expr);
+                    let shot_expr = this.getInput('shot_expr', id).value;
+                    if (this.getInput('shot_expr-default', id).checked) {
+                        shot_expr = Scope.defaults.shot_expr;
+                    }
 
-                    // HACK: Effectively "cancel"
-                    this.close();
+                    let traverser = await TraverserSidebar.findOrOpen(tree, shot_expr);
+
+                    let node = this.getInput('y_expr', id).value;
+                    if (this.getInput('y_expr-default', id).checked) {
+                        node = Scope.defaults.y_expr;
+                    }
+
+                    if (node !== null) {
+                        // Filter out functions
+                        node = node.replaceAll(/([a-zA-Z_]+\()/g, '');
+
+                        // Filter out variables
+                        node = node.replaceAll(/([\s;,]_[a-zA-Z_]+)/g, '');
+
+                        // Filter out scientific notation
+                        node = node.replaceAll(/([0-9]e[0-9]+)/g, '');
+
+                        // Find first thing that looks like a node
+                        let matches = node.match(/(\\?\\?[a-zA-Z][a-zA-Z0-9_:\.]+)/);
+                        node = matches[0];
+
+                        let default_node_expr = this.valueOr(this.getInput('default_node_expr', id).value);
+                        if (this.getInput('default_node_expr-default', id).checked) {
+                            default_node_expr = Scope.defaults.default_node_expr;
+                        }
+
+                        traverser.reveal(node, default_node_expr);
+
+                        // HACK: Effectively "cancel"
+                        this.close();
+                    }
+                }
+
+                if (this.unsaved) {
+                    ConfirmForm.ask('You have unsaved changes, proceed?', doReveal);
+                }
+                else {
+                    doReveal();
                 }
             },
         { element: traceForm });
@@ -254,6 +267,8 @@ export class MDSplusPanelForm extends Form
         this.getInput('default_node_expr', id).value = this.valueOr(trace.default_node_expr, MDSplusTrace.Defaults.default_node_expr);
         this.getInput('trace_color', id).value = this.valueOr(trace.trace_color, MDSplusTrace.Defaults.trace_color);
 
+        this.unsaved = true;
+
         return id;
     }
 
@@ -272,6 +287,10 @@ export class MDSplusPanelForm extends Form
 
         let traceTab = document.querySelector(`#trace-tab-${id}`);
         Utils.focusElement(traceTab);
+
+        this.unsaved = true;
+
+        return id;
     }
 
     showTraceForm(id)

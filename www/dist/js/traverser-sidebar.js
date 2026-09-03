@@ -139,11 +139,15 @@ export class TraverserSidebar
         document.querySelectorAll('.traverser')
             .forEach((node) => node.classList.remove('active'));
 
-        traverser.element.classList.add('active');
-
-        document.querySelector('#traverser-select').value = traverser.id;
-
         TraverserSidebar.activeTraverser = traverser;
+
+        if (traverser !== null) {
+            traverser.element.classList.add('active');
+            TraverserSidebar.select.value = traverser.id;
+        }
+        else {
+            TraverserSidebar.select.value = 0;
+        }
     }
 
     static async findOrOpen(tree, shot_expr)
@@ -155,7 +159,7 @@ export class TraverserSidebar
         // Maybe only do this if mode != 'readonly' ?
 
         let request = [
-            ['open', `TreeOpen("${tree}",${shot_expr})`],
+            ['open', `getmsg(TreeOpen("${tree}",${shot_expr}))`],
             ['tree', '$EXPT'],
             ['shot', '$SHOT'],
         ];
@@ -164,6 +168,11 @@ export class TraverserSidebar
             await Connection.current.getMany(request)
             .then(async (response) => {
                 response.checkForErrors();
+
+                let open = response.getValue('open');
+                if (open.startsWith('%TREE-E')) {
+                    throw Error(open);
+                }
     
                 tree = response.getValue('tree');
                 let shot = response.getValue('shot');
@@ -201,6 +210,8 @@ export class TraverserSidebar
         }
         catch (e) {
             Utils.showErrorMessage(e.message);
+
+            TraverserSidebar.show(null);
         }
 
         return traverser;
