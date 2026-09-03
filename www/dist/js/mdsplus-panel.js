@@ -148,6 +148,7 @@ export class MDSplusPanel extends Panel
             bounds = await this.calculateBounds();
         }
 
+        let updateFailed = false;
         let view = new Bounds();
         for (var i = 0; i < this.traces.length; ++i) {
             try {
@@ -157,6 +158,7 @@ export class MDSplusPanel extends Panel
                 await this.traces[i].update(this.connection, bounds, count);
             }
             catch (e) {
+                updateFailed = true;
                 this.showError(e);
             }
             
@@ -172,40 +174,45 @@ export class MDSplusPanel extends Panel
 
         this.widget.style.opacity = 1;
 
-        let request = [];
-        if (this.title_expr !== null) {
-            request.push([ 'title', this.title_expr ]);
-        }
-        else if (Scope.defaults.title_expr !== null) {
-            request.push([ 'title', Scope.defaults.title_expr ]);
-        }
-
         let title = this.widget.querySelector('.title');
-        if (request.length > 0) {
-            try {
-                await this.connection.getMany(request)
-                .then((response) => {
-                    response.checkForErrors();
-
-                    this.title = response.getValue('title');
-                });
-            }
-            catch (e) {
-                Utils.showErrorMessage(e.message, () => {
-                    this.edit();
-                    
-                    // TODO: Cleanup
-                    let input = Form.activeForm.getInput('title_expr');
-                    Utils.focusElement(input);
-                });
-            }
-    
-            title.innerText = this.title;
-        }
-        else {
+        if (updateFailed) {
             title.innerText = '';
         }
+        else {
 
+            let request = [];
+            if (this.title_expr !== null) {
+                request.push([ 'title', this.title_expr ]);
+            }
+            else if (Scope.defaults.title_expr !== null) {
+                request.push([ 'title', Scope.defaults.title_expr ]);
+            }
+
+            if (request.length > 0) {
+                try {
+                    await this.connection.getMany(request)
+                    .then((response) => {
+                        response.checkForErrors();
+
+                        this.title = response.getValue('title');
+                    });
+                }
+                catch (e) {
+                    Utils.showErrorMessage(e.message, () => {
+                        this.edit();
+                        
+                        // TODO: Cleanup
+                        let input = Form.activeForm.getInput('title_expr');
+                        Utils.focusElement(input);
+                    });
+                }
+        
+                title.innerText = this.title;
+            }
+            else {
+                title.innerText = '';
+            }
+        }
     }
 
     async render()
