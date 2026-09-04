@@ -24,10 +24,9 @@ const InitialDefaults = {
     x_expr: null,
     x_min_expr: null,
     x_max_expr: null,
-    trace_type: 'line',
-    trace_color: 'steelblue',
-    point_type: null,
-    point_color: null,
+    type: 'line',
+    color: 'steelblue',
+    marker: null,
 };
 
 export class Scope

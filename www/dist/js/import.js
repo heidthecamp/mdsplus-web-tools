@@ -60,10 +60,9 @@ export function importJSON(text)
                         valueOrNull(trace, 'default_node_expr'),
                         valueOrNull(trace, 'y_expr'),
                         valueOrNull(trace, 'x_expr'),
-                        valueOrNull(trace, 'trace_type'),
-                        valueOrNull(trace, 'trace_color'),
-                        valueOrNull(trace, 'point_type'),
-                        valueOrNull(trace, 'point_color')
+                        valueOrNull(trace, 'type'),
+                        valueOrNull(trace, 'color'),
+                        valueOrNull(trace, 'marker'),
                     )
                 );
             }

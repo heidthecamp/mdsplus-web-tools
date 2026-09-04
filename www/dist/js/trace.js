@@ -4,15 +4,13 @@ import { Bounds } from "./bounds.js";
 export class Trace
 {
     constructor(
-        trace_type = "line",
-        trace_color = "black",
-        point_type = null,
-        point_color = null
+        type = "line", // line, step, none
+        color = "black",
+        marker = null, // circle, triangle, cross, etc
     ) {
-        this.trace_type = trace_type;
-        this.trace_color = trace_color;
-        this.point_type = point_type;
-        this.point_color = point_color;
+        this.type = type;
+        this.color = color;
+        this.marker = marker;
 
         this.bounds = new Bounds();
         this.initialData = null; // for auto**

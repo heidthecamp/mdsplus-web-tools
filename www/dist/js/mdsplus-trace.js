@@ -15,10 +15,9 @@ export class MDSplusTrace extends Trace
         default_node_expr: null,
         y_expr: null,
         x_expr: null,
-        trace_type: "line",
-        trace_color: "black",
-        point_type: null,
-        point_color: "black",
+        type: "line",
+        color: "black",
+        marker: null,
     };
 
     constructor(
@@ -27,12 +26,11 @@ export class MDSplusTrace extends Trace
         default_node_expr = MDSplusTrace.Defaults.default_node_expr,
         y_expr = MDSplusTrace.Defaults.y_expr,
         x_expr = MDSplusTrace.Defaults.x_expr,
-        trace_type = MDSplusTrace.Defaults.trace_type,
-        trace_color = MDSplusTrace.Defaults.trace_color,
-        point_type = MDSplusTrace.Defaults.point_type,
-        point_color = MDSplusTrace.Defaults.point_color,
+        type = MDSplusTrace.Defaults.type,
+        color = MDSplusTrace.Defaults.color,
+        marker = MDSplusTrace.Defaults.marker,
     ) {
-        super(trace_type, trace_color, point_type, point_color);
+        super(type, color, marker);
 
         if (shot_expr !== null && typeof shot_expr !== 'string') {
             shot_expr = shot_expr.toString();

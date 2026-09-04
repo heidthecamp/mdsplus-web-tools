@@ -265,7 +265,7 @@ export class MDSplusPanelForm extends Form
         this.getInput('tree', id).value = this.valueOr(trace.tree, MDSplusTrace.Defaults.tree);
         this.getInput('shot_expr', id).value = this.valueOr(trace.shot_expr, MDSplusTrace.Defaults.shot_expr);
         this.getInput('default_node_expr', id).value = this.valueOr(trace.default_node_expr, MDSplusTrace.Defaults.default_node_expr);
-        this.getInput('trace_color', id).value = this.valueOr(trace.trace_color, MDSplusTrace.Defaults.trace_color);
+        this.getInput('color', id).value = this.valueOr(trace.color, MDSplusTrace.Defaults.color);
 
         this.unsaved = true;
 
@@ -281,7 +281,7 @@ export class MDSplusPanelForm extends Form
         this.copyTraceInput('tree', id, other_id);
         this.copyTraceInput('shot_expr', id, other_id);
         this.copyTraceInput('default_node_expr', id, other_id);
-        this.copyTraceInput('trace_color', id, other_id);
+        this.copyTraceInput('color', id, other_id);
 
         this.showTraceForm(id);
 
@@ -368,7 +368,7 @@ export class MDSplusPanelForm extends Form
             updateValue('default_node_expr', i);
             updateValue('y_expr', i);
             updateValue('x_expr', i);
-            updateValue('trace_color', i);
+            updateValue('color', i);
         }
 
         if (needUpdate) {

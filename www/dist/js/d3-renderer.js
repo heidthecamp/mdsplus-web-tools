@@ -82,33 +82,29 @@ export class D3Renderer extends Renderer
 
             // For every line...
             for (var j = 0; j < trace.data.length; ++j) {
-                if (trace.data[j].length == 1) {
-                    // TODO: Investigate
-                    svg.selectAll('myPoints')
-                        .attr('class', 'data-point')
-                        .data(trace.data[j])
-                        .enter()
-                        .append('circle')
-                        .attr('stroke-width', .75)
-                        .attr('fill', trace.point_color)
-                        .attr('stroke', trace.point_color)
-                        .attr('cx', d => xScale(d[0]))
-                        .attr('cy', d => yScale(d[1]))
-                        .attr('r', .75);
-                }
                 let line = svg.append('g')
+                    .attr('fill', 'none')
+                    .attr('stroke', trace.color)
+                    .attr('stroke-width', 1.5)
                     .attr('class', 'data-line')
-                    .attr('clip-path', `url(#clip-${id})`)
-                    .append('path')
+                    .attr('clip-path', `url(#clip-${id})`);
+
+                if (trace.data[j].length == 1) {
+                    line.append('circle')
+                        .attr('r', .75)
+                        .data(trace.data[j]) // For a single point...
+                        .attr('cx', d => xScale(d[0]))
+                        .attr('cy', d => yScale(d[1]));
+                }
+                else {
+                    line.append('path')
                         .datum(trace.data[j]) // For every point...
-                        .attr('class', 'line')
-                        .attr('fill', 'none')
-                        .attr('stroke', trace.trace_color)
-                        .attr('stroke-width', 1.5)
                         .attr('d', d3.line()
                             .x((d) => xScale(d[0]))
                             .y((d) => yScale(d[1]))
                         );
+                }
+
                 lines.push(line);
             }
             this.line.push(lines);

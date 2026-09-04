@@ -39,7 +39,7 @@ export class PreviewTrace extends Trace
     constructor(y_data, x_data) {
         super();
 
-        this.trace_color = 'white';
+        this.color = 'white';
 
         if (y_data.length != x_data.length) {
             console.error('array length mismatch');

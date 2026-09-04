@@ -27,10 +27,9 @@ export function exportJSON()
         'x_expr': Scope.defaults.x_expr,
         'x_min_expr': Scope.defaults.x_min_expr,
         'x_max_expr': Scope.defaults.x_max_expr,
-        'trace_type': Scope.defaults.trace_type,
-        'trace_color': Scope.defaults.trace_color,
-        'point_type': Scope.defaults.point_type,
-        'point_color': Scope.defaults.point_color,
+        'type': Scope.defaults.type,
+        'color': Scope.defaults.color,
+        'marker': Scope.defaults.marker,
     });
 
     data['panels'] = [];
@@ -47,10 +46,9 @@ export function exportJSON()
                 'default_node_expr': trace.default_node_expr,
                 'y_expr': trace.y_expr,
                 'x_expr': trace.x_expr,
-                'trace_type': trace.trace_type,
-                'trace_color': trace.trace_color,
-                'point_type': trace.point_type,
-                'point_color': trace.point_color,
+                'type': trace.type,
+                'color': trace.color,
+                'marker': trace.marker,
             }));
         }
 

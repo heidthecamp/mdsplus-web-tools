@@ -51,12 +51,12 @@ export class CanvasRenderer extends Renderer
         for (var i = 0; i < traces.length; ++i) {
             let trace = traces[i];
 
-            if (trace.trace_color == null) {
+            if (trace.color == null) {
                 // ctx.strokeStyle = 'white';
                 ctx.strokeStyle = 'black';
             }
             else {
-                ctx.strokeStyle = trace.trace_color;
+                ctx.strokeStyle = trace.color;
             }
 
             // For every line...
