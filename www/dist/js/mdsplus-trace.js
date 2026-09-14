@@ -149,11 +149,13 @@ export class MDSplusTrace extends Trace
 
                 response.checkForErrors();
 
-                let open = response.getValue('open');
-                if (open.startsWith('%TREE-E')) {
-                    let error = Error(open);
-                    error.field = 'open';
-                    throw error;
+                if (response.hasOwnProperty('open')) {
+                    let open = response.getValue('open');
+                    if (open.startsWith('%TREE-E')) {
+                        let error = Error(open);
+                        error.field = 'open';
+                        throw error;
+                    }
                 }
 
                 let y = response.getValue('y');
