@@ -16,6 +16,7 @@ export function exportJSON()
     let data = {};
 
     data['title_expr'] = Scope.title_expr;
+    data['resample'] = Scope.resample;
     data['global_defaults'] = clean({
         'tree': Scope.defaults.tree,
         'shot_expr': Scope.defaults.shot_expr,

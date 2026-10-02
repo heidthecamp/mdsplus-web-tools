@@ -72,6 +72,9 @@ export function importJSON(text)
     if (data.hasOwnProperty('title_expr')) {
         Scope.setTitle(data['title_expr']);
     }
+    if (data.hasOwnProperty('resample')) {
+        Scope.resample = data['resample'];
+    }
 }
 
 export async function importFile(file)

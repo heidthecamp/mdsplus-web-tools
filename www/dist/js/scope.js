@@ -62,6 +62,8 @@ export class Scope
             Import.importJSON(localStorage.getItem("ws-autosave"));
         }
         catch (e) {
+            Utils.showErrorMessage(e);
+            
             localStorage.removeItem("ws-autosave");
             
             let sin = Scope.addPanel(

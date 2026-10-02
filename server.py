@@ -82,7 +82,7 @@ def handle_connection(ws: ServerConnection):
 
     # TODO: Add this to the TDI standard library
     conn.get(
-    'public fun CropAndResample(in _sig, optional in _start, optional in _end, in _count) {' +
+    'public fun CropAndResample(in _sig, optional in _start, optional in _end, optional in _count) {' +
         '_crop = (present(_start) || present(_end));' +
         '_dim = data(dim_of(_sig));' +
         'if (not present(_start)) _start = set_range(1,_dim)[0];' +
@@ -95,6 +95,9 @@ def handle_connection(ws: ServerConnection):
             '_sig = make_signal(_data, *, _dim);' +
         '} else {' +
             '_sig = make_signal(data(_sig), *, _dim);' + # HACK: To prevent resample giving us the dim?
+        '}' +
+        'if (!present(_count)) {' +
+            '_count = size(_sig);' +
         '}' +
         'if (size(_sig) > _count) {' +
             '_delta = (float(_end) - float(_start)) / float(_count);' +
