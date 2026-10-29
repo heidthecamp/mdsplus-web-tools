@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mdsplus-web-tools"
+version = "0.1.0"
+description = "Web-based tools for viewing and browsing MDSplus data"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+    "mdsthin>=1.5.1",
+    "numpy>=2.3.3",
+    "websockets>=15.0.1",
+]
+
+[project.scripts]
+mdsplus-web-tools = "mdsplus_web_tools.server:main"
+
+[tool.setuptools.packages.find]
+include = ["mdsplus_web_tools*"]
+
+[tool.setuptools.package-data]
+mdsplus_web_tools = ["www/**/*"]

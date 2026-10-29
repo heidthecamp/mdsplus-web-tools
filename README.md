@@ -41,11 +41,14 @@ To run these tools for a single user, follow these steps:
 1. Clone this repository
 2. Create and source a python virtual environment
   `python3 -m venv .venv` and `source .venv/bin/activate`
-3. Install the required packages
-  `pip install -r requirements.txt`
+3. Install the package and its dependencies
+  `pip install .`
 4. Run the server, likely pointing at your MDSplus data server. See [Data Server Options](#data-server-options) for more information.
-  `python3 server.py DATA_SERVER`
+  `mdsplus-web-tools DATA_SERVER`
 5. Open the link displayed in your terminal
+
+Running from a checkout with `python3 server.py DATA_SERVER` is still supported and is
+equivalent to the `mdsplus-web-tools` command installed in step 3.
 
 ## Site-Wide Setup
 
