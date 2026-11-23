@@ -85,8 +85,18 @@ def handle_connection(ws: ServerConnection):
     'public fun CropAndResample(in _sig, optional in _start, optional in _end, optional in _count) {' +
         '_crop = (present(_start) || present(_end));' +
         '_dim = data(dim_of(_sig));' +
-        'if (not present(_start)) _start = set_range(1,_dim)[0];' +
-        'if (not present(_end)) _end = _dim[size(_dim) - 1];' +
+        '_first_time = set_range(1,_dim)[0];' +
+        '_last_time = _dim[size(_dim) - 1];' +
+        'if (not present(_start)) {' +
+            '_start = _first_time;' +
+        '} else if (_start < _first_time) {' +
+            '_start = _first_time;' +
+        '}' +
+        'if (not present(_end)) {' +
+            '_end = _last_time;' +
+        '} else if (_end > _last_time) {' +
+            '_end = _last_time;' +
+        '}' +
         'if (_crop) {' +
             '_data = data(_sig);' +
             '_mask = (_dim >= _start && _dim <= _end);' +

@@ -11,6 +11,7 @@ services:
         #- 8123:8123 # python3 websocket server
         environment:
             MDS_HOST: mdsplus.example.com # Replace with address of MDSplus data server
+            PYTHONUNBUFFERED: true
         networks:
         - default
         volumes:
